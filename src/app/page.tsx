@@ -180,7 +180,7 @@ export default function LandingPage() {
               {
                 icon: <Eye className="w-6 h-6" />,
                 title: 'Actionable analytics',
-                description: 'Know what's working. See where your visitors come from and what they click.',
+                description: "Know what's working. See where your visitors come from and what they click.",
               },
             ].map((feature, i) => (
               <motion.div
