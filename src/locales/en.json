@@ -1,0 +1,191 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "continue": "Continue",
+    "back": "Back",
+    "skip": "Skip",
+    "done": "Done",
+    "error": "Something went wrong",
+    "retry": "Try again"
+  },
+  
+  "landing": {
+    "hero": {
+      "title": "Finally, a bio link that looks good.",
+      "subtitle": "One page for everything you share. Stunning design. Lightning fast. Always free.",
+      "cta": "Get your free page",
+      "input_placeholder": "yourname"
+    },
+    "features": {
+      "no_signup": "No signup required",
+      "ready_seconds": "Ready in seconds",
+      "beautiful": "Beautiful by default"
+    },
+    "pricing": {
+      "title": "Simple pricing",
+      "free": {
+        "name": "Free",
+        "price": "$0",
+        "description": "Everything you need to get started",
+        "features": [
+          "Unlimited links",
+          "6 beautiful themes",
+          "Basic analytics",
+          "Social icons",
+          "Mobile optimized"
+        ],
+        "cta": "Start for free"
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "$4",
+        "period": "/month",
+        "description": "For creators who want more",
+        "features": [
+          "Everything in Free",
+          "12 premium themes",
+          "Advanced analytics",
+          "Priority support",
+          "No HeyBio badge"
+        ],
+        "cta": "Upgrade to Pro"
+      }
+    }
+  },
+  
+  "onboarding": {
+    "step1": {
+      "title": "Pick your link",
+      "subtitle": "This will be your page URL",
+      "placeholder": "yourname",
+      "available": "Available!",
+      "taken": "Already taken",
+      "invalid": "Only letters, numbers, and underscores",
+      "cta": "Get your free page"
+    },
+    "step2": {
+      "title": "What do you want to share?",
+      "subtitle": "Add the links that matter most.",
+      "add_placeholder": "Paste any link...",
+      "auto_detect": "We'll make it look great.",
+      "add_another": "Add another",
+      "cta": "Continue"
+    },
+    "step3": {
+      "title": "Pick a style.",
+      "subtitle": "You can always change it later.",
+      "themes_label": "Free themes",
+      "cta": "Looks good, continue"
+    },
+    "step4": {
+      "title": "Looking good ✨",
+      "subtitle": "Save your page so you can edit it anytime.",
+      "email_placeholder": "Email",
+      "password_placeholder": "Password",
+      "cta": "Save & publish — it's free",
+      "or": "or",
+      "google": "Continue with Google",
+      "disclaimer": "No credit card required. Ever."
+    },
+    "success": {
+      "title": "You're live 🎉",
+      "copy_link": "Copy link",
+      "view_page": "View page",
+      "pro_title": "Go Pro",
+      "pro_subtitle": "$4/month — upgrade anytime",
+      "pro_features": [
+        "Premium themes",
+        "See what's working",
+        "No badge"
+      ],
+      "pro_cta": "Upgrade to Pro",
+      "pro_skip": "Not now"
+    }
+  },
+  
+  "dashboard": {
+    "nav": {
+      "edit": "Edit page",
+      "analytics": "Analytics",
+      "settings": "Settings"
+    },
+    "edit": {
+      "title": "Edit your page",
+      "preview": "Preview",
+      "name_label": "Display name",
+      "bio_label": "Bio",
+      "bio_placeholder": "Tell visitors about yourself...",
+      "links_title": "Links",
+      "add_link": "Add link",
+      "theme_title": "Theme",
+      "save": "Save changes"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "views": "Page views",
+      "clicks": "Link clicks",
+      "top_links": "Top links",
+      "sources": "Traffic sources",
+      "period": {
+        "7d": "Last 7 days",
+        "30d": "Last 30 days"
+      },
+      "pro_required": "Upgrade to Pro for detailed analytics"
+    },
+    "settings": {
+      "title": "Settings",
+      "account": "Account",
+      "email_label": "Email",
+      "plan_label": "Plan",
+      "upgrade": "Upgrade to Pro",
+      "danger": "Danger zone",
+      "delete_account": "Delete account",
+      "logout": "Log out"
+    }
+  },
+  
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "email_placeholder": "Email",
+      "password_placeholder": "Password",
+      "cta": "Log in",
+      "google": "Continue with Google",
+      "forgot": "Forgot password?",
+      "signup_prompt": "Don't have an account?",
+      "signup_link": "Sign up"
+    },
+    "signup": {
+      "title": "Create your account",
+      "email_placeholder": "Email",
+      "password_placeholder": "Password",
+      "cta": "Sign up",
+      "google": "Continue with Google",
+      "login_prompt": "Already have an account?",
+      "login_link": "Log in"
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "subtitle": "We'll send you a reset link",
+      "email_placeholder": "Email",
+      "cta": "Send reset link",
+      "back": "Back to login"
+    }
+  },
+  
+  "bio_page": {
+    "powered_by": "Powered by HeyBio"
+  },
+  
+  "errors": {
+    "required": "This field is required",
+    "invalid_email": "Please enter a valid email",
+    "password_short": "Password must be at least 8 characters",
+    "network": "Network error. Please try again.",
+    "unknown": "Something went wrong. Please try again."
+  }
+}
