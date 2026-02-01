@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { Metadata } from 'next';
+import { Metadata, Viewport } from 'next';
 import { BioPage } from '@/components/bio-page';
 import { getTheme } from '@/config/themes';
 
@@ -111,6 +111,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: data.page.display_name,
       description: data.page.bio || `Check out ${data.page.display_name}'s links`,
     },
+  };
+}
+
+export async function generateViewport({ params }: PageProps): Promise<Viewport> {
+  const { username } = await params;
+  const data = DEMO_PAGES[username];
+  
+  if (!data) {
+    return {};
+  }
+
+  const theme = getTheme(data.page.theme_id);
+  
+  return {
     themeColor: theme.colors.background.startsWith('linear') 
       ? '#ffffff' 
       : theme.colors.background,

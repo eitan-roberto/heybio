@@ -127,8 +127,8 @@ export default function DashboardPage() {
 
         {/* Quick actions */}
         <div className="grid gap-4 md:grid-cols-2">
-          <Card className="hover:border-gray-300 transition-colors cursor-pointer" asChild>
-            <Link href="/dashboard/edit">
+          <Link href="/dashboard/edit" className="block">
+            <Card className="hover:border-gray-300 transition-colors cursor-pointer h-full">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Edit className="w-5 h-5" />
@@ -144,11 +144,11 @@ export default function DashboardPage() {
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </div>
               </CardContent>
-            </Link>
-          </Card>
+            </Card>
+          </Link>
 
-          <Card className="hover:border-gray-300 transition-colors cursor-pointer" asChild>
-            <Link href="/dashboard/analytics">
+          <Link href="/dashboard/analytics" className="block">
+            <Card className="hover:border-gray-300 transition-colors cursor-pointer h-full">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <BarChart2 className="w-5 h-5" />
@@ -164,8 +164,8 @@ export default function DashboardPage() {
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </div>
               </CardContent>
-            </Link>
-          </Card>
+            </Card>
+          </Link>
         </div>
       </div>
     </DashboardLayout>
