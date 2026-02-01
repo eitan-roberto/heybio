@@ -46,42 +46,51 @@ export function BioPage({
       className="min-h-screen w-full flex flex-col"
       style={getBackgroundStyle(theme)}
     >
-      <main className="flex-1 w-full max-w-lg mx-auto px-6 py-12">
-        <ProfileSection
-          displayName={page.display_name}
-          bio={page.bio}
-          avatarUrl={page.avatar_url}
-          theme={theme}
-        />
-        
-        <div className="flex flex-col gap-3">
-          {activeLinks.map((link, index) => (
-            <LinkCard
-              key={index}
-              link={link}
-              theme={theme}
-              onClick={() => onLinkClick?.(index)}
-            />
-          ))}
+      <main className="flex-1 w-full max-w-lg mx-auto px-6 py-12 flex flex-col">
+        {/* Profile */}
+        <div className="mb-8">
+          <ProfileSection
+            displayName={page.display_name}
+            bio={page.bio}
+            avatarUrl={page.avatar_url}
+            theme={theme}
+          />
         </div>
-        
-        <SocialBar
-          socialIcons={socialIcons}
-          theme={theme}
-          onIconClick={onSocialClick}
-        />
+
+        {/* Links */}
+        {activeLinks.length > 0 && (
+          <div className="flex-1 flex flex-col gap-4 mb-8">
+            {activeLinks.map((link, index) => (
+              <LinkCard
+                key={index}
+                link={link}
+                theme={theme}
+                onClick={() => onLinkClick?.(index)}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Social */}
+        {socialIcons.length > 0 && (
+          <div className="mb-8">
+            <SocialBar
+              socialIcons={socialIcons}
+              theme={theme}
+              onIconClick={onSocialClick}
+            />
+          </div>
+        )}
       </main>
-      
+
+      {/* Footer Badge */}
       {showBadge && (
         <footer className="py-6 text-center">
           <a
             href="https://heybio.co"
             target="_blank"
             rel="noopener noreferrer"
-            className={cn(
-              "inline-flex items-center gap-1.5 text-xs opacity-60",
-              "hover:opacity-100 transition-opacity"
-            )}
+            className="inline-flex items-center gap-1.5 text-xs opacity-60 hover:opacity-100 transition-opacity"
             style={{ color: theme.colors.textMuted }}
           >
             <span>Made with</span>

@@ -11,6 +11,8 @@ export default function PreviewPage() {
   const router = useRouter();
   const { draft, reset } = useOnboardingStore();
   const [showMobilePreview, setShowMobilePreview] = useState(true);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Redirect if no draft exists
   useEffect(() => {
@@ -27,10 +29,32 @@ export default function PreviewPage() {
     router.push('/new/theme');
   };
 
-  const handlePublish = () => {
-    // TODO: In real app, this would create an account and save the page
-    // For now, just show a success message and reset
-    alert(`Your page heybio.co/${draft.slug} is ready!\n\nNote: Signup coming soon. For now, this is just a preview.`);
+  const handlePublish = async () => {
+    setError(null);
+    setIsPublishing(true);
+
+    try {
+      const response = await fetch('/api/pages/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(draft),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to publish page');
+      }
+
+      // Clear draft and redirect to the new page
+      reset();
+      router.push(`/${draft.slug}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      setError(message);
+      setIsPublishing(false);
+    }
   };
 
   const handleStartOver = () => {
@@ -137,15 +161,30 @@ export default function PreviewPage() {
       {/* Publish CTA */}
       <div className="bg-bottom border-t border-low px-6 py-4">
         <div className="max-w-lg mx-auto flex flex-col gap-3">
+          {error && (
+            <div className="p-3 rounded-lg bg-red-900/20 text-red-400 text-sm text-center">
+              {error}
+            </div>
+          )}
           <Button
             onClick={handlePublish}
-            className="w-full py-6 text-lg rounded-xl gap-2"
+            disabled={isPublishing}
+            className="w-full py-6 text-lg rounded-xl gap-2 bg-green text-top hover:bg-green/80"
           >
-            <Icon icon="sparkles" className="w-5 h-5" />
-            Publish my page
+            {isPublishing ? (
+              <>
+                <Icon icon="loader-2" className="w-5 h-5 animate-spin" />
+                Publishing...
+              </>
+            ) : (
+              <>
+                <Icon icon="sparkles" className="w-5 h-5" />
+                Publish my page
+              </>
+            )}
           </Button>
-          <p className="text-xs text-center text-top">
-            Create a free account to save your page and access it anytime
+          <p className="text-xs text-center text-high">
+            You need to be logged in to save your page
           </p>
         </div>
       </div>
