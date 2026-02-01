@@ -40,12 +40,12 @@ export default function DashboardPage() {
               <CardTitle className="text-sm font-medium text-top">
                 Page Views
               </CardTitle>
-              <Icon name="eye" className="w-4 h-4 text-top" />
+              <Icon icon="eye" className="w-4 h-4 text-top" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{DEMO_STATS.pageViews.toLocaleString()}</div>
               <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
-                <Icon name="trending-up" className="w-3 h-3" />
+                <Icon icon="trending-up" className="w-3 h-3" />
                 +12% from last week
               </p>
             </CardContent>
@@ -56,12 +56,12 @@ export default function DashboardPage() {
               <CardTitle className="text-sm font-medium text-top">
                 Link Clicks
               </CardTitle>
-              <Icon name="mouse-pointer-click" className="w-4 h-4 text-top" />
+              <Icon icon="mouse-pointer-click" className="w-4 h-4 text-top" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{DEMO_STATS.linkClicks.toLocaleString()}</div>
               <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
-                <Icon name="trending-up" className="w-3 h-3" />
+                <Icon icon="trending-up" className="w-3 h-3" />
                 +8% from last week
               </p>
             </CardContent>
@@ -72,7 +72,7 @@ export default function DashboardPage() {
               <CardTitle className="text-sm font-medium text-top">
                 Click Rate
               </CardTitle>
-              <Icon name="bar-chart-2" className="w-4 h-4 text-top" />
+              <Icon icon="bar-chart-2" className="w-4 h-4 text-top" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{DEMO_STATS.clickRate}%</div>
@@ -97,13 +97,13 @@ export default function DashboardPage() {
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-700"
                   >
-                    <Icon name="external-link" className="w-3 h-3" />
+                    <Icon icon="external-link" className="w-3 h-3" />
                   </a>
                 </CardDescription>
               </div>
               <Button variant="outline" size="sm" asChild>
                 <Link href="/dashboard/edit">
-                  <Icon name="edit" className="w-4 h-4 mr-2" />
+                  <Icon icon="edit" className="w-4 h-4 mr-2" />
                   Edit
                 </Link>
               </Button>
@@ -131,7 +131,7 @@ export default function DashboardPage() {
             <Card className="hover:border-mid transition-colors cursor-pointer h-full">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Icon name="edit" className="w-5 h-5" />
+                  <Icon icon="edit" className="w-5 h-5" />
                   Edit your page
                 </CardTitle>
                 <CardDescription>
@@ -141,7 +141,7 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="flex items-center text-sm text-blue-600 font-medium">
                   Edit page
-                  <Icon name="arrow-right" className="w-4 h-4 ml-1" />
+                  <Icon icon="arrow-right" className="w-4 h-4 ml-1" />
                 </div>
               </CardContent>
             </Card>
@@ -151,7 +151,7 @@ export default function DashboardPage() {
             <Card className="hover:border-mid transition-colors cursor-pointer h-full">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Icon name="bar-chart-2" className="w-5 h-5" />
+                  <Icon icon="bar-chart-2" className="w-5 h-5" />
                   View analytics
                 </CardTitle>
                 <CardDescription>
@@ -161,7 +161,7 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="flex items-center text-sm text-blue-600 font-medium">
                   View analytics
-                  <Icon name="arrow-right" className="w-4 h-4 ml-1" />
+                  <Icon icon="arrow-right" className="w-4 h-4 ml-1" />
                 </div>
               </CardContent>
             </Card>

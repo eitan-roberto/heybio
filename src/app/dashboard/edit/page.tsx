@@ -85,14 +85,14 @@ export default function EditPage() {
               variant="outline"
               onClick={() => setShowPreview(!showPreview)}
             >
-              <Icon name="eye" className="w-4 h-4 mr-2" />
+              <Icon icon="eye" className="w-4 h-4 mr-2" />
               {showPreview ? 'Hide' : 'Show'} Preview
             </Button>
             <Button
               onClick={handleSave}
               disabled={!hasChanges}
             >
-              <Icon name="save" className="w-4 h-4 mr-2" />
+              <Icon icon="save" className="w-4 h-4 mr-2" />
               Save Changes
             </Button>
           </div>
@@ -158,7 +158,7 @@ export default function EditPage() {
                     <CardDescription>Manage your links</CardDescription>
                   </div>
                   <Button size="sm">
-                    <Icon name="plus" className="w-4 h-4 mr-2" />
+                    <Icon icon="plus" className="w-4 h-4 mr-2" />
                     Add Link
                   </Button>
                 </div>
@@ -171,7 +171,7 @@ export default function EditPage() {
                       className="flex items-center gap-2 p-3rounded-lg"
                     >
                       <button className="cursor-grab text-top hover:text-top">
-                        <Icon name="grip-vertical" className="w-4 h-4" />
+                        <Icon icon="grip-vertical" className="w-4 h-4" />
                       </button>
                       <div className="flex-1 min-w-0">
                         <Input
@@ -200,7 +200,7 @@ export default function EditPage() {
                         }}
                         className="p-2 text-top hover:text-red-500"
                       >
-                        <Icon name="trash-2" className="w-4 h-4" />
+                        <Icon icon="trash-2" className="w-4 h-4" />
                       </button>
                     </div>
                   ))}

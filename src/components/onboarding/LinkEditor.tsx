@@ -77,7 +77,7 @@ export function LinkEditor({
       {/* Add new link */}
       <div className="flex gap-2">
         <div className="flex-1 relative">
-          <Icon name="link" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-top" />
+          <Icon icon="link" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-top" />
           <Input
             type="url"
             placeholder="Paste a link..."
@@ -92,7 +92,7 @@ export function LinkEditor({
           disabled={!newUrl.trim() || links.length >= maxLinks}
           className="shrink-0"
         >
-          <Icon name="plus" className="w-4 h-4" />
+          <Icon icon="plus" className="w-4 h-4" />
         </Button>
       </div>
       
@@ -115,7 +115,7 @@ export function LinkEditor({
               className="cursor-grab active:cursor-grabbing p-1 text-top hover:text-top"
               onMouseDown={(e) => e.preventDefault()}
             >
-              <Icon name="grip-vertical" className="w-4 h-4" />
+              <Icon icon="grip-vertical" className="w-4 h-4" />
             </button>
             
             {editingIndex === index ? (
@@ -160,7 +160,7 @@ export function LinkEditor({
                   onClick={() => onRemoveLink(index)}
                   className="p-1.5 text-top hover:text-red-500 transition-colors"
                 >
-                  <Icon name="trash-2" className="w-4 h-4" />
+                  <Icon icon="trash-2" className="w-4 h-4" />
                 </button>
               </>
             )}
@@ -169,7 +169,7 @@ export function LinkEditor({
         
         {links.length === 0 && (
           <div className="text-center py-8 text-top">
-            <Icon name="link" className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <Icon icon="link" className="w-8 h-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No links yet. Paste a URL above to get started.</p>
           </div>
         )}

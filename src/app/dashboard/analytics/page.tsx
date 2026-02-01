@@ -81,7 +81,7 @@ export default function AnalyticsPage() {
               )}
             >
               30 days
-              {!isPro && <Icon name="lock" className="w-3 h-3" />}
+              {!isPro && <Icon icon="lock" className="w-3 h-3" />}
             </button>
           </div>
         </div>
@@ -93,12 +93,12 @@ export default function AnalyticsPage() {
               <CardTitle className="text-sm font-medium text-top">
                 Page Views
               </CardTitle>
-              <Icon name="eye" className="w-4 h-4 text-top" />
+              <Icon icon="eye" className="w-4 h-4 text-top" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{DEMO_STATS.pageViews.toLocaleString()}</div>
               <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
-                <Icon name="trending-up" className="w-3 h-3" />
+                <Icon icon="trending-up" className="w-3 h-3" />
                 +12% from last week
               </p>
             </CardContent>
@@ -109,12 +109,12 @@ export default function AnalyticsPage() {
               <CardTitle className="text-sm font-medium text-top">
                 Link Clicks
               </CardTitle>
-              <Icon name="mouse-pointer-click" className="w-4 h-4 text-top" />
+              <Icon icon="mouse-pointer-click" className="w-4 h-4 text-top" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{DEMO_STATS.linkClicks.toLocaleString()}</div>
               <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
-                <Icon name="trending-up" className="w-3 h-3" />
+                <Icon icon="trending-up" className="w-3 h-3" />
                 +8% from last week
               </p>
             </CardContent>
@@ -125,12 +125,12 @@ export default function AnalyticsPage() {
               <CardTitle className="text-sm font-medium text-top">
                 Unique Visitors
               </CardTitle>
-              <Icon name="globe" className="w-4 h-4 text-top" />
+              <Icon icon="globe" className="w-4 h-4 text-top" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{DEMO_STATS.uniqueVisitors.toLocaleString()}</div>
               <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
-                <Icon name="trending-up" className="w-3 h-3" />
+                <Icon icon="trending-up" className="w-3 h-3" />
                 +5% from last week
               </p>
             </CardContent>
@@ -141,7 +141,7 @@ export default function AnalyticsPage() {
               <CardTitle className="text-sm font-medium text-top">
                 Click Rate
               </CardTitle>
-              <Icon name="trending-up" className="w-4 h-4 text-top" />
+              <Icon icon="trending-up" className="w-4 h-4 text-top" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{DEMO_STATS.clickRate}%</div>
@@ -231,7 +231,7 @@ export default function AnalyticsPage() {
             <CardContent className="flex items-center justify-between py-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-bottom/10 rounded-xl">
-                  <Icon name="sparkles" className="w-6 h-6" />
+                  <Icon icon="sparkles" className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="font-semibold">Unlock Pro Analytics</h3>
@@ -259,7 +259,7 @@ export default function AnalyticsPage() {
                 {DEMO_DEVICES.map((item) => {
                   return (
                     <div key={item.device} className="flex items-center gap-3">
-                      <Icon name={item.icon} className="w-5 h-5 text-top" />
+                      <Icon icon={item.icon} className="w-5 h-5 text-top" />
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-sm font-medium text-top">
@@ -288,7 +288,7 @@ export default function AnalyticsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 Traffic Sources
-                <Icon name="lock" className="w-4 h-4 text-top" />
+                <Icon icon="lock" className="w-4 h-4 text-top" />
               </CardTitle>
               <CardDescription>Where your visitors come from</CardDescription>
             </CardHeader>
@@ -314,7 +314,7 @@ export default function AnalyticsPage() {
             </CardContent>
             <div className="absolute inset-0 flex items-center justify-center bg-bottom/80">
               <div className="text-center">
-                <Icon name="lock" className="w-8 h-8 text-top mx-auto mb-2" />
+                <Icon icon="lock" className="w-8 h-8 text-top mx-auto mb-2" />
                 <p className="text-sm font-medium text-top">Pro feature</p>
                 <Button size="sm" className="mt-2">
                   Upgrade

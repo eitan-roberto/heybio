@@ -66,7 +66,7 @@ export function SocialBar({ socialIcons, theme, onIconClick }: SocialBarProps) {
                 e.currentTarget.style.color = theme.colors.textMuted;
               }}
             >
-              <Icon name={iconName} className="w-5 h-5" />
+              <Icon icon={iconName} className="w-5 h-5" />
             </a>
           );
         })}

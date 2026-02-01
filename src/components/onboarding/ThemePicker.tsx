@@ -78,14 +78,14 @@ function ThemeCard({
       {/* Selected indicator */}
       {isSelected && (
         <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-top flex items-center justify-center">
-          <Icon name="check" className="w-3 h-3 text-bottom" />
+          <Icon icon="check" className="w-3 h-3 text-bottom" />
         </div>
       )}
 
       {/* Locked indicator */}
       {isLocked && (
         <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-high flex items-center justify-center">
-          <Icon name="lock" className="w-3 h-3 text-bottom" />
+          <Icon icon="lock" className="w-3 h-3 text-bottom" />
         </div>
       )}
       

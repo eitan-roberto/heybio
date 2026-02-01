@@ -69,7 +69,7 @@ export function DashboardLayout({ children, user, pageSlug }: DashboardLayoutPro
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden p-1 text-top hover:text-top"
             >
-              <Icon name="x" className="w-5 h-5" />
+              <Icon icon="x" className="w-5 h-5" />
             </button>
           </div>
 
@@ -90,7 +90,7 @@ export function DashboardLayout({ children, user, pageSlug }: DashboardLayoutPro
                           : "text-top hover:bg-bottom hover:text-top"
                       )}
                     >
-                      <Icon name={item.icon} className="w-5 h-5" />
+                      <Icon icon={item.icon} className="w-5 h-5" />
                       {item.label}
                     </Link>
                   </li>
@@ -108,7 +108,7 @@ export function DashboardLayout({ children, user, pageSlug }: DashboardLayoutPro
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-3 py-2 text-sm text-top hover:text-top transition-colors"
               >
-                <Icon name="external-link" className="w-4 h-4" />
+                <Icon icon="external-link" className="w-4 h-4" />
                 View your page
               </a>
             </div>
@@ -121,7 +121,7 @@ export function DashboardLayout({ children, user, pageSlug }: DashboardLayoutPro
                 href="/dashboard/upgrade"
                 className="flex items-center gap-2 px-3 py-2 bg-top text-bottom rounded-lg text-sm font-medium hover:bg-high transition-colors"
               >
-                <Icon name="sparkles" className="w-4 h-4" />
+                <Icon icon="sparkles" className="w-4 h-4" />
                 Upgrade to Pro
               </Link>
             </div>
@@ -147,7 +147,7 @@ export function DashboardLayout({ children, user, pageSlug }: DashboardLayoutPro
                 </p>
               </div>
               <button className="p-1 text-top hover:text-top">
-                <Icon name="log-out" className="w-4 h-4" />
+                <Icon icon="log-out" className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -163,7 +163,7 @@ export function DashboardLayout({ children, user, pageSlug }: DashboardLayoutPro
               onClick={() => setSidebarOpen(true)}
               className="p-2 text-top hover:text-top"
             >
-              <Icon name="menu" className="w-5 h-5" />
+              <Icon icon="menu" className="w-5 h-5" />
             </button>
             <span className="text-lg font-semibold">HeyBio</span>
             <Avatar className="w-8 h-8">

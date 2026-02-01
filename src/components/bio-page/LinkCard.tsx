@@ -74,9 +74,9 @@ export function LinkCard({ link, theme, onClick }: LinkCardProps) {
           : theme.colors.linkBg;
       }}
     >
-      <Icon name={iconName} className="w-5 h-5 flex-shrink-0 opacity-70" />
+      <Icon icon={iconName} className="w-5 h-5 flex-shrink-0 opacity-70" />
       <span className="flex-1 font-medium text-center">{link.title}</span>
-      <Icon name="external-link" className="w-4 h-4 flex-shrink-0 opacity-0 group-hover:opacity-50 transition-opacity" />
+      <Icon icon="external-link" className="w-4 h-4 flex-shrink-0 opacity-0 group-hover:opacity-50 transition-opacity" />
     </a>
   );
 }

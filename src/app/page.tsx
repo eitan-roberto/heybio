@@ -245,7 +245,7 @@ export default function LandingPage() {
           {/* Pricing Cards */}
           <div className="grid gap-6 md:grid-cols-2 md:gap-8">
             {/* Free Plan */}
-            <div className="rounded-3xlp-8 ring-1 ring-low md:p-10">
+            <div className="rounded-3xl p-8 ring-1 ring-low md:p-10 bg-bottom">
               <div className="text-sm font-medium text-top">Free</div>
               <div className="mt-2 text-5xl font-bold text-top">$0</div>
               <p className="mt-4 text-top">
@@ -309,7 +309,7 @@ export default function LandingPage() {
               </ul>
 
               <Button
-                className="mt-8 w-full rounded-fullpy-6 text-top hover:bg-low"
+                className="mt-8 w-full rounded-full py-6"
                 asChild
               >
                 <Link href="/new">Upgrade to Pro</Link>
@@ -330,7 +330,7 @@ export default function LandingPage() {
             presence.
           </p>
           <Button
-            className="mt-10 rounded-fullpx-10 py-7 text-lg text-top hover:bg-low"
+            className="mt-10 rounded-full px-10 py-7 text-lg bg-bottom text-top hover:bg-low"
             asChild
           >
             <Link href="/new">
@@ -342,7 +342,7 @@ export default function LandingPage() {
       </section>
 
       {/* Contact Section - WaxyWeb Style with HUGE text */}
-      <section className="border-t border-lowpx-4 py-20 md:px-8 md:py-32">
+      <section className="border-t border-low px-4 py-20 md:px-8 md:py-32">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-16 md:grid-cols-2 md:gap-20">
             {/* Email */}
@@ -396,8 +396,8 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="bg-bottom px-4 py-12 md:px-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 md:flex-row">
-          <Link href="/" className="text-3xl font-bold tracking-tight">
-            HeyBio
+          <Link href="/" className="text-3xl font-bold tracking-tight text-pink">
+            heybio
           </Link>
           <div className="flex items-center gap-8 text-sm text-top">
             <Link href="/pricing" className="transition-colors hover:text-top">

@@ -46,7 +46,7 @@ export function OnboardingLayout({
               onClick={handleBack}
               className="gap-1"
             >
-              <Icon name="arrow-left" className="w-4 h-4" />
+              <Icon icon="arrow-left" className="w-4 h-4" />
               Back
             </Button>
           )}

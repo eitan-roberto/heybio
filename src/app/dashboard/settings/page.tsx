@@ -10,10 +10,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils';
 
 // Demo data
-const DEMO_USER = {
+const DEMO_USER: {
+  email: string;
+  name: string;
+  plan: 'free' | 'pro';
+  createdAt: string;
+} = {
   email: 'demo@heybio.co',
   name: 'Demo User',
-  plan: 'free' as const,
+  plan: 'free',
   createdAt: '2026-01-15',
 };
 
@@ -56,7 +61,7 @@ export default function SettingsPage() {
                         tab.id === 'danger' && "text-red-600 hover:text-red-700"
                       )}
                     >
-                      <Icon name={tab.icon} className="w-4 h-4" />
+                      <Icon icon={tab.icon} className="w-4 h-4" />
                       {tab.label}
                     </button>
                   </li>
@@ -94,7 +99,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <Button>
-                      <Icon name="save" className="w-4 h-4 mr-2" />
+                      <Icon icon="save" className="w-4 h-4 mr-2" />
                       Save Changes
                     </Button>
                   </CardContent>
@@ -178,7 +183,7 @@ export default function SettingsPage() {
                       <div className="flex items-center justify-between p-4rounded-lg">
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-low rounded">
-                            <Icon name="credit-card" className="w-4 h-4" />
+                            <Icon icon="credit-card" className="w-4 h-4" />
                           </div>
                           <div>
                             <p className="font-medium text-top">•••• •••• •••• 4242</p>
@@ -220,7 +225,7 @@ export default function SettingsPage() {
                   </CardHeader>
                   <CardContent>
                     <Button variant="outline">
-                      <Icon name="log-out" className="w-4 h-4 mr-2" />
+                      <Icon icon="log-out" className="w-4 h-4 mr-2" />
                       Sign Out
                     </Button>
                   </CardContent>
@@ -240,7 +245,7 @@ export default function SettingsPage() {
                       username will become available for others to claim.
                     </p>
                     <Button variant="destructive">
-                      <Icon name="trash-2" className="w-4 h-4 mr-2" />
+                      <Icon icon="trash-2" className="w-4 h-4 mr-2" />
                       Delete Account
                     </Button>
                   </CardContent>
