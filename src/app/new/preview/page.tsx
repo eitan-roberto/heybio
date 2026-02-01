@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ExternalLink, Sparkles } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { BioPage } from '@/components/bio-page';
 import { useOnboardingStore } from '@/stores/onboardingStore';
@@ -56,34 +56,34 @@ export default function PreviewPage() {
   }));
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="min-h-screen bg-low flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <header className="bg-bottom border-b border-low px-6 py-4 flex items-center justify-between">
         <Button
           variant="ghost"
           size="sm"
           onClick={handleBack}
           className="gap-1"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <Icon icon="arrow-left" className="w-4 h-4" />
           Back
         </Button>
         
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">heybio.co/{draft.slug}</span>
+          <span className="text-sm text-top">heybio.co/{draft.slug}</span>
           <button
             onClick={() => window.open(`#preview`, '_blank')}
-            className="p-1 text-gray-400 hover:text-gray-600"
+            className="p-1 text-top hover:text-top"
             title="Open in new tab"
           >
-            <ExternalLink className="w-4 h-4" />
+            <Icon icon="external-link" className="w-4 h-4" />
           </button>
         </div>
         
         <div className="flex items-center gap-2">
           <button
             onClick={handleStartOver}
-            className="text-sm text-gray-500 hover:text-gray-700"
+            className="text-sm text-top hover:text-top"
           >
             Start over
           </button>
@@ -91,13 +91,13 @@ export default function PreviewPage() {
       </header>
 
       {/* Preview toggle */}
-      <div className="bg-white border-b border-gray-200 px-6 py-2 flex items-center justify-center gap-4">
+      <div className="bg-bottom border-b border-low px-6 py-2 flex items-center justify-center gap-4">
         <button
           onClick={() => setShowMobilePreview(true)}
           className={`text-sm px-3 py-1 rounded-full ${
             showMobilePreview 
-              ? 'bg-gray-900 text-white' 
-              : 'text-gray-500 hover:bg-gray-100'
+              ? 'bg-top text-bottom' 
+              : 'text-top hover:bg-low'
           }`}
         >
           Mobile
@@ -106,8 +106,8 @@ export default function PreviewPage() {
           onClick={() => setShowMobilePreview(false)}
           className={`text-sm px-3 py-1 rounded-full ${
             !showMobilePreview 
-              ? 'bg-gray-900 text-white' 
-              : 'text-gray-500 hover:bg-gray-100'
+              ? 'bg-top text-bottom' 
+              : 'text-top hover:bg-low'
           }`}
         >
           Desktop
@@ -117,7 +117,7 @@ export default function PreviewPage() {
       {/* Preview area */}
       <div className="flex-1 p-6 flex items-start justify-center overflow-auto">
         <div 
-          className={`bg-white rounded-3xl shadow-2xl overflow-hidden transition-all ${
+          className={`bg-bottom rounded-3xl shadow-2xl overflow-hidden transition-all ${
             showMobilePreview 
               ? 'w-[375px] h-[700px]' 
               : 'w-full max-w-4xl h-auto min-h-[600px]'
@@ -135,16 +135,16 @@ export default function PreviewPage() {
       </div>
 
       {/* Publish CTA */}
-      <div className="bg-white border-t border-gray-200 px-6 py-4">
+      <div className="bg-bottom border-t border-low px-6 py-4">
         <div className="max-w-lg mx-auto flex flex-col gap-3">
           <Button
             onClick={handlePublish}
             className="w-full py-6 text-lg rounded-xl gap-2"
           >
-            <Sparkles className="w-5 h-5" />
+            <Icon icon="sparkles" className="w-5 h-5" />
             Publish my page
           </Button>
-          <p className="text-xs text-center text-gray-400">
+          <p className="text-xs text-center text-top">
             Create a free account to save your page and access it anytime
           </p>
         </div>

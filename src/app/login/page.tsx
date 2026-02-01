@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowRight, Mail, Lock, Loader2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -59,19 +59,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-gray-50)] px-4">
+    <div className="min-h-screen flex items-center justify-centerpx-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <Link href="/" className="block text-center mb-8">
-          <span className="font-heading text-3xl font-bold">HeyBio</span>
+          <span className="text-3xl font-bold">HeyBio</span>
         </Link>
 
         {/* Card */}
-        <div className="bg-white rounded-3xl p-8 shadow-xl ring-1 ring-gray-100">
-          <h1 className="font-heading text-2xl font-bold text-center mb-2">
+        <div className="bg-bottom rounded-3xl p-8 shadow-xl ring-1 ring-low">
+          <h1 className="text-2xl font-bold text-center mb-2">
             Welcome back
           </h1>
-          <p className="text-center text-[var(--color-muted)] mb-8">
+          <p className="text-center text-top mb-8">
             Sign in to manage your bio page
           </p>
 
@@ -106,10 +106,10 @@ export default function LoginPage() {
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
+              <div className="w-full border-t border-low" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-[var(--color-muted)]">or</span>
+              <span className="px-2text-top">or</span>
             </div>
           </div>
 
@@ -118,7 +118,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Icon icon="mail" className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-top" />
                 <Input
                   id="email"
                   type="email"
@@ -134,12 +134,12 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <Link href="/forgot-password" className="text-sm text-[var(--color-brand)] hover:underline">
+                <Link href="/forgot-password" className="text-sm text-green hover:underline">
                   Forgot password?
                 </Link>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Icon icon="lock" className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-top" />
                 <Input
                   id="password"
                   type="password"
@@ -160,15 +160,15 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full rounded-full py-6 bg-black text-white hover:bg-gray-800"
+              className="w-full rounded-full py-6 bg-top text-bottom hover:bg-high"
               disabled={loading}
             >
               {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Icon icon="loader-2" className="h-5 w-5 animate-spin" />
               ) : (
                 <>
                   Sign in
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <Icon icon="arrow-right" className="ml-2 h-5 w-5" />
                 </>
               )}
             </Button>
@@ -176,9 +176,9 @@ export default function LoginPage() {
         </div>
 
         {/* Sign up link */}
-        <p className="text-center mt-6 text-[var(--color-muted)]">
+        <p className="text-center mt-6 text-top">
           Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-black font-medium hover:underline">
+          <Link href="/signup" className="text-top font-medium hover:underline">
             Sign up
           </Link>
         </p>

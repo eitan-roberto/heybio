@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Save, Eye, Trash2, Plus, GripVertical } from 'lucide-react';
+import { Icon, IconSize } from '@/components/ui/icon';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { ThemePicker } from '@/components/onboarding/ThemePicker';
 import { Button } from '@/components/ui/button';
@@ -75,8 +75,8 @@ export default function EditPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Edit Page</h1>
-            <p className="text-gray-500 mt-1">
+            <h1 className="text-2xl font-bold text-top">Edit Page</h1>
+            <p className="text-top mt-1">
               Customize your bio page
             </p>
           </div>
@@ -85,14 +85,14 @@ export default function EditPage() {
               variant="outline"
               onClick={() => setShowPreview(!showPreview)}
             >
-              <Eye className="w-4 h-4 mr-2" />
+              <Icon name="eye" className="w-4 h-4 mr-2" />
               {showPreview ? 'Hide' : 'Show'} Preview
             </Button>
             <Button
               onClick={handleSave}
               disabled={!hasChanges}
             >
-              <Save className="w-4 h-4 mr-2" />
+              <Icon name="save" className="w-4 h-4 mr-2" />
               Save Changes
             </Button>
           </div>
@@ -115,7 +115,7 @@ export default function EditPage() {
                 <div className="flex items-center gap-4">
                   <Avatar className="w-16 h-16">
                     <AvatarImage src={DEMO_PAGE.avatar_url} />
-                    <AvatarFallback className="text-lg bg-gray-200">
+                    <AvatarFallback className="text-lg bg-low">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
@@ -144,7 +144,7 @@ export default function EditPage() {
                     onChange={(e) => updateField(setBio, e.target.value)}
                     placeholder="A short bio about you"
                   />
-                  <p className="text-xs text-gray-400">{bio.length}/150 characters</p>
+                  <p className="text-xs text-top">{bio.length}/150 characters</p>
                 </div>
               </CardContent>
             </Card>
@@ -158,7 +158,7 @@ export default function EditPage() {
                     <CardDescription>Manage your links</CardDescription>
                   </div>
                   <Button size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
+                    <Icon name="plus" className="w-4 h-4 mr-2" />
                     Add Link
                   </Button>
                 </div>
@@ -168,10 +168,10 @@ export default function EditPage() {
                   {links.map((link, index) => (
                     <div
                       key={link.id}
-                      className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg"
+                      className="flex items-center gap-2 p-3rounded-lg"
                     >
-                      <button className="cursor-grab text-gray-400 hover:text-gray-600">
-                        <GripVertical className="w-4 h-4" />
+                      <button className="cursor-grab text-top hover:text-top">
+                        <Icon name="grip-vertical" className="w-4 h-4" />
                       </button>
                       <div className="flex-1 min-w-0">
                         <Input
@@ -198,9 +198,9 @@ export default function EditPage() {
                           const newLinks = links.filter((_, i) => i !== index);
                           updateField(setLinks, newLinks);
                         }}
-                        className="p-2 text-gray-400 hover:text-red-500"
+                        className="p-2 text-top hover:text-red-500"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Icon name="trash-2" className="w-4 h-4" />
                       </button>
                     </div>
                   ))}

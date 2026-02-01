@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Lock } from 'lucide-react';
+import { Icon, IconSize } from '@/components/ui/icon';
 import { freeThemes, proThemes, type Theme } from '@/config/themes';
 import { cn } from '@/lib/utils';
 
@@ -33,8 +33,8 @@ function ThemeCard({
         "relative w-full aspect-[3/4] rounded-xl overflow-hidden transition-all",
         "border-2 hover:scale-[1.02]",
         isSelected 
-          ? "border-gray-900 ring-2 ring-gray-900/20" 
-          : "border-gray-200 hover:border-gray-300",
+          ? "border-top ring-2 ring-top/20" 
+          : "border-low hover:border-mid",
         isLocked && "opacity-60 cursor-not-allowed"
       )}
     >
@@ -77,23 +77,23 @@ function ThemeCard({
       
       {/* Selected indicator */}
       {isSelected && (
-        <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center">
-          <Check className="w-3 h-3 text-white" />
+        <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-top flex items-center justify-center">
+          <Icon name="check" className="w-3 h-3 text-bottom" />
         </div>
       )}
-      
+
       {/* Locked indicator */}
       {isLocked && (
-        <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-gray-400 flex items-center justify-center">
-          <Lock className="w-3 h-3 text-white" />
+        <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-high flex items-center justify-center">
+          <Icon name="lock" className="w-3 h-3 text-bottom" />
         </div>
       )}
       
       {/* Theme name */}
-      <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 bg-white/90 backdrop-blur-sm">
-        <span className="text-xs font-medium text-gray-700">{theme.name}</span>
+      <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 bg-bottom/90 backdrop-blur-sm">
+        <span className="text-xs font-medium text-top">{theme.name}</span>
         {isLocked && (
-          <span className="ml-1 text-xs text-gray-400">Pro</span>
+          <span className="ml-1 text-xs text-top">Pro</span>
         )}
       </div>
     </button>
@@ -105,7 +105,7 @@ export function ThemePicker({ selectedThemeId, onSelectTheme, showProThemes = fa
     <div className="space-y-6">
       {/* Free themes */}
       <div>
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Free themes</h3>
+        <h3 className="text-sm font-medium text-top mb-3">Free themes</h3>
         <div className="grid grid-cols-3 gap-3">
           {freeThemes.map((theme) => (
             <ThemeCard
@@ -122,9 +122,9 @@ export function ThemePicker({ selectedThemeId, onSelectTheme, showProThemes = fa
       {/* Pro themes */}
       {showProThemes && (
         <div>
-          <h3 className="text-sm font-medium text-gray-700 mb-3">
+          <h3 className="text-sm font-medium text-top mb-3">
             Pro themes
-            <span className="ml-2 text-xs text-gray-400">Upgrade to unlock</span>
+            <span className="ml-2 text-xs text-top">Upgrade to unlock</span>
           </h3>
           <div className="grid grid-cols-3 gap-3">
             {proThemes.map((theme) => (

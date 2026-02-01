@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Trash2, GripVertical, Link as LinkIcon } from 'lucide-react';
+import { Icon, IconSize } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { detectLinkIcon, extractDomain, formatUrl } from '@/lib/icons';
@@ -77,7 +77,7 @@ export function LinkEditor({
       {/* Add new link */}
       <div className="flex gap-2">
         <div className="flex-1 relative">
-          <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Icon name="link" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-top" />
           <Input
             type="url"
             placeholder="Paste a link..."
@@ -92,7 +92,7 @@ export function LinkEditor({
           disabled={!newUrl.trim() || links.length >= maxLinks}
           className="shrink-0"
         >
-          <Plus className="w-4 h-4" />
+          <Icon name="plus" className="w-4 h-4" />
         </Button>
       </div>
       
@@ -106,16 +106,16 @@ export function LinkEditor({
             onDragOver={(e) => handleDragOver(e, index)}
             onDragEnd={handleDragEnd}
             className={cn(
-              "flex items-center gap-2 p-3 bg-white border border-gray-200 rounded-lg",
-              "hover:border-gray-300 transition-colors",
+              "flex items-center gap-2 p-3border border-low rounded-lg",
+              "hover:border-mid transition-colors",
               dragIndex === index && "opacity-50"
             )}
           >
             <button
-              className="cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600"
+              className="cursor-grab active:cursor-grabbing p-1 text-top hover:text-top"
               onMouseDown={(e) => e.preventDefault()}
             >
-              <GripVertical className="w-4 h-4" />
+              <Icon name="grip-vertical" className="w-4 h-4" />
             </button>
             
             {editingIndex === index ? (
@@ -148,19 +148,19 @@ export function LinkEditor({
                   className="flex-1 min-w-0 cursor-pointer"
                   onClick={() => setEditingIndex(index)}
                 >
-                  <div className="font-medium text-sm text-gray-900 truncate">
+                  <div className="font-medium text-sm text-top truncate">
                     {link.title}
                   </div>
-                  <div className="text-xs text-gray-500 truncate">
+                  <div className="text-xs text-top truncate">
                     {extractDomain(link.url)}
                   </div>
                 </div>
                 
                 <button
                   onClick={() => onRemoveLink(index)}
-                  className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                  className="p-1.5 text-top hover:text-red-500 transition-colors"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Icon name="trash-2" className="w-4 h-4" />
                 </button>
               </>
             )}
@@ -168,15 +168,15 @@ export function LinkEditor({
         ))}
         
         {links.length === 0 && (
-          <div className="text-center py-8 text-gray-400">
-            <LinkIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
+          <div className="text-center py-8 text-top">
+            <Icon name="link" className="w-8 h-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No links yet. Paste a URL above to get started.</p>
           </div>
         )}
       </div>
       
       {/* Link count */}
-      <div className="text-xs text-gray-400 text-center">
+      <div className="text-xs text-top text-center">
         {links.length} / {maxLinks} links
       </div>
     </div>

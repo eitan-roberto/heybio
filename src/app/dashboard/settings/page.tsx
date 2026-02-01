@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Save, Trash2, CreditCard, User, Bell, Shield, LogOut } from 'lucide-react';
+import { Icon, IconSize } from '@/components/ui/icon';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,9 +23,9 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'account' | 'billing' | 'danger'>('account');
 
   const tabs = [
-    { id: 'account', label: 'Account', icon: User },
-    { id: 'billing', label: 'Billing', icon: CreditCard },
-    { id: 'danger', label: 'Danger Zone', icon: Shield },
+    { id: 'account', label: 'Account', icon: 'user' },
+    { id: 'billing', label: 'Billing', icon: 'credit-card' },
+    { id: 'danger', label: 'Danger Zone', icon: 'shield' },
   ] as const;
 
   return (
@@ -33,8 +33,8 @@ export default function SettingsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-top">Settings</h1>
+          <p className="text-top mt-1">
             Manage your account and preferences
           </p>
         </div>
@@ -44,7 +44,6 @@ export default function SettingsPage() {
           <nav className="w-full lg:w-48 flex-shrink-0">
             <ul className="flex lg:flex-col gap-1">
               {tabs.map((tab) => {
-                const Icon = tab.icon;
                 return (
                   <li key={tab.id}>
                     <button
@@ -52,12 +51,12 @@ export default function SettingsPage() {
                       className={cn(
                         "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                         activeTab === tab.id
-                          ? "bg-gray-100 text-gray-900"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+                          ? "bg-low text-top"
+                          : "text-top hover:bg-bottom hover:text-top",
                         tab.id === 'danger' && "text-red-600 hover:text-red-700"
                       )}
                     >
-                      <Icon className="w-4 h-4" />
+                      <Icon name={tab.icon} className="w-4 h-4" />
                       {tab.label}
                     </button>
                   </li>
@@ -95,7 +94,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <Button>
-                      <Save className="w-4 h-4 mr-2" />
+                      <Icon name="save" className="w-4 h-4 mr-2" />
                       Save Changes
                     </Button>
                   </CardContent>
@@ -147,12 +146,12 @@ export default function SettingsPage() {
                     <CardDescription>Your subscription details</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-4rounded-lg">
                       <div>
-                        <p className="font-semibold text-gray-900">
+                        <p className="font-semibold text-top">
                           {DEMO_USER.plan === 'pro' ? 'Pro' : 'Free'} Plan
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-top">
                           {DEMO_USER.plan === 'pro' 
                             ? '$4/month • Next billing date: Feb 15, 2026'
                             : 'Limited features'
@@ -176,20 +175,20 @@ export default function SettingsPage() {
                   </CardHeader>
                   <CardContent>
                     {DEMO_USER.plan === 'pro' ? (
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between p-4rounded-lg">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-gray-200 rounded">
-                            <CreditCard className="w-4 h-4" />
+                          <div className="p-2 bg-low rounded">
+                            <Icon name="credit-card" className="w-4 h-4" />
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">•••• •••• •••• 4242</p>
-                            <p className="text-sm text-gray-500">Expires 12/28</p>
+                            <p className="font-medium text-top">•••• •••• •••• 4242</p>
+                            <p className="text-sm text-top">Expires 12/28</p>
                           </div>
                         </div>
                         <Button variant="outline" size="sm">Update</Button>
                       </div>
                     ) : (
-                      <p className="text-gray-500 text-sm">
+                      <p className="text-top text-sm">
                         No payment method saved. Add one when you upgrade to Pro.
                       </p>
                     )}
@@ -203,7 +202,7 @@ export default function SettingsPage() {
                     <CardDescription>Your past invoices</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-top text-sm">
                       No invoices yet.
                     </p>
                   </CardContent>
@@ -221,7 +220,7 @@ export default function SettingsPage() {
                   </CardHeader>
                   <CardContent>
                     <Button variant="outline">
-                      <LogOut className="w-4 h-4 mr-2" />
+                      <Icon name="log-out" className="w-4 h-4 mr-2" />
                       Sign Out
                     </Button>
                   </CardContent>
@@ -236,12 +235,12 @@ export default function SettingsPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-gray-600 mb-4">
+                    <p className="text-sm text-top mb-4">
                       This action cannot be undone. Your bio page will be removed and your
                       username will become available for others to claim.
                     </p>
                     <Button variant="destructive">
-                      <Trash2 className="w-4 h-4 mr-2" />
+                      <Icon name="trash-2" className="w-4 h-4 mr-2" />
                       Delete Account
                     </Button>
                   </CardContent>

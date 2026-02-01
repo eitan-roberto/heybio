@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
+import { Icon, IconSize } from '@/components/ui/icon';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -35,7 +35,7 @@ export function OnboardingLayout({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screenflex flex-col">
       {/* Header */}
       <header className="px-6 py-4 flex items-center justify-between">
         <div className="w-20">
@@ -46,7 +46,7 @@ export function OnboardingLayout({
               onClick={handleBack}
               className="gap-1"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <Icon name="arrow-left" className="w-4 h-4" />
               Back
             </Button>
           )}
@@ -60,10 +60,10 @@ export function OnboardingLayout({
               className={cn(
                 "w-2 h-2 rounded-full transition-colors",
                 i + 1 === step
-                  ? "bg-gray-900"
+                  ? "bg-top"
                   : i + 1 < step
-                  ? "bg-gray-400"
-                  : "bg-gray-200"
+                  ? "bg-high"
+                  : "bg-low"
               )}
             />
           ))}
@@ -75,9 +75,9 @@ export function OnboardingLayout({
       {/* Content */}
       <main className="flex-1 px-6 py-8 max-w-lg mx-auto w-full">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{title}</h1>
+          <h1 className="text-2xl font-bold text-top mb-2">{title}</h1>
           {subtitle && (
-            <p className="text-gray-500">{subtitle}</p>
+            <p className="text-top">{subtitle}</p>
           )}
         </div>
         

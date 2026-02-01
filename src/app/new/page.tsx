@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Check, X, Loader2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { OnboardingLayout } from '@/components/onboarding';
@@ -73,7 +73,7 @@ export default function ChooseUsernamePage() {
   const getValidationMessage = () => {
     switch (validationState) {
       case 'checking':
-        return { text: 'Checking availability...', color: 'text-gray-500' };
+        return { text: 'Checking availability...', color: 'text-top' };
       case 'available':
         return { text: `heybio.co/${username} is available!`, color: 'text-green-600' };
       case 'taken':
@@ -97,26 +97,26 @@ export default function ChooseUsernamePage() {
       <div className="space-y-6">
         {/* Username input */}
         <div className="space-y-2">
-          <div className="flex items-center bg-white rounded-xl border border-gray-200 focus-within:ring-2 focus-within:ring-gray-900/10 focus-within:border-gray-300 transition-all overflow-hidden">
-            <span className="pl-4 text-gray-400 text-lg select-none">heybio.co/</span>
+          <div className="flex items-centerrounded-xl border border-low focus-within:ring-2 focus-within:ring-top/10 focus-within:border-mid transition-all overflow-hidden">
+            <span className="pl-4 text-top text-lg select-none">heybio.co/</span>
             <Input
               type="text"
               placeholder="yourname"
               value={username}
               onChange={(e) => handleUsernameChange(e.target.value)}
-              className="flex-1 border-0 text-lg focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-300"
+              className="flex-1 border-0 text-lg focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-top"
               maxLength={30}
               autoFocus
             />
             <div className="pr-4">
               {validationState === 'checking' && (
-                <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+                <Icon icon="loader-2" className="w-5 h-5 text-top animate-spin" />
               )}
               {validationState === 'available' && (
-                <Check className="w-5 h-5 text-green-500" />
+                <Icon icon="check" className="w-5 h-5 text-green-500" />
               )}
               {(validationState === 'taken' || validationState === 'invalid') && (
-                <X className="w-5 h-5 text-red-500" />
+                <Icon icon="x" className="w-5 h-5 text-red-500" />
               )}
             </div>
           </div>
@@ -135,11 +135,11 @@ export default function ChooseUsernamePage() {
           className="w-full py-6 text-lg rounded-xl"
         >
           Continue
-          <ArrowRight className="ml-2 w-5 h-5" />
+          <Icon icon="arrow-right" className="ml-2 w-5 h-5" />
         </Button>
 
         {/* Hint */}
-        <p className="text-xs text-center text-gray-400">
+        <p className="text-xs text-center text-top">
           You can change this later in settings
         </p>
       </div>

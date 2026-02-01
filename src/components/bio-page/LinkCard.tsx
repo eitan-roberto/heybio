@@ -1,8 +1,6 @@
 'use client';
 
-import { ExternalLink, Link as LinkIcon, Instagram, Twitter, Youtube, Music, 
-  ShoppingBag, Calendar, Mic, Mail, Heart, FileText, DollarSign,
-  MessageCircle, Github, Linkedin, Facebook, Twitch } from 'lucide-react';
+import { Icon, IconSize } from '@/components/ui/icon';
 import { detectLinkIcon, formatUrl } from '@/lib/icons';
 import type { Theme } from '@/config/themes';
 import type { Link } from '@/types';
@@ -13,30 +11,6 @@ interface LinkCardProps {
   theme: Theme;
   onClick?: () => void;
 }
-
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  instagram: Instagram,
-  twitter: Twitter,
-  youtube: Youtube,
-  spotify: Music,
-  soundcloud: Music,
-  tiktok: Music,
-  twitch: Twitch,
-  github: Github,
-  linkedin: Linkedin,
-  facebook: Facebook,
-  telegram: MessageCircle,
-  whatsapp: MessageCircle,
-  discord: MessageCircle,
-  'dollar-sign': DollarSign,
-  'shopping-bag': ShoppingBag,
-  calendar: Calendar,
-  mic: Mic,
-  mail: Mail,
-  heart: Heart,
-  'file-text': FileText,
-  link: LinkIcon,
-};
 
 function getBorderRadius(radius: Theme['borderRadius']): string {
   switch (radius) {
@@ -51,8 +25,7 @@ function getBorderRadius(radius: Theme['borderRadius']): string {
 
 export function LinkCard({ link, theme, onClick }: LinkCardProps) {
   const iconName = link.icon || detectLinkIcon(link.url);
-  const IconComponent = iconMap[iconName] || LinkIcon;
-  
+
   const handleClick = () => {
     onClick?.();
     // Actual navigation happens via the anchor tag
@@ -96,14 +69,14 @@ export function LinkCard({ link, theme, onClick }: LinkCardProps) {
         e.currentTarget.style.backgroundColor = hoverBg;
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = theme.style === 'outline' || theme.style === 'glass' 
-          ? 'transparent' 
+        e.currentTarget.style.backgroundColor = theme.style === 'outline' || theme.style === 'glass'
+          ? 'transparent'
           : theme.colors.linkBg;
       }}
     >
-      <IconComponent className="w-5 h-5 flex-shrink-0 opacity-70" />
+      <Icon name={iconName} className="w-5 h-5 flex-shrink-0 opacity-70" />
       <span className="flex-1 font-medium text-center">{link.title}</span>
-      <ExternalLink className="w-4 h-4 flex-shrink-0 opacity-0 group-hover:opacity-50 transition-opacity" />
+      <Icon name="external-link" className="w-4 h-4 flex-shrink-0 opacity-0 group-hover:opacity-50 transition-opacity" />
     </a>
   );
 }

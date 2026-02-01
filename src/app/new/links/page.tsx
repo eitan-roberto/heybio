@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { OnboardingLayout, LinkEditor } from '@/components/onboarding';
 import { useOnboardingStore } from '@/stores/onboardingStore';
@@ -53,14 +53,14 @@ export default function AddLinksPage() {
             className="w-full py-6 text-lg rounded-xl"
           >
             Continue
-            <ArrowRight className="ml-2 w-5 h-5" />
+            <Icon icon="arrow-right" className="ml-2 w-5 h-5" />
           </Button>
           
           {draft.links.length === 0 && (
             <Button
               variant="ghost"
               onClick={handleSkip}
-              className="text-gray-500"
+              className="text-top"
             >
               Skip for now
             </Button>

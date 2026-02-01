@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { OnboardingLayout, ThemePicker } from '@/components/onboarding';
 import { useOnboardingStore } from '@/stores/onboardingStore';
@@ -46,7 +46,7 @@ export default function ChooseThemePage() {
           className="w-full py-6 text-lg rounded-xl"
         >
           Continue
-          <ArrowRight className="ml-2 w-5 h-5" />
+          <Icon icon="arrow-right" className="ml-2 w-5 h-5" />
         </Button>
       </div>
     </OnboardingLayout>

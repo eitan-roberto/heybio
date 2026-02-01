@@ -1,7 +1,6 @@
 'use client';
 
-import { Instagram, Twitter, Youtube, Music, Github, Linkedin, Facebook, 
-  Twitch, MessageCircle, Mail, Globe } from 'lucide-react';
+import { Icon, IconSize } from '@/components/ui/icon';
 import { formatUrl, getPlatformConfig } from '@/lib/icons';
 import type { Theme } from '@/config/themes';
 import type { SocialIcon, SocialPlatform } from '@/types';
@@ -13,24 +12,24 @@ interface SocialBarProps {
   onIconClick?: (platform: SocialPlatform) => void;
 }
 
-const iconComponents: Record<SocialPlatform, React.ComponentType<{ className?: string }>> = {
-  instagram: Instagram,
-  twitter: Twitter,
-  youtube: Youtube,
-  tiktok: Music,
-  spotify: Music,
-  soundcloud: Music,
-  twitch: Twitch,
-  discord: MessageCircle,
-  github: Github,
-  linkedin: Linkedin,
-  facebook: Facebook,
-  pinterest: Globe,
-  snapchat: MessageCircle,
-  telegram: MessageCircle,
-  whatsapp: MessageCircle,
-  email: Mail,
-  website: Globe,
+const iconNames: Record<SocialPlatform, string> = {
+  instagram: 'instagram',
+  twitter: 'twitter',
+  youtube: 'youtube',
+  tiktok: 'tiktok',
+  spotify: 'music',
+  soundcloud: 'music',
+  twitch: 'twitch',
+  discord: 'message-circle',
+  github: 'github',
+  linkedin: 'linkedin',
+  facebook: 'facebook',
+  pinterest: 'globe',
+  snapchat: 'message-circle',
+  telegram: 'message-circle',
+  whatsapp: 'message-circle',
+  email: 'mail',
+  website: 'globe',
 };
 
 export function SocialBar({ socialIcons, theme, onIconClick }: SocialBarProps) {
@@ -41,9 +40,9 @@ export function SocialBar({ socialIcons, theme, onIconClick }: SocialBarProps) {
       {socialIcons
         .sort((a, b) => (a as SocialIcon).order - (b as SocialIcon).order)
         .map((icon, index) => {
-          const IconComponent = iconComponents[icon.platform] || Globe;
+          const iconName = iconNames[icon.platform] || 'globe';
           const config = getPlatformConfig(icon.platform);
-          
+
           return (
             <a
               key={`${icon.platform}-${index}`}
@@ -67,7 +66,7 @@ export function SocialBar({ socialIcons, theme, onIconClick }: SocialBarProps) {
                 e.currentTarget.style.color = theme.colors.textMuted;
               }}
             >
-              <IconComponent className="w-5 h-5" />
+              <Icon name={iconName} className="w-5 h-5" />
             </a>
           );
         })}
