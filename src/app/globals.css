@@ -38,8 +38,8 @@ body {
 
 /* Selection */
 ::selection {
-  background-color: var(--color-brand);
-  color: var(--color-bottom);
+  background-color: var(--color-low);
+  color: var(--color-top);
 }
 
 /* Scrollbar */
@@ -128,7 +128,7 @@ body {
 }
 
 .animate-marquee {
-  animation: marquee 30s linear infinite;
+  animation: marquee 20s linear infinite;
 }
 
 .animate-marquee:hover {
