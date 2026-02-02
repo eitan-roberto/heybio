@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Icon, IconSize } from "@/components/ui/icon";
+import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SvgAsset } from "@/components/ui/svgasset";
@@ -77,11 +77,48 @@ const TESTIMONIALS = [
 export default function LandingPage() {
   const [username, setUsername] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Debounced username availability check
+  useEffect(() => {
+    if (!username || username.length < 3) {
+      setIsAvailable(null);
+      setError(null);
+      return;
+    }
+
+    const checkAvailability = async () => {
+      setIsChecking(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/check-username?username=${encodeURIComponent(username)}`);
+        const data = await response.json();
+
+        if (data.available) {
+          setIsAvailable(true);
+          setError(null);
+        } else {
+          setIsAvailable(false);
+          setError(data.error || 'Username not available');
+        }
+      } catch {
+        setIsAvailable(null);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    const timeoutId = setTimeout(checkAvailability, 300); // Debounce 300ms
+    return () => clearTimeout(timeoutId);
+  }, [username]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username.trim()) {
-      window.location.href = `/new?u=${username}`;
+    if (username.trim() && isAvailable) {
+      window.location.href = `/new/links?u=${username}`;
     }
   };
 
@@ -181,22 +218,33 @@ export default function LandingPage() {
           {/* Mobile: Stacked Layout */}
           <div className="flex md:hidden flex-col gap-3 bg-blue rounded-3xl p-4 focus-within:ring-4 focus-within:ring-blue/30">
             <span className="text-lg text-top font-bold text-center">heybio.co/</span>
-            <input
-              id="username-input-mobile"
-              type="text"
-              placeholder="yourname"
-              value={username}
-              onChange={(e) =>
-                setUsername(
-                  e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
-                )
-              }
-              className="w-full px-4 py-3 border-0 bg-bottom font-bold rounded-full placeholder:text-high text-top focus-visible:ring-0 text-xl text-center"
-            />
+            <div className="relative">
+              <input
+                id="username-input-mobile"
+                type="text"
+                placeholder="yourname"
+                value={username}
+                onChange={(e) =>
+                  setUsername(
+                    e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
+                  )
+                }
+                className="w-full px-4 py-3 border-0 bg-bottom font-bold rounded-full placeholder:text-high text-top focus-visible:ring-0 text-xl text-center"
+              />
+              {isChecking && (
+                <Icon icon="loader-2" className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-high animate-spin" />
+              )}
+              {isAvailable && !isChecking && (
+                <Icon icon="check" className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green" />
+              )}
+            </div>
+            {error && username.length >= 3 && (
+              <p className="text-sm text-orange text-center">{error}</p>
+            )}
             <Button
               type="submit"
-              disabled={!username.trim()}
-              className="rounded-full bg-top px-6 py-3 text-bottom hover:bg-high w-full"
+              disabled={!username.trim() || !isAvailable || isChecking}
+              className="rounded-full bg-top px-6 py-3 text-bottom hover:bg-high w-full disabled:opacity-50"
             >
               <span className="font-bold text-lg">Claim it</span>
               <Icon icon="arrow-right" className="ml-2 w-5 h-5" />
@@ -204,28 +252,41 @@ export default function LandingPage() {
           </div>
 
           {/* Desktop: Horizontal Layout */}
-          <div className="hidden md:flex items-center gap-2 rounded-full p-4 bg-blue focus-within:ring-8 focus-within:ring-blue/30">
-            <span className="pl-4 text-xl text-top">heybio.co/</span>
-            <input
-              id="username-input-desktop"
-              type="text"
-              placeholder="yourname"
-              value={username}
-              onChange={(e) =>
-                setUsername(
-                  e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
-                )
-              }
-              className="min-w-16 px-3 py-2 border-0 bg-bottom font-bold rounded-full placeholder:text-top text-top focus-visible:ring-0 text-2xl"
-            />
-            <Button
-              type="submit"
-              disabled={!username.trim()}
-              className="rounded-full bg-top px-6 py-6 text-bottom hover:bg-high"
-            >
-              <span className="mr-2 font-bold text-xl">Claim it</span>
-              <Icon icon="arrow-right" className="w-5 h-5" />
-            </Button>
+          <div className="hidden md:flex flex-col gap-2">
+            <div className="flex items-center gap-2 rounded-full p-4 bg-blue focus-within:ring-8 focus-within:ring-blue/30">
+              <span className="pl-4 text-xl text-top">heybio.co/</span>
+              <div className="relative flex-1">
+                <input
+                  id="username-input-desktop"
+                  type="text"
+                  placeholder="yourname"
+                  value={username}
+                  onChange={(e) =>
+                    setUsername(
+                      e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
+                    )
+                  }
+                  className="w-full px-3 py-2 border-0 bg-bottom font-bold rounded-full placeholder:text-top text-top focus-visible:ring-0 text-2xl"
+                />
+                {isChecking && (
+                  <Icon icon="loader-2" className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-high animate-spin" />
+                )}
+                {isAvailable && !isChecking && (
+                  <Icon icon="check" className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green" />
+                )}
+              </div>
+              <Button
+                type="submit"
+                disabled={!username.trim() || !isAvailable || isChecking}
+                className="rounded-full bg-top px-6 py-6 text-bottom hover:bg-high disabled:opacity-50"
+              >
+                <span className="mr-2 font-bold text-xl">Claim it</span>
+                <Icon icon="arrow-right" className="w-5 h-5" />
+              </Button>
+            </div>
+            {error && username.length >= 3 && (
+              <p className="text-sm text-orange text-center">{error}</p>
+            )}
           </div>
         </form>
 

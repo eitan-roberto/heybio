@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,12 +18,49 @@ const RESERVED_SLUGS = [
 
 type ValidationState = 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
 
-export default function ChooseUsernamePage() {
+function UsernameForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { initDraft } = useOnboardingStore();
   
   const [username, setUsername] = useState('');
   const [validationState, setValidationState] = useState<ValidationState>('idle');
+  const [isChecking, setIsChecking] = useState(false);
+
+  // Check for ?u= parameter and auto-validate/skip
+  useEffect(() => {
+    const u = searchParams.get('u');
+    if (u && u.length >= 3) {
+      const cleaned = u.toLowerCase().replace(/[^a-z0-9_]/g, '');
+      setUsername(cleaned);
+      
+      // Check if valid and available
+      const validateAndSkip = async () => {
+        setIsChecking(true);
+        try {
+          const response = await fetch(`/api/check-username?username=${encodeURIComponent(cleaned)}`);
+          const data = await response.json();
+          
+          if (data.available) {
+            setValidationState('available');
+            initDraft(cleaned);
+            // Auto-skip to links after short delay
+            setTimeout(() => {
+              router.push('/new/links');
+            }, 500);
+          } else {
+            setValidationState('taken');
+          }
+        } catch {
+          setValidationState('idle');
+        } finally {
+          setIsChecking(false);
+        }
+      };
+      
+      validateAndSkip();
+    }
+  }, [searchParams, router, initDraft]);
 
   // Validate username format
   const validateFormat = (value: string): boolean => {
@@ -144,5 +181,13 @@ export default function ChooseUsernamePage() {
         </p>
       </div>
     </OnboardingLayout>
+  );
+}
+
+export default function ChooseUsernamePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" /></div>}>
+      <UsernameForm />
+    </Suspense>
   );
 }

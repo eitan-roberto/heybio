@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { BioPage } from '@/components/bio-page';
 import { useOnboardingStore } from '@/stores/onboardingStore';
+import { createClient } from '@/lib/supabase/client';
 
 export default function PreviewPage() {
   const router = useRouter();
@@ -13,16 +15,33 @@ export default function PreviewPage() {
   const [showMobilePreview, setShowMobilePreview] = useState(true);
   const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Check auth status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
+    };
+    checkAuth();
+  }, []);
 
   // Redirect if no draft exists
   useEffect(() => {
-    if (!draft) {
+    if (!draft && !loading) {
       router.replace('/new');
     }
-  }, [draft, router]);
+  }, [draft, loading, router]);
 
-  if (!draft) {
-    return null;
+  if (!draft || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" />
+      </div>
+    );
   }
 
   const handleBack = () => {
@@ -57,6 +76,16 @@ export default function PreviewPage() {
     }
   };
 
+  const handleGoogleAuth = async () => {
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?redirect=/new/preview`,
+      },
+    });
+  };
+
   const handleStartOver = () => {
     if (confirm('Start over? You will lose your current progress.')) {
       reset();
@@ -83,35 +112,18 @@ export default function PreviewPage() {
     <div className="min-h-screen bg-low flex flex-col">
       {/* Header */}
       <header className="bg-bottom border-b border-low px-6 py-4 flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleBack}
-          className="gap-1"
-        >
+        <Button variant="ghost" size="sm" onClick={handleBack} className="gap-1">
           <Icon icon="arrow-left" className="w-4 h-4" />
           Back
         </Button>
         
         <div className="flex items-center gap-2">
           <span className="text-sm text-top">heybio.co/{draft.slug}</span>
-          <button
-            onClick={() => window.open(`#preview`, '_blank')}
-            className="p-1 text-top hover:text-top"
-            title="Open in new tab"
-          >
-            <Icon icon="external-link" className="w-4 h-4" />
-          </button>
         </div>
         
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleStartOver}
-            className="text-sm text-top hover:text-top"
-          >
-            Start over
-          </button>
-        </div>
+        <button onClick={handleStartOver} className="text-sm text-high hover:text-top">
+          Start over
+        </button>
       </header>
 
       {/* Preview toggle */}
@@ -119,9 +131,7 @@ export default function PreviewPage() {
         <button
           onClick={() => setShowMobilePreview(true)}
           className={`text-sm px-3 py-1 rounded-full ${
-            showMobilePreview 
-              ? 'bg-top text-bottom' 
-              : 'text-top hover:bg-low'
+            showMobilePreview ? 'bg-top text-bottom' : 'text-top hover:bg-low'
           }`}
         >
           Mobile
@@ -129,9 +139,7 @@ export default function PreviewPage() {
         <button
           onClick={() => setShowMobilePreview(false)}
           className={`text-sm px-3 py-1 rounded-full ${
-            !showMobilePreview 
-              ? 'bg-top text-bottom' 
-              : 'text-top hover:bg-low'
+            !showMobilePreview ? 'bg-top text-bottom' : 'text-top hover:bg-low'
           }`}
         >
           Desktop
@@ -140,13 +148,9 @@ export default function PreviewPage() {
 
       {/* Preview area */}
       <div className="flex-1 p-6 flex items-start justify-center overflow-auto">
-        <div 
-          className={`bg-bottom rounded-3xl shadow-2xl overflow-hidden transition-all ${
-            showMobilePreview 
-              ? 'w-[375px] h-[700px]' 
-              : 'w-full max-w-4xl h-auto min-h-[600px]'
-          }`}
-        >
+        <div className={`bg-bottom rounded-3xl shadow-2xl overflow-hidden transition-all ${
+          showMobilePreview ? 'w-[375px] h-[700px]' : 'w-full max-w-4xl h-auto min-h-[600px]'
+        }`}>
           <div className="h-full overflow-auto">
             <BioPage
               page={previewPage}
@@ -158,34 +162,80 @@ export default function PreviewPage() {
         </div>
       </div>
 
-      {/* Publish CTA */}
+      {/* Publish CTA - Show auth if not logged in */}
       <div className="bg-bottom border-t border-low px-6 py-4">
         <div className="max-w-lg mx-auto flex flex-col gap-3">
           {error && (
-            <div className="p-3 rounded-lg bg-red-900/20 text-red-400 text-sm text-center">
+            <div className="p-3 rounded-lg bg-orange/20 text-orange text-sm text-center">
               {error}
             </div>
           )}
-          <Button
-            onClick={handlePublish}
-            disabled={isPublishing}
-            className="w-full py-6 text-lg rounded-xl gap-2 bg-green text-top hover:bg-green/80"
-          >
-            {isPublishing ? (
-              <>
-                <Icon icon="loader-2" className="w-5 h-5 animate-spin" />
-                Publishing...
-              </>
-            ) : (
-              <>
-                <Icon icon="sparkles" className="w-5 h-5" />
-                Publish my page
-              </>
-            )}
-          </Button>
-          <p className="text-xs text-center text-high">
-            You need to be logged in to save your page
-          </p>
+          
+          {!user ? (
+            // Auth required
+            <>
+              <div className="text-center mb-2">
+                <p className="text-top font-semibold">Almost there!</p>
+                <p className="text-high text-sm">Create an account to publish your page</p>
+              </div>
+              
+              <Button
+                onClick={handleGoogleAuth}
+                className="w-full py-6 text-lg rounded-full gap-2 bg-blue text-top hover:bg-blue/80"
+              >
+                <Icon icon="github" className="w-5 h-5" />
+                Continue with Google
+              </Button>
+              
+              <div className="relative my-2">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-low" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-bottom text-mid">or</span>
+                </div>
+              </div>
+              
+              <Button
+                variant="outline"
+                className="w-full py-6 text-lg rounded-full"
+                asChild
+              >
+                <Link href="/signup">Sign up with email</Link>
+              </Button>
+              
+              <p className="text-xs text-center text-high">
+                Already have an account?{' '}
+                <Link href="/login" className="text-pink hover:underline">
+                  Log in
+                </Link>
+              </p>
+            </>
+          ) : (
+            // User logged in - show publish
+            <>
+              <Button
+                onClick={handlePublish}
+                disabled={isPublishing}
+                className="w-full py-6 text-lg rounded-full gap-2 bg-green text-top hover:bg-green/80"
+              >
+                {isPublishing ? (
+                  <>
+                    <Icon icon="loader-2" className="w-5 h-5 animate-spin" />
+                    Publishing...
+                  </>
+                ) : (
+                  <>
+                    <Icon icon="sparkles" className="w-5 h-5" />
+                    Publish my page
+                  </>
+                )}
+              </Button>
+              <p className="text-xs text-center text-high">
+                Publishing as {user.email}
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>
