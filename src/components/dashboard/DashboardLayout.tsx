@@ -3,19 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Icon, IconSize } from '@/components/ui/icon';
+import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { SvgAsset } from '@/components/ui/svgasset';
 import { cn } from '@/lib/utils';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  user?: {
-    name: string;
-    email: string;
-    avatarUrl?: string;
-    plan: 'free' | 'pro';
-  };
   pageSlug?: string;
 }
 
@@ -26,156 +20,61 @@ const NAV_ITEMS = [
   { href: '/dashboard/settings', label: 'Settings', icon: 'settings' },
 ];
 
-export function DashboardLayout({ children, user, pageSlug }: DashboardLayoutProps) {
+export function DashboardLayout({ children, pageSlug }: DashboardLayoutProps) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Demo user for now
-  const currentUser = user || {
-    name: 'Demo User',
-    email: 'demo@heybio.co',
-    plan: 'free' as const,
-  };
-
-  const initials = currentUser.name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase();
-
   return (
-    <div className="min-h-screen bg-bottom">
-      {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-top/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside className={cn(
-        "fixed top-0 left-0 h-full w-64border-r border-low z-50",
-        "transform transition-transform lg:translate-x-0",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="px-6 py-4 border-b border-low flex items-center justify-between">
-            <Link href="/" className="text-xl font-semibold tracking-tight">
-              HeyBio
-            </Link>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-1 text-top hover:text-top"
-            >
-              <Icon icon="x" className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 px-3 py-4">
-            <ul className="space-y-1">
-              {NAV_ITEMS.map((item) => {
-                const isActive = pathname === item.href;
-
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                        isActive
-                          ? "bg-low text-top"
-                          : "text-top hover:bg-bottom hover:text-top"
-                      )}
-                    >
-                      <Icon icon={item.icon} className="w-5 h-5" />
-                      {item.label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          {/* Page link */}
+    <div className="min-h-screen flex flex-col gap-1">
+      {/* Header */}
+      <header className="bg-bottom px-4 md:px-6 py-3 rounded-bl-4xl rounded-br-4xl flex items-center justify-between">
+        <Link href="/" className="text-pink">
+          <SvgAsset src="/logos/logo-full.svg" height={32} />
+        </Link>
+        
+        <div className="flex items-center gap-2">
           {pageSlug && (
-            <div className="px-3 py-4 border-t border-low">
-              <a
-                href={`/${pageSlug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 py-2 text-sm text-top hover:text-top transition-colors"
-              >
-                <Icon icon="external-link" className="w-4 h-4" />
-                View your page
-              </a>
-            </div>
+            <Link href={`/${pageSlug}`} className="hidden md:flex items-center gap-1 text-sm text-high hover:text-top">
+              View page
+              <Icon icon="external-link" className="w-4 h-4" />
+            </Link>
           )}
-
-          {/* Pro upgrade (for free users) */}
-          {currentUser.plan === 'free' && (
-            <div className="px-3 py-4 border-t border-low">
-              <Link
-                href="/dashboard/upgrade"
-                className="flex items-center gap-2 px-3 py-2 bg-top text-bottom rounded-lg text-sm font-medium hover:bg-high transition-colors"
-              >
-                <Icon icon="sparkles" className="w-4 h-4" />
-                Upgrade to Pro
-              </Link>
-            </div>
-          )}
-
-          {/* User menu */}
-          <div className="px-3 py-4 border-t border-low">
-            <div className="flex items-center gap-3 px-3 py-2">
-              <Avatar className="w-8 h-8">
-                {currentUser.avatarUrl && (
-                  <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
-                )}
-                <AvatarFallback className="text-xs bg-low text-top">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-top truncate">
-                  {currentUser.name}
-                </p>
-                <p className="text-xs text-top truncate">
-                  {currentUser.email}
-                </p>
-              </div>
-              <button className="p-1 text-top hover:text-top">
-                <Icon icon="log-out" className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+          <Button variant="outline" size="sm" className="rounded-full" asChild>
+            <Link href="/login">Log out</Link>
+          </Button>
         </div>
-      </aside>
+      </header>
 
       {/* Main content */}
-      <div className="lg:pl-64">
-        {/* Top bar (mobile) */}
-        <header className="sticky top-0 z-30border-b border-low lg:hidden">
-          <div className="flex items-center justify-between px-4 py-3">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 text-top hover:text-top"
-            >
-              <Icon icon="menu" className="w-5 h-5" />
-            </button>
-            <span className="text-lg font-semibold">HeyBio</span>
-            <Avatar className="w-8 h-8">
-              <AvatarFallback className="text-xs bg-low text-top">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+      <div className="flex-1 flex flex-col md:flex-row gap-1 px-1">
+        {/* Sidebar */}
+        <aside className="w-full md:w-64 flex-shrink-0">
+          <div className="bg-bottom rounded-4xl p-4 md:sticky md:top-4">
+            <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
+              {NAV_ITEMS.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-3 rounded-2xl whitespace-nowrap transition-colors",
+                      isActive 
+                        ? "bg-green text-top" 
+                        : "text-high hover:bg-low"
+                    )}
+                  >
+                    <Icon icon={item.icon} className="w-5 h-5 flex-shrink-0" />
+                    <span className="font-medium">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
           </div>
-        </header>
+        </aside>
 
-        {/* Page content */}
-        <main className="p-6 lg:p-8">
+        {/* Content */}
+        <main className="flex-1 bg-bottom rounded-4xl p-4 md:p-8 min-h-[calc(100vh-200px)]">
           {children}
         </main>
       </div>

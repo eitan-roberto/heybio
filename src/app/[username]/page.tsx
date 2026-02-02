@@ -2,29 +2,10 @@ import { notFound } from 'next/navigation';
 import { Metadata, Viewport } from 'next';
 import { BioPage } from '@/components/bio-page';
 import { getTheme } from '@/config/themes';
+import { createClient } from '@/lib/supabase/server';
 
-// Demo data - in real app, this would come from Supabase
-const DEMO_PAGES: Record<string, {
-  page: {
-    display_name: string;
-    bio?: string;
-    avatar_url?: string;
-    theme_id: string;
-    slug: string;
-  };
-  links: {
-    title: string;
-    url: string;
-    icon?: string;
-    order: number;
-    is_active: boolean;
-  }[];
-  socialIcons: {
-    platform: 'instagram' | 'twitter' | 'youtube' | 'tiktok' | 'spotify' | 'github' | 'linkedin';
-    url: string;
-    order: number;
-  }[];
-}> = {
+// Keep demo data for static generation
+const DEMO_PAGES: Record<string, any> = {
   demo: {
     page: {
       display_name: 'Alex Demo',
@@ -33,125 +14,71 @@ const DEMO_PAGES: Record<string, {
       slug: 'demo',
     },
     links: [
-      { title: 'My YouTube Channel', url: 'https://youtube.com/@demo', order: 0, is_active: true },
-      { title: 'Latest Blog Post', url: 'https://medium.com/@demo', order: 1, is_active: true },
-      { title: 'Book a Call', url: 'https://calendly.com/demo', order: 2, is_active: true },
-      { title: 'My Newsletter', url: 'https://substack.com/@demo', order: 3, is_active: true },
+      { title: 'My YouTube', url: 'https://youtube.com/@demo', order: 0, is_active: true },
+      { title: 'Latest Blog', url: 'https://medium.com/@demo', order: 1, is_active: true },
     ],
     socialIcons: [
       { platform: 'instagram', url: 'https://instagram.com/demo', order: 0 },
       { platform: 'twitter', url: 'https://twitter.com/demo', order: 1 },
-      { platform: 'youtube', url: 'https://youtube.com/@demo', order: 2 },
-    ],
-  },
-  dark: {
-    page: {
-      display_name: 'Night Owl',
-      bio: 'Embracing the darkness 🌙',
-      theme_id: 'dark',
-      slug: 'dark',
-    },
-    links: [
-      { title: 'My Music', url: 'https://spotify.com/artist/demo', order: 0, is_active: true },
-      { title: 'Stream on Twitch', url: 'https://twitch.tv/demo', order: 1, is_active: true },
-      { title: 'Discord Community', url: 'https://discord.gg/demo', order: 2, is_active: true },
-    ],
-    socialIcons: [
-      { platform: 'spotify', url: 'https://spotify.com/demo', order: 0 },
-      { platform: 'github', url: 'https://github.com/demo', order: 1 },
-    ],
-  },
-  warm: {
-    page: {
-      display_name: 'Sarah Cozy',
-      bio: 'Lifestyle | Home decor | Coffee lover ☕',
-      theme_id: 'warm',
-      slug: 'warm',
-    },
-    links: [
-      { title: 'Shop My Favorites', url: 'https://amazon.com/shop/demo', order: 0, is_active: true },
-      { title: 'Latest Video', url: 'https://youtube.com/watch?v=demo', order: 1, is_active: true },
-      { title: 'Recipe Blog', url: 'https://demo.com/recipes', order: 2, is_active: true },
-      { title: 'Support Me', url: 'https://ko-fi.com/demo', order: 3, is_active: true },
-    ],
-    socialIcons: [
-      { platform: 'instagram', url: 'https://instagram.com/demo', order: 0 },
-      { platform: 'tiktok', url: 'https://tiktok.com/@demo', order: 1 },
-      { platform: 'youtube', url: 'https://youtube.com/@demo', order: 2 },
     ],
   },
 };
 
-interface PageProps {
-  params: Promise<{ username: string }>;
+async function getPageData(username: string) {
+  // Check demo first
+  if (DEMO_PAGES[username]) return DEMO_PAGES[username];
+
+  // Fetch from Supabase
+  try {
+    const supabase = await createClient();
+    const { data: page } = await supabase.from('pages').select('*').eq('slug', username).single();
+    if (!page) return null;
+
+    const [{ data: links }, { data: socialIcons }] = await Promise.all([
+      supabase.from('links').select('*').eq('page_id', page.id).order('order'),
+      supabase.from('social_icons').select('*').eq('page_id', page.id).order('order'),
+    ]);
+
+    return {
+      page: {
+        display_name: page.display_name,
+        bio: page.bio,
+        avatar_url: page.avatar_url,
+        theme_id: page.theme_id,
+        slug: page.slug,
+      },
+      links: links?.map((l: any) => ({ ...l, is_active: l.is_active ?? true })) || [],
+      socialIcons: socialIcons || [],
+    };
+  } catch {
+    return null;
+  }
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ username: string }> }): Promise<Metadata> {
   const { username } = await params;
-  const data = DEMO_PAGES[username];
-  
-  if (!data) {
-    return {
-      title: 'Page Not Found | HeyBio',
-    };
-  }
-
-  const theme = getTheme(data.page.theme_id);
-  
+  const data = await getPageData(username);
+  if (!data) return { title: 'Not Found | HeyBio' };
   return {
     title: `${data.page.display_name} | HeyBio`,
     description: data.page.bio || `Check out ${data.page.display_name}'s links`,
-    openGraph: {
-      title: data.page.display_name,
-      description: data.page.bio || `Check out ${data.page.display_name}'s links`,
-      type: 'profile',
-    },
-    twitter: {
-      card: 'summary',
-      title: data.page.display_name,
-      description: data.page.bio || `Check out ${data.page.display_name}'s links`,
-    },
   };
 }
 
-export async function generateViewport({ params }: PageProps): Promise<Viewport> {
+export async function generateViewport({ params }: { params: Promise<{ username: string }> }): Promise<Viewport> {
   const { username } = await params;
-  const data = DEMO_PAGES[username];
-  
-  if (!data) {
-    return {};
-  }
-
-  const theme = getTheme(data.page.theme_id);
-  
-  return {
-    themeColor: theme.colors.background.startsWith('linear') 
-      ? '#ffffff' 
-      : theme.colors.background,
-  };
+  const data = await getPageData(username);
+  const theme = data ? getTheme(data.page.theme_id) : null;
+  return { themeColor: theme?.colors.background || '#ffffff' };
 }
 
-export default async function PublicBioPage({ params }: PageProps) {
+export default async function PublicBioPage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
-  
-  // In real app, fetch from Supabase
-  const data = DEMO_PAGES[username];
-  
-  if (!data) {
-    notFound();
-  }
-
-  return (
-    <BioPage
-      page={data.page}
-      links={data.links}
-      socialIcons={data.socialIcons}
-      showBadge={true}
-    />
-  );
+  const data = await getPageData(username);
+  if (!data) notFound();
+  return <BioPage page={data.page} links={data.links} socialIcons={data.socialIcons} showBadge={true} />;
 }
 
-// Generate static pages for demo usernames
 export function generateStaticParams() {
   return Object.keys(DEMO_PAGES).map((username) => ({ username }));
 }

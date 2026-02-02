@@ -1,170 +1,159 @@
-'use client';
-
 import Link from 'next/link';
-import { Icon, IconSize } from '@/components/ui/icon';
+import { redirect } from 'next/navigation';
+import { Icon } from '@/components/ui/icon';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { createClient } from '@/lib/supabase/server';
 
-// Demo data - in real app, this would come from Supabase
-const DEMO_STATS = {
-  pageViews: 1234,
-  linkClicks: 567,
-  clickRate: 45.9,
-};
+async function getDashboardData(userId: string) {
+  const supabase = await createClient();
+  
+  // Get user's pages
+  const { data: pages } = await supabase
+    .from('pages')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
 
-const DEMO_PAGE = {
-  slug: 'demo',
-  displayName: 'Alex Demo',
-  bio: 'Creator, builder, dreamer ✨',
-  themeId: 'clean',
-  linksCount: 4,
-};
+  if (!pages || pages.length === 0) {
+    return { pages: [], stats: null };
+  }
 
-export default function DashboardPage() {
+  // Get stats for first page (simplified - in real app would aggregate)
+  const page = pages[0];
+  const [{ count: views }, { count: clicks }] = await Promise.all([
+    supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('page_id', page.id),
+    supabase.from('link_clicks').select('*', { count: 'exact', head: true }).eq('page_id', page.id),
+  ]);
+
+  return {
+    pages: pages.map(p => ({
+      id: p.id,
+      slug: p.slug,
+      displayName: p.display_name,
+      bio: p.bio,
+      themeId: p.theme_id,
+    })),
+    stats: {
+      pageViews: views || 0,
+      linkClicks: clicks || 0,
+      clickRate: views && clicks ? Math.round((clicks / views) * 100) : 0,
+    },
+  };
+}
+
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login?redirect=/dashboard');
+  }
+
+  const { pages, stats } = await getDashboardData(user.id);
+
+  if (pages.length === 0) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+          <div className="w-20 h-20 rounded-full bg-green flex items-center justify-center mb-6">
+            <Icon icon="plus" className="w-10 h-10 text-top" />
+          </div>
+          <h1 className="text-2xl font-bold text-top mb-2">Create your first page</h1>
+          <p className="text-high mb-8 max-w-md">
+            You don&apos;t have any bio pages yet. Create one in just a few clicks.
+          </p>
+          <Button className="rounded-full px-8 py-6 bg-green text-top hover:bg-green/80" asChild>
+            <Link href="/new">Create your page</Link>
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const page = pages[0];
+
   return (
-    <DashboardLayout pageSlug={DEMO_PAGE.slug}>
-      <div className="space-y-8">
+    <DashboardLayout pageSlug={page.slug}>
+      <div className="space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold text-top">Dashboard</h1>
-          <p className="text-top mt-1">
-            Welcome back! Here is how your page is performing.
+          <p className="text-high mt-1">
+            Welcome back! Here&apos;s how your page is performing.
           </p>
         </div>
 
-        {/* Quick stats */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-top">
-                Page Views
-              </CardTitle>
-              <Icon icon="eye" className="w-4 h-4 text-top" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{DEMO_STATS.pageViews.toLocaleString()}</div>
-              <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
-                <Icon icon="trending-up" className="w-3 h-3" />
-                +12% from last week
-              </p>
-            </CardContent>
-          </Card>
+        {/* Stats */}
+        {stats && (
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-3xl p-6 bg-green">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-top">Page Views</span>
+                <Icon icon="eye" className="w-5 h-5 text-top" />
+              </div>
+              <div className="text-3xl font-bold text-top">{stats.pageViews.toLocaleString()}</div>
+            </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-top">
-                Link Clicks
-              </CardTitle>
-              <Icon icon="mouse-pointer-click" className="w-4 h-4 text-top" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{DEMO_STATS.linkClicks.toLocaleString()}</div>
-              <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
-                <Icon icon="trending-up" className="w-3 h-3" />
-                +8% from last week
-              </p>
-            </CardContent>
-          </Card>
+            <div className="rounded-3xl p-6 bg-pink">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-top">Link Clicks</span>
+                <Icon icon="mouse-pointer-click" className="w-5 h-5 text-top" />
+              </div>
+              <div className="text-3xl font-bold text-top">{stats.linkClicks.toLocaleString()}</div>
+            </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-top">
-                Click Rate
-              </CardTitle>
-              <Icon icon="bar-chart-2" className="w-4 h-4 text-top" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{DEMO_STATS.clickRate}%</div>
-              <p className="text-xs text-top mt-1">
-                of visitors click a link
-              </p>
-            </CardContent>
-          </Card>
+            <div className="rounded-3xl p-6 bg-blue">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-top">Click Rate</span>
+                <Icon icon="bar-chart-2" className="w-5 h-5 text-top" />
+              </div>
+              <div className="text-3xl font-bold text-top">{stats.clickRate}%</div>
+            </div>
+          </div>
+        )}
+
+        {/* Page Card */}
+        <div className="rounded-4xl p-6 bg-bottom">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-top">Your Page</h2>
+              <Link href={`/${page.slug}`} className="text-sm text-pink hover:underline flex items-center gap-1">
+                heybio.co/{page.slug}
+                <Icon icon="external-link" className="w-3 h-3" />
+              </Link>
+            </div>
+            <Button variant="outline" className="rounded-full" asChild>
+              <Link href="/dashboard/edit">Edit</Link>
+            </Button>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-top flex items-center justify-center text-bottom font-bold text-xl">
+              {page.displayName.charAt(0)}
+            </div>
+            <div>
+              <h3 className="font-semibold text-top">{page.displayName}</h3>
+              <p className="text-sm text-high">{page.bio || 'No bio yet'}</p>
+            </div>
+          </div>
         </div>
 
-        {/* Page preview card */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Your Page</CardTitle>
-                <CardDescription className="flex items-center gap-1 mt-1">
-                  heybio.co/{DEMO_PAGE.slug}
-                  <a
-                    href={`/${DEMO_PAGE.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-700"
-                  >
-                    <Icon icon="external-link" className="w-3 h-3" />
-                  </a>
-                </CardDescription>
-              </div>
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard/edit">
-                  <Icon icon="edit" className="w-4 h-4 mr-2" />
-                  Edit
-                </Link>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-6">
-              <div className="w-16 h-16 rounded-full bg-low flex items-center justify-center text-top font-semibold text-xl">
-                {DEMO_PAGE.displayName.charAt(0)}
-              </div>
-              <div>
-                <h3 className="font-semibold text-top">{DEMO_PAGE.displayName}</h3>
-                <p className="text-sm text-top">{DEMO_PAGE.bio}</p>
-                <p className="text-xs text-top mt-1">
-                  {DEMO_PAGE.linksCount} links • {DEMO_PAGE.themeId} theme
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick actions */}
+        {/* Actions */}
         <div className="grid gap-4 md:grid-cols-2">
-          <Link href="/dashboard/edit" className="block">
-            <Card className="hover:border-mid transition-colors cursor-pointer h-full">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Icon icon="edit" className="w-5 h-5" />
-                  Edit your page
-                </CardTitle>
-                <CardDescription>
-                  Update your bio, add links, change theme
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center text-sm text-blue-600 font-medium">
-                  Edit page
-                  <Icon icon="arrow-right" className="w-4 h-4 ml-1" />
-                </div>
-              </CardContent>
-            </Card>
+          <Link href="/dashboard/edit" className="rounded-4xl p-6 bg-orange hover:bg-orange/80 transition-colors">
+            <div className="flex items-center gap-3 mb-2">
+              <Icon icon="edit" className="w-6 h-6 text-top" />
+              <span className="font-semibold text-top">Edit your page</span>
+            </div>
+            <p className="text-sm text-top">Update bio, add links, change theme</p>
           </Link>
 
-          <Link href="/dashboard/analytics" className="block">
-            <Card className="hover:border-mid transition-colors cursor-pointer h-full">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Icon icon="bar-chart-2" className="w-5 h-5" />
-                  View analytics
-                </CardTitle>
-                <CardDescription>
-                  See detailed stats and insights
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center text-sm text-blue-600 font-medium">
-                  View analytics
-                  <Icon icon="arrow-right" className="w-4 h-4 ml-1" />
-                </div>
-              </CardContent>
-            </Card>
+          <Link href="/dashboard/analytics" className="rounded-4xl p-6 bg-yellow hover:bg-yellow/80 transition-colors">
+            <div className="flex items-center gap-3 mb-2">
+              <Icon icon="bar-chart-2" className="w-6 h-6 text-top" />
+              <span className="font-semibold text-top">View analytics</span>
+            </div>
+            <p className="text-sm text-top">See detailed stats and insights</p>
           </Link>
         </div>
       </div>
