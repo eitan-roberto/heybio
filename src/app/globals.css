@@ -42,22 +42,47 @@ body {
   color: var(--color-top);
 }
 
-/* Scrollbar */
+/* Scrollbar - Overlay Style */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-mid);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-mid);
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-mid);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Make scrollbar overlay content */
+html {
+  overflow: overlay;
+  overflow: auto;
+}
+
+@supports (scrollbar-gutter: stable) {
+  html {
+    overflow: auto;
+    scrollbar-gutter: stable both-edges;
+  }
+}
+
+@media (pointer: fine) {
+  ::-webkit-scrollbar {
+    position: absolute;
+  }
 }
 
 /* Utility Classes */
