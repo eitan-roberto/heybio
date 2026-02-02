@@ -37,6 +37,8 @@ export default function EditPage() {
   const [message, setMessage] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // Load page data
   useEffect(() => {
@@ -62,6 +64,7 @@ export default function EditPage() {
       setDisplayName(page.display_name);
       setBio(page.bio || '');
       setThemeId(page.theme_id);
+      setAvatarUrl(page.avatar_url || '');
 
       // Get links
       const { data: pageLinks, error: linksError } = await supabase
@@ -163,17 +166,58 @@ export default function EditPage() {
   const handleDelete = async () => {
     if (!pageId) return;
     setDeleting(true);
-    
+
     const supabase = createClient();
     const { error } = await supabase.from('pages').delete().eq('id', pageId);
-    
+
     if (error) {
       setMessage('Error deleting page');
       setDeleting(false);
       return;
     }
-    
+
     router.push('/dashboard');
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !pageId) return;
+
+    setUploadingAvatar(true);
+    const supabase = createClient();
+
+    // Upload to storage
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${pageId}/avatar.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      setMessage('Error uploading image');
+      setUploadingAvatar(false);
+      return;
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+
+    setAvatarUrl(publicUrl);
+    setUploadingAvatar(false);
+
+    // Auto-save the avatar URL
+    await supabase.from('pages').update({ avatar_url: publicUrl }).eq('id', pageId);
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!pageId) return;
+    setAvatarUrl('');
+    const supabase = createClient();
+    await supabase.from('pages').update({ avatar_url: null }).eq('id', pageId);
   };
 
   const addLink = () => {
@@ -208,7 +252,7 @@ export default function EditPage() {
   const previewPage = {
     display_name: displayName || 'Your Name',
     bio: bio || '',
-    avatar_url: '',
+    avatar_url: avatarUrl,
     theme_id: themeId,
     slug: slug || 'preview',
   };
@@ -284,6 +328,50 @@ export default function EditPage() {
 
         {/* Profile Info */}
         <div className="rounded-4xl p-4 bg-bottom">
+          <div className="flex items-center gap-4 mb-4">
+            {/* Avatar */}
+            <div className="relative">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt="Profile"
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-top flex items-center justify-center text-bottom font-bold text-xl">
+                  {displayName.charAt(0).toUpperCase() || '?'}
+                </div>
+              )}
+              {uploadingAvatar && (
+                <div className="absolute inset-0 flex items-center justify-center bg-top/50 rounded-full">
+                  <Icon icon="loader-2" className="w-6 h-6 animate-spin text-bottom" />
+                </div>
+              )}
+            </div>
+            <div>
+              <label className="text-sm text-high block mb-1">Profile Photo</label>
+              <label className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-low hover:bg-mid cursor-pointer transition-colors">
+                <Icon icon="upload" className="w-4 h-4" />
+                <span className="text-sm">{avatarUrl ? 'Change' : 'Upload'}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                  disabled={uploadingAvatar}
+                />
+              </label>
+              {avatarUrl && (
+                <button
+                  onClick={handleRemoveAvatar}
+                  className="ml-2 text-sm text-orange hover:underline"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm text-high block mb-1">Display Name</label>
