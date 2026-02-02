@@ -7,6 +7,7 @@ import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { SvgAsset } from '@/components/ui/svgasset';
 import { createClient } from '@/lib/supabase/client';
 
 function LoginForm() {
@@ -59,26 +60,25 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full max-w-md px-4">
       {/* Logo */}
-      <Link href="/" className="block text-center mb-8">
-        <span className="text-4xl text-pink font-bold">heybio</span>
+      <Link href="/" className="block text-center mb-8 text-pink">
+        <SvgAsset src="/logos/logo-full.svg" height={48} className="mx-auto" />
       </Link>
 
       {/* Card */}
-      <div className="bg-bottom rounded-4xl p-8 shadow-xl ring-1 ring-low">
+      <div className="bg-bottom rounded-4xl p-6 md:p-8">
         <h1 className="text-2xl font-bold text-center mb-2 text-top">
           Welcome back
         </h1>
-        <p className="text-center text-mid mb-8">
+        <p className="text-center text-high mb-8">
           Sign in to manage your bio page
         </p>
 
         {/* Google Login */}
         <Button
           type="button"
-          variant="outline"
-          className="w-full rounded-full py-6 mb-4"
+          className="w-full rounded-full py-6 mb-4 bg-blue text-top hover:bg-blue/80"
           onClick={handleGoogleLogin}
           disabled={loading}
         >
@@ -107,7 +107,7 @@ function LoginForm() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 rounded-xl py-6"
+                className="pl-10 rounded-xl py-6 bg-low border-0"
                 required
               />
             </div>
@@ -128,21 +128,21 @@ function LoginForm() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 rounded-xl py-6"
+                className="pl-10 rounded-xl py-6 bg-low border-0"
                 required
               />
             </div>
           </div>
 
           {error && (
-            <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+            <div className="p-3 rounded-xl bg-orange/20 text-orange text-sm">
               {error}
             </div>
           )}
 
           <Button
             type="submit"
-            className="w-full rounded-full py-6 bg-top text-bottom hover:bg-high"
+            className="w-full rounded-full py-6 bg-green text-top hover:bg-green/80"
             disabled={loading}
           >
             {loading ? (
@@ -158,9 +158,9 @@ function LoginForm() {
       </div>
 
       {/* Sign up link */}
-      <p className="text-center mt-6 text-mid">
+      <p className="text-center mt-6 text-high">
         Don&apos;t have an account?{' '}
-        <Link href="/signup" className="text-top font-medium hover:underline">
+        <Link href="/signup" className="text-pink font-medium hover:underline">
           Sign up
         </Link>
       </p>
@@ -170,11 +170,11 @@ function LoginForm() {
 
 function LoginFallback() {
   return (
-    <div className="w-full max-w-md">
-      <div className="block text-center mb-8">
-        <span className="text-4xl text-pink font-bold">heybio</span>
+    <div className="w-full max-w-md px-4">
+      <div className="block text-center mb-8 text-pink">
+        <SvgAsset src="/logos/logo-full.svg" height={48} className="mx-auto" />
       </div>
-      <div className="bg-bottom rounded-4xl p-8 shadow-xl ring-1 ring-low flex items-center justify-center min-h-[400px]">
+      <div className="bg-bottom rounded-4xl p-8 flex items-center justify-center min-h-[400px]">
         <Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" />
       </div>
     </div>
@@ -183,7 +183,7 @@ function LoginFallback() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-top px-4">
+    <div className="min-h-screen flex items-center justify-center">
       <Suspense fallback={<LoginFallback />}>
         <LoginForm />
       </Suspense>
