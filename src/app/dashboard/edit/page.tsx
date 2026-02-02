@@ -102,7 +102,7 @@ export default function EditPage() {
       return;
     }
 
-    // Update links
+    // Update existing links
     for (const link of links) {
       if (link.id) {
         await supabase.from('links').update({
@@ -112,16 +112,38 @@ export default function EditPage() {
           is_active: link.is_active,
         }).eq('id', link.id);
       } else {
-        await supabase.from('links').insert({
+        // Insert new link and get ID back
+        const { data } = await supabase.from('links').insert({
           page_id: pageId,
           title: link.title,
           url: link.url,
           order: link.order,
           is_active: link.is_active,
-        });
+        }).select('id').single();
+        
+        if (data) {
+          link.id = data.id;
+        }
       }
     }
 
+    // Refresh links data
+    const { data: freshLinks } = await supabase
+      .from('links')
+      .select('*')
+      .eq('page_id', pageId)
+      .order('order');
+    
+    if (freshLinks) {
+      setLinks(freshLinks.map((l: any) => ({
+        id: l.id,
+        title: l.title,
+        url: l.url,
+        order: l.order,
+        is_active: l.is_active ?? true,
+      })));
+    }
+    
     setMessage('Saved!');
     setTimeout(() => setMessage(''), 2000);
     setSaving(false);
