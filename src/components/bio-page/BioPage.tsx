@@ -1,11 +1,11 @@
 'use client';
 
+import { useEffect } from 'react';
 import { ProfileSection } from './ProfileSection';
 import { LinkCard } from './LinkCard';
 import { SocialBar } from './SocialBar';
 import { getTheme, type Theme } from '@/config/themes';
 import type { Page, Link, SocialIcon, SocialPlatform } from '@/types';
-import { cn } from '@/lib/utils';
 
 interface BioPageProps {
   page: Pick<Page, 'display_name' | 'bio' | 'avatar_url' | 'theme_id' | 'slug'>;
@@ -18,13 +18,9 @@ interface BioPageProps {
 
 function getBackgroundStyle(theme: Theme): React.CSSProperties {
   if (theme.colors.background.startsWith('linear')) {
-    return {
-      background: theme.colors.background,
-    };
+    return { background: theme.colors.background };
   }
-  return {
-    backgroundColor: theme.colors.background,
-  };
+  return { backgroundColor: theme.colors.background };
 }
 
 export function BioPage({ 
@@ -41,13 +37,29 @@ export function BioPage({
     .filter(link => link.is_active)
     .sort((a, b) => a.order - b.order);
 
+  // Track page view
+  useEffect(() => {
+    fetch('/api/analytics/view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug: page.slug }),
+    }).catch(() => {});
+  }, [page.slug]);
+
+  const handleLinkClick = async (index: number, url: string) => {
+    // Track click
+    await fetch('/api/analytics/click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug: page.slug, url, index }),
+    }).catch(() => {});
+    
+    onLinkClick?.(index);
+  };
+
   return (
-    <div 
-      className="min-h-screen w-full flex flex-col"
-      style={getBackgroundStyle(theme)}
-    >
+    <div className="min-h-screen w-full flex flex-col" style={getBackgroundStyle(theme)}>
       <main className="flex-1 w-full max-w-lg mx-auto px-6 py-12 flex flex-col">
-        {/* Profile */}
         <div className="mb-8">
           <ProfileSection
             displayName={page.display_name}
@@ -57,7 +69,6 @@ export function BioPage({
           />
         </div>
 
-        {/* Links */}
         {activeLinks.length > 0 && (
           <div className="flex-1 flex flex-col gap-4 mb-8">
             {activeLinks.map((link, index) => (
@@ -65,13 +76,12 @@ export function BioPage({
                 key={index}
                 link={link}
                 theme={theme}
-                onClick={() => onLinkClick?.(index)}
+                onClick={() => handleLinkClick(index, link.url)}
               />
             ))}
           </div>
         )}
 
-        {/* Social */}
         {socialIcons.length > 0 && (
           <div className="mb-8">
             <SocialBar
@@ -83,7 +93,6 @@ export function BioPage({
         )}
       </main>
 
-      {/* Footer Badge */}
       {showBadge && (
         <footer className="py-6 text-center">
           <a
