@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { BioPage } from '@/components/bio-page';
 import { getTheme } from '@/config/themes';
 import { createClient } from '@/lib/supabase/client';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { cn } from '@/lib/utils';
 
 interface Link {
@@ -22,6 +24,7 @@ interface Link {
 const THEMES = ['clean', 'soft', 'bold', 'dark', 'warm', 'minimal'];
 
 export default function EditPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [pageId, setPageId] = useState<string | null>(null);
@@ -32,6 +35,8 @@ export default function EditPage() {
   const [links, setLinks] = useState<Link[]>([]);
   const [activeTab, setActiveTab] = useState<'links' | 'design'>('links');
   const [message, setMessage] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Load page data
   useEffect(() => {
@@ -155,6 +160,22 @@ export default function EditPage() {
     setSaving(false);
   };
 
+  const handleDelete = async () => {
+    if (!pageId) return;
+    setDeleting(true);
+    
+    const supabase = createClient();
+    const { error } = await supabase.from('pages').delete().eq('id', pageId);
+    
+    if (error) {
+      setMessage('Error deleting page');
+      setDeleting(false);
+      return;
+    }
+    
+    router.push('/dashboard');
+  };
+
   const addLink = () => {
     setLinks([...links, {
       title: '',
@@ -236,6 +257,14 @@ export default function EditPage() {
                 {message}
               </span>
             )}
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(true)}
+              className="rounded-full text-orange border-orange hover:bg-orange/10"
+            >
+              <Icon icon="trash-2" className="w-4 h-4 mr-2" />
+              Delete
+            </Button>
             <Button
               onClick={handleSave}
               disabled={saving}
@@ -413,6 +442,18 @@ export default function EditPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDelete}
+        title="Delete your page?"
+        description="This will permanently delete your bio page and all its data. This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </DashboardLayout>
   );
 }
