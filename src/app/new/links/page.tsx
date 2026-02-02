@@ -1,22 +1,28 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { OnboardingLayout, LinkEditor } from '@/components/onboarding';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 
-export default function AddLinksPage() {
+function LinksContent() {
   const router = useRouter();
-  const { draft, addLink, updateLink, removeLink, reorderLinks } = useOnboardingStore();
+  const searchParams = useSearchParams();
+  const { draft, initDraft, addLink, updateLink, removeLink, reorderLinks } = useOnboardingStore();
 
-  // Redirect if no draft exists
+  // Initialize from ?u= parameter if no draft
   useEffect(() => {
     if (!draft) {
-      router.replace('/new');
+      const u = searchParams.get('u');
+      if (u && u.length >= 3) {
+        initDraft(u);
+      } else {
+        router.replace('/new');
+      }
     }
-  }, [draft, router]);
+  }, [draft, searchParams, router, initDraft]);
 
   if (!draft) {
     return null;
@@ -68,5 +74,13 @@ export default function AddLinksPage() {
         </div>
       </div>
     </OnboardingLayout>
+  );
+}
+
+export default function AddLinksPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" /></div>}>
+      <LinksContent />
+    </Suspense>
   );
 }

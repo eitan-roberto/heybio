@@ -39,28 +39,14 @@ export function OnboardingLayout({
   return (
     <div className="min-h-screen flex flex-col gap-1">
       {/* Header */}
-      <header className="bg-bottom px-4 md:px-6 py-4 rounded-bl-4xl rounded-br-4xl flex items-center justify-between">
-        <div className="w-20">
-          {showBack && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBack}
-              className="gap-1 text-top"
-            >
-              <Icon icon="arrow-left" className="w-4 h-4" />
-              Back
-            </Button>
-          )}
-        </div>
-        
-        {/* Logo */}
-        <Link href="/" className="text-pink">
+      <header className="bg-bottom px-4 md:px-6 py-4 rounded-bl-4xl rounded-br-4xl flex items-center">
+        {/* Logo - LEFT */}
+        <Link href="/" className="text-pink flex-shrink-0">
           <SvgAsset src="/logos/logo-full.svg" height={32} />
         </Link>
         
-        {/* Progress dots */}
-        <div className="flex items-center gap-2 w-20 justify-end">
+        {/* Progress dots - CENTER */}
+        <div className="flex-1 flex items-center justify-center gap-2">
           {Array.from({ length: totalSteps }, (_, i) => (
             <div
               key={i}
@@ -74,6 +60,21 @@ export function OnboardingLayout({
               )}
             />
           ))}
+        </div>
+        
+        {/* Back button - RIGHT */}
+        <div className="flex-shrink-0 w-20 flex justify-end">
+          {showBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBack}
+              className="gap-1 text-top"
+            >
+              <Icon icon="arrow-left" className="w-4 h-4" />
+              Back
+            </Button>
+          )}
         </div>
       </header>
 
