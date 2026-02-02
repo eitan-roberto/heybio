@@ -21,7 +21,28 @@ interface Link {
   is_active: boolean;
 }
 
+interface SocialIcon {
+  id?: string;
+  platform: string;
+  url: string;
+  order: number;
+}
+
 const THEMES = ['clean', 'soft', 'bold', 'dark', 'warm', 'minimal'];
+
+const SOCIAL_PLATFORMS = [
+  { id: 'instagram', name: 'Instagram', icon: 'instagram' },
+  { id: 'twitter', name: 'Twitter', icon: 'twitter' },
+  { id: 'youtube', name: 'YouTube', icon: 'youtube' },
+  { id: 'tiktok', name: 'TikTok', icon: 'tiktok' },
+  { id: 'spotify', name: 'Spotify', icon: 'spotify' },
+  { id: 'github', name: 'GitHub', icon: 'github' },
+  { id: 'linkedin', name: 'LinkedIn', icon: 'linkedin' },
+  { id: 'discord', name: 'Discord', icon: 'discord' },
+  { id: 'twitch', name: 'Twitch', icon: 'twitch' },
+  { id: 'email', name: 'Email', icon: 'mail' },
+  { id: 'website', name: 'Website', icon: 'globe' },
+];
 
 export default function EditPage() {
   const router = useRouter();
@@ -33,7 +54,8 @@ export default function EditPage() {
   const [bio, setBio] = useState('');
   const [themeId, setThemeId] = useState('clean');
   const [links, setLinks] = useState<Link[]>([]);
-  const [activeTab, setActiveTab] = useState<'links' | 'design'>('links');
+  const [activeTab, setActiveTab] = useState<'links' | 'social' | 'design'>('links');
+  const [socialIcons, setSocialIcons] = useState<SocialIcon[]>([]);
   const [message, setMessage] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -85,6 +107,20 @@ export default function EditPage() {
         url: l.url,
         order: l.order,
         is_active: l.is_active ?? true,
+      })) || []);
+
+      // Get social icons
+      const { data: socialData } = await supabase
+        .from('social_icons')
+        .select('*')
+        .eq('page_id', page.id)
+        .order('order');
+
+      setSocialIcons(socialData?.map((s: any) => ({
+        id: s.id,
+        platform: s.platform,
+        url: s.url,
+        order: s.order,
       })) || []);
 
       setLoading(false);
@@ -157,7 +193,31 @@ export default function EditPage() {
 
     // Update state with IDs
     setLinks(updatedLinks);
-    
+
+    // Handle social icons
+    const updatedSocials = [...socialIcons];
+    for (let i = 0; i < updatedSocials.length; i++) {
+      const social = updatedSocials[i];
+      if (social.id) {
+        await supabase.from('social_icons').update({
+          platform: social.platform,
+          url: social.url,
+          order: social.order,
+        }).eq('id', social.id);
+      } else {
+        const { data, error } = await supabase.from('social_icons').insert({
+          page_id: pageId,
+          platform: social.platform,
+          url: social.url,
+          order: social.order,
+        }).select().single();
+        if (data) {
+          updatedSocials[i] = { ...social, id: data.id };
+        }
+      }
+    }
+    setSocialIcons(updatedSocials);
+
     setMessage('Saved!');
     setTimeout(() => setMessage(''), 2000);
     setSaving(false);
@@ -220,6 +280,33 @@ export default function EditPage() {
     await supabase.from('pages').update({ avatar_url: null }).eq('id', pageId);
   };
 
+  const addSocialIcon = (platform: string) => {
+    setSocialIcons([...socialIcons, {
+      platform,
+      url: '',
+      order: socialIcons.length,
+    }]);
+  };
+
+  const updateSocialIcon = (index: number, updates: Partial<SocialIcon>) => {
+    const newSocials = [...socialIcons];
+    newSocials[index] = { ...newSocials[index], ...updates };
+    setSocialIcons(newSocials);
+  };
+
+  const removeSocialIcon = (index: number) => {
+    setSocialIcons(socialIcons.filter((_, i) => i !== index));
+  };
+
+  const moveSocialIcon = (index: number, direction: -1 | 1) => {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= socialIcons.length) return;
+    const newSocials = [...socialIcons];
+    [newSocials[index], newSocials[newIndex]] = [newSocials[newIndex], newSocials[index]];
+    newSocials.forEach((s, i) => s.order = i);
+    setSocialIcons(newSocials);
+  };
+
   const addLink = () => {
     setLinks([...links, {
       title: '',
@@ -259,6 +346,11 @@ export default function EditPage() {
 
   const previewLinks = links.filter(l => l.is_active && l.title && l.url).map((link, index) => ({
     ...link,
+    order: index,
+  }));
+
+  const previewSocialIcons = socialIcons.filter(s => s.url).map((social, index) => ({
+    ...social,
     order: index,
   }));
 
@@ -395,7 +487,7 @@ export default function EditPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => setActiveTab('links')}
             className={cn(
@@ -404,6 +496,15 @@ export default function EditPage() {
             )}
           >
             Links ({links.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('social')}
+            className={cn(
+              "px-4 py-2 rounded-full text-sm font-medium transition-colors",
+              activeTab === 'social' ? 'bg-green text-top' : 'bg-bottom text-high hover:bg-low'
+            )}
+          >
+            Social ({socialIcons.length})
           </button>
           <button
             onClick={() => setActiveTab('design')}
@@ -420,7 +521,7 @@ export default function EditPage() {
         <div className="grid lg:grid-cols-2 gap-4">
           {/* Left: Editor */}
           <div className="space-y-4">
-            {activeTab === 'links' ? (
+            {activeTab === 'links' && (
               <div className="rounded-4xl p-4 bg-bottom space-y-3">
                 {links.map((link, index) => (
                   <div key={index} className="rounded-3xl p-3 bg-low">
@@ -470,7 +571,7 @@ export default function EditPage() {
                     />
                   </div>
                 ))}
-                
+
                 <Button
                   onClick={addLink}
                   variant="outline"
@@ -480,7 +581,64 @@ export default function EditPage() {
                   Add Link
                 </Button>
               </div>
-            ) : (
+            )}
+
+            {activeTab === 'social' && (
+              <div className="rounded-4xl p-4 bg-bottom space-y-3">
+                <p className="text-sm text-high mb-2">Add your social media profiles</p>
+
+                {socialIcons.map((social, index) => (
+                  <div key={index} className="rounded-3xl p-3 bg-low">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon icon={social.platform} className="w-5 h-5 text-high" />
+                      <span className="text-sm text-high capitalize flex-1">{social.platform}</span>
+                      <button
+                        onClick={() => moveSocialIcon(index, -1)}
+                        disabled={index === 0}
+                        className="p-1 text-high disabled:opacity-30"
+                      >
+                        <Icon icon="arrow-left" className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => moveSocialIcon(index, 1)}
+                        disabled={index === socialIcons.length - 1}
+                        className="p-1 text-high disabled:opacity-30"
+                      >
+                        <Icon icon="arrow-right" className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => removeSocialIcon(index)}
+                        className="p-1 text-high hover:text-orange"
+                      >
+                        <Icon icon="trash-2" className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <Input
+                      value={social.url}
+                      onChange={(e) => updateSocialIcon(index, { url: e.target.value })}
+                      placeholder={social.platform === 'email' ? 'mailto:you@example.com' : 'https://...'}
+                      className="rounded-xl bg-bottom border-0"
+                    />
+                  </div>
+                ))}
+
+                {/* Add social buttons */}
+                <div className="grid grid-cols-3 gap-2">
+                  {SOCIAL_PLATFORMS.filter(p => !socialIcons.some(s => s.platform === p.id)).map((platform) => (
+                    <button
+                      key={platform.id}
+                      onClick={() => addSocialIcon(platform.id)}
+                      className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-low hover:bg-mid transition-colors"
+                    >
+                      <Icon icon={platform.icon} className="w-5 h-5 text-high" />
+                      <span className="text-xs text-high">{platform.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'design' && (
               <div className="rounded-4xl p-4 bg-bottom">
                 <h3 className="font-medium text-top mb-4">Choose Theme</h3>
                 <div className="grid grid-cols-2 gap-3">
@@ -522,7 +680,7 @@ export default function EditPage() {
                 <BioPage
                   page={previewPage}
                   links={previewLinks}
-                  socialIcons={[]}
+                  socialIcons={previewSocialIcons}
                   showBadge={true}
                 />
               </div>
