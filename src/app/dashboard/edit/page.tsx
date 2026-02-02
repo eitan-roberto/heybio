@@ -59,11 +59,17 @@ export default function EditPage() {
       setThemeId(page.theme_id);
 
       // Get links
-      const { data: pageLinks } = await supabase
+      const { data: pageLinks, error: linksError } = await supabase
         .from('links')
         .select('*')
         .eq('page_id', page.id)
         .order('order');
+      
+      if (linksError) {
+        console.error('Error loading links:', linksError);
+      }
+      
+      console.log('Loaded links:', pageLinks);
 
       setLinks(pageLinks?.map((l: any) => ({
         id: l.id,
@@ -82,7 +88,7 @@ export default function EditPage() {
   const handleSave = async () => {
     if (!pageId) return;
     setSaving(true);
-    setMessage('');
+    setMessage('Saving...');
 
     const supabase = createClient();
 
@@ -97,52 +103,52 @@ export default function EditPage() {
       .eq('id', pageId);
 
     if (pageError) {
+      console.error('Page update error:', pageError);
       setMessage('Error saving page');
       setSaving(false);
       return;
     }
 
-    // Update existing links
-    for (const link of links) {
+    // Handle links - track new links to update state
+    const updatedLinks = [...links];
+    
+    for (let i = 0; i < updatedLinks.length; i++) {
+      const link = updatedLinks[i];
+      
       if (link.id) {
-        await supabase.from('links').update({
+        // Update existing
+        const { error } = await supabase.from('links').update({
           title: link.title,
           url: link.url,
           order: link.order,
           is_active: link.is_active,
         }).eq('id', link.id);
+        
+        if (error) {
+          console.error('Link update error:', error);
+        }
       } else {
-        // Insert new link and get ID back
-        const { data } = await supabase.from('links').insert({
+        // Insert new
+        console.log('Inserting new link:', link);
+        const { data, error } = await supabase.from('links').insert({
           page_id: pageId,
           title: link.title,
           url: link.url,
           order: link.order,
           is_active: link.is_active,
-        }).select('id').single();
+        }).select().single();
         
-        if (data) {
-          link.id = data.id;
+        if (error) {
+          console.error('Link insert error:', error);
+        } else if (data) {
+          console.log('New link created:', data);
+          updatedLinks[i] = { ...link, id: data.id };
         }
       }
     }
 
-    // Refresh links data
-    const { data: freshLinks } = await supabase
-      .from('links')
-      .select('*')
-      .eq('page_id', pageId)
-      .order('order');
-    
-    if (freshLinks) {
-      setLinks(freshLinks.map((l: any) => ({
-        id: l.id,
-        title: l.title,
-        url: l.url,
-        order: l.order,
-        is_active: l.is_active ?? true,
-      })));
-    }
+    // Update state with IDs
+    setLinks(updatedLinks);
     
     setMessage('Saved!');
     setTimeout(() => setMessage(''), 2000);
