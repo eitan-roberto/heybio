@@ -246,8 +246,14 @@ export default function LandingPage() {
               disabled={!username.trim() || !isAvailable || isChecking}
               className="rounded-full bg-top px-6 py-3 text-bottom hover:bg-high w-full disabled:opacity-50"
             >
-              <span className="font-bold text-lg">Claim it</span>
-              <Icon icon="arrow-right" className="ml-2 w-5 h-5" />
+              {isChecking ? (
+                <span className="font-bold text-lg">Checking...</span>
+              ) : (
+                <>
+                  <span className="font-bold text-lg">Claim it</span>
+                  <Icon icon="arrow-right" className="ml-2 w-5 h-5" />
+                </>
+              )}
             </Button>
           </div>
 
@@ -280,8 +286,14 @@ export default function LandingPage() {
                 disabled={!username.trim() || !isAvailable || isChecking}
                 className="rounded-full bg-top px-6 py-6 text-bottom hover:bg-high disabled:opacity-50"
               >
-                <span className="mr-2 font-bold text-xl">Claim it</span>
-                <Icon icon="arrow-right" className="w-5 h-5" />
+                {isChecking ? (
+                  <span className="font-bold text-xl">Checking...</span>
+                ) : (
+                  <>
+                    <span className="mr-2 font-bold text-xl">Claim it</span>
+                    <Icon icon="arrow-right" className="w-5 h-5" />
+                  </>
+                )}
               </Button>
             </div>
             {error && username.length >= 3 && (
