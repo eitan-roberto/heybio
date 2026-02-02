@@ -1,193 +1,37 @@
-/* Google Fonts - must be first */
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
 
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
-  /* Typography */
+:root {
   --font-body: "DM Sans", system-ui, sans-serif;
-
-  /* Brand Colors */
-  --color-green: theme("colors.green.400");
-  --color-pink: theme("colors.pink.400");
-  --color-orange: theme("colors.orange.400");
-  --color-yellow: theme("colors.yellow.400");
-  --color-brown: theme("colors.yellow.950");
-  --color-blue: theme("colors.blue.400");
-
-  /* Neutral Colors */
-  --color-top: theme("colors.zinc.950");
-  --color-high: theme("colors.zinc.700");
-  --color-mid: theme("colors.zinc.500");
-  --color-low: theme("colors.zinc.300");
-  --color-bottom: theme("colors.zinc.50");
+  --color-green: #4ade80;
+  --color-pink: #f472b6;
+  --color-orange: #fb923c;
+  --color-yellow: #facc15;
+  --color-brown: #713f12;
+  --color-blue: #60a5fa;
+  --color-top: #09090b;
+  --color-high: #3f3f46;
+  --color-mid: #71717a;
+  --color-low: #d4d4d8;
+  --color-bottom: #fafafa;
 }
 
-/* Base Styles */
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  font-family: var(--font-body);
+  font-family: "DM Sans", system-ui, sans-serif;
   background-color: var(--color-top);
   color: var(--color-high);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Selection */
 ::selection {
-  background-color: var(--color-low);
+  background-color: var(--color-green);
   color: var(--color-top);
-}
-
-/* Scrollbar - Overlay Style */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.9);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.4);
-}
-
-/* Make scrollbar overlay content */
-html {
-  overflow: overlay;
-  overflow: auto;
-}
-
-@supports (scrollbar-gutter: stable) {
-  html {
-    overflow: auto;
-    scrollbar-gutter: stable both-edges;
-  }
-}
-
-@media (pointer: fine) {
-  ::-webkit-scrollbar {
-    position: absolute;
-  }
-}
-
-/* Utility Classes */
-.text-brand {
-  color: var(--color-brand);
-}
-
-.bg-brand {
-  background-color: var(--color-brand);
-}
-
-.border-brand {
-  border-color: var(--color-brand);
-}
-
-/* Gradient Text */
-.text-gradient {
-  background: linear-gradient(
-    135deg,
-    var(--color-brand) 0%,
-    var(--color-brand-dark) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Animated Border */
-@property --border-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-.animated-border {
-  position: relative;
-}
-
-.animated-border::before {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  z-index: -1;
-  border-radius: inherit;
-  background: conic-gradient(
-    from var(--border-angle),
-    var(--color-brand) 0%,
-    var(--color-top) 50%,
-    var(--color-brand) 100%
-  );
-  animation: rotate-border 3s linear infinite;
-}
-
-@keyframes rotate-border {
-  to {
-    --border-angle: 360deg;
-  }
-}
-
-/* Marquee Animation */
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-marquee {
-  animation: marquee 20s linear infinite;
-}
-
-.animate-marquee:hover {
-  animation-play-state: paused;
-}
-
-/* Smooth Hover Scale */
-.hover-scale {
-  transition: transform 0.2s ease-out;
-}
-
-.hover-scale:hover {
-  transform: scale(1.02);
-}
-
-.hover-scale:active {
-  transform: scale(0.98);
-}
-
-/* Glass Effect */
-.glass {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-.glass-dark {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-/* Focus Ring */
-*:focus-visible {
-  outline: 2px solid var(--color-brand);
-  outline-offset: 2px;
 }

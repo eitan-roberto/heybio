@@ -352,7 +352,7 @@ export default function EditPage() {
   const previewSocialIcons = socialIcons.filter(s => s.url).map((social, index) => ({
     ...social,
     order: index,
-  }));
+  })) as import('@/types').SocialIcon[];
 
   if (loading) {
     return (
