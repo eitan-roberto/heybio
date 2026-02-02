@@ -4,7 +4,7 @@ import { BioPage } from '@/components/bio-page';
 import { getTheme } from '@/config/themes';
 import { createClient } from '@/lib/supabase/server';
 
-// Keep demo data for static generation
+// Keep demo data for fallback
 const DEMO_PAGES: Record<string, any> = {
   demo: {
     page: {
@@ -20,6 +20,34 @@ const DEMO_PAGES: Record<string, any> = {
     socialIcons: [
       { platform: 'instagram', url: 'https://instagram.com/demo', order: 0 },
       { platform: 'twitter', url: 'https://twitter.com/demo', order: 1 },
+    ],
+  },
+  dark: {
+    page: {
+      display_name: 'Night Owl',
+      bio: 'Embracing the darkness 🌙',
+      theme_id: 'dark',
+      slug: 'dark',
+    },
+    links: [
+      { title: 'My Music', url: 'https://spotify.com/artist/demo', order: 0, is_active: true },
+    ],
+    socialIcons: [
+      { platform: 'spotify', url: 'https://spotify.com/demo', order: 0 },
+    ],
+  },
+  warm: {
+    page: {
+      display_name: 'Sarah Cozy',
+      bio: 'Lifestyle | Home decor | Coffee lover ☕',
+      theme_id: 'warm',
+      slug: 'warm',
+    },
+    links: [
+      { title: 'Shop My Favorites', url: 'https://amazon.com/shop/demo', order: 0, is_active: true },
+    ],
+    socialIcons: [
+      { platform: 'instagram', url: 'https://instagram.com/demo', order: 0 },
     ],
   },
 };
@@ -72,6 +100,10 @@ export async function generateViewport({ params }: { params: Promise<{ username:
   return { themeColor: theme?.colors.background || '#ffffff' };
 }
 
+// Force dynamic rendering for user-created pages
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+
 export default async function PublicBioPage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
   const data = await getPageData(username);
@@ -79,6 +111,7 @@ export default async function PublicBioPage({ params }: { params: Promise<{ user
   return <BioPage page={data.page} links={data.links} socialIcons={data.socialIcons} showBadge={true} />;
 }
 
+// Pre-render demo pages at build time
 export function generateStaticParams() {
   return Object.keys(DEMO_PAGES).map((username) => ({ username }));
 }
