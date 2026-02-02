@@ -76,6 +76,7 @@ const TESTIMONIALS = [
 
 export default function LandingPage() {
   const [username, setUsername] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,14 +86,16 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col gap-1">
+    <div className="min-h-screen flex flex-col gap-1 overflow-x-hidden">
       {/* Navigation */}
-      <nav className="mx-auto w-full bg-bottom px-10 py-3 rounded-bl-4xl rounded-br-4xl">
+      <nav className="mx-auto w-full bg-bottom px-4 md:px-10 py-3 rounded-bl-4xl rounded-br-4xl">
         <div className="mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-[12px] text-pink">
             <SvgAsset src="/logos/logo-full.svg" height={42} />
           </Link>
-          <div className="flex items-center gap-2 md:gap-4">
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-2 md:gap-4">
             <Button
               variant="outline"
               size="lg"
@@ -109,31 +112,102 @@ export default function LandingPage() {
               <Link href="/new">Get started</Link>
             </Button>
           </div>
+
+          {/* Mobile Hamburger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 text-top"
+            aria-label="Toggle menu"
+          >
+            <div className="w-6 h-6 flex flex-col justify-center gap-1.5 relative">
+              <span className={cn(
+                "block h-[3px] w-full bg-current rounded-full transition-all duration-300 absolute",
+                mobileMenuOpen ? "rotate-45 top-1/2 -translate-y-1/2" : "top-0"
+              )} />
+              <span className={cn(
+                "block h-[3px] w-full bg-current rounded-full transition-all duration-300",
+                mobileMenuOpen && "opacity-0"
+              )} />
+              <span className={cn(
+                "block h-[3px] w-full bg-current rounded-full transition-all duration-300 absolute",
+                mobileMenuOpen ? "-rotate-45 top-1/2 -translate-y-1/2" : "bottom-0"
+              )} />
+            </div>
+          </button>
+        </div>
+
+        {/* Mobile Menu Dropdown */}
+        <div className={cn(
+          "md:hidden overflow-hidden transition-all duration-300",
+          mobileMenuOpen ? "max-h-48 mt-4" : "max-h-0"
+        )}>
+          <div className="flex flex-col gap-2 pb-4">
+            <Button
+              variant="outline"
+              size="lg"
+              className="rounded-full w-full"
+              asChild
+            >
+              <Link href="/login">Log in</Link>
+            </Button>
+            <Button
+              size="lg"
+              className="rounded-full bg-top text-bottom hover:bg-high w-full"
+              asChild
+            >
+              <Link href="/new">Get started</Link>
+            </Button>
+          </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative bg-bottom p-10 rounded-4xl overflow-hidden flex flex-col gap-3">
+      <section className="relative bg-bottom p-4 md:p-10 rounded-4xl overflow-hidden flex flex-col gap-3">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm bg-green w-fit">
+        <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs md:text-sm bg-green w-fit">
           <span className="font-bold text-top">
             Free forever, no credit card required
           </span>
         </div>
 
         {/* Main Heading - HUGE */}
-        <h1 className="text-5xl font-bold leading-[1.1] tracking-tight text-top md:text-7xl lg:text-8xl">
+        <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-top md:text-7xl lg:text-8xl">
           Finally, a bio link
           <span className="text-pink"> that looks good.</span>
         </h1>
 
         {/* CTA Form */}
-        <form onSubmit={handleSubmit} className="mx-auto mt-10 md:mt-12">
-          <div className="flex items-center gap-2 rounded-full p-4 bg-blue focus-within:ring-8 focus-within:ring-blue/30">
+        <form onSubmit={handleSubmit} className="w-full max-w-xl mx-auto mt-6 md:mt-12">
+          {/* Mobile: Stacked Layout */}
+          <div className="flex md:hidden flex-col gap-3 bg-blue rounded-3xl p-4 focus-within:ring-4 focus-within:ring-blue/30">
+            <span className="text-lg text-top font-bold text-center">heybio.co/</span>
+            <input
+              id="username-input-mobile"
+              type="text"
+              placeholder="yourname"
+              value={username}
+              onChange={(e) =>
+                setUsername(
+                  e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
+                )
+              }
+              className="w-full px-4 py-3 border-0 bg-bottom font-bold rounded-full placeholder:text-high text-top focus-visible:ring-0 text-xl text-center"
+            />
+            <Button
+              type="submit"
+              disabled={!username.trim()}
+              className="rounded-full bg-top px-6 py-3 text-bottom hover:bg-high w-full"
+            >
+              <span className="font-bold text-lg">Claim it</span>
+              <Icon icon="arrow-right" className="ml-2 w-5 h-5" />
+            </Button>
+          </div>
+
+          {/* Desktop: Horizontal Layout */}
+          <div className="hidden md:flex items-center gap-2 rounded-full p-4 bg-blue focus-within:ring-8 focus-within:ring-blue/30">
             <span className="pl-4 text-xl text-top">heybio.co/</span>
             <input
-              id="username-input"
-              data-slot="input"
+              id="username-input-desktop"
               type="text"
               placeholder="yourname"
               value={username}
@@ -149,9 +223,7 @@ export default function LandingPage() {
               disabled={!username.trim()}
               className="rounded-full bg-top px-6 py-6 text-bottom hover:bg-high"
             >
-              <span className="mr-2 hidden sm:inline font-bold text-xl">
-                Claim it
-              </span>
+              <span className="mr-2 font-bold text-xl">Claim it</span>
               <Icon icon="arrow-right" className="w-5 h-5" />
             </Button>
           </div>
@@ -175,7 +247,7 @@ export default function LandingPage() {
       </section>
 
       {/* Marquee Section */}
-      <section className="overflow-hidden bg-bottom p-10 rounded-4xl">
+      <section className="overflow-hidden bg-bottom p-4 md:p-10 rounded-4xl">
         <div className="animate-marquee flex whitespace-nowrap">
           {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
             <div
@@ -200,7 +272,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-bottom p-10 rounded-4xl">
+      <section className="bg-bottom p-4 md:p-10 rounded-4xl">
         <div className="mx-auto max-w-6xl">
           {/* Section Header */}
           <div className="mb-16 text-center md:mb-20">
@@ -330,29 +402,29 @@ export default function LandingPage() {
       </section>
 
       {/* Big CTA Section */}
-      <section className="bg-pink p-10 rounded-4xl">
-        <div className="mx-auto max-w-6xl rounded-4xl bg-bottom p-10 text-center text-top">
-          <h2 className="text-5xl font-bold tracking-tight">
+      <section className="bg-pink p-4 md:p-10 rounded-4xl">
+        <div className="mx-auto max-w-6xl rounded-4xl bg-bottom p-6 md:p-10 text-center text-top">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Ready to stand out?
           </h2>
-          <p className="mx-auto mt-6 text-lg text-top">
+          <p className="mx-auto mt-4 md:mt-6 text-base md:text-lg text-top">
             Join thousands of creators who&apos;ve upgraded their online
             presence.
           </p>
           <Button
-            className="mt-10 rounded-full px-10 py-7 text-lg"
+            className="mt-6 md:mt-10 rounded-full px-6 md:px-10 py-4 md:py-7 text-base md:text-lg whitespace-nowrap"
             asChild
           >
-            <Link href="/new">
-              Create your free page
-              <Icon icon="arrow-right" className="ml-2 w-5 h-5" />
+            <Link href="/new" className="flex items-center gap-2">
+              <span>Create your free page</span>
+              <Icon icon="arrow-right" className="w-5 h-5 flex-shrink-0" />
             </Link>
           </Button>
         </div>
       </section>
 
       {/* Contact Section - WaxyWeb Style with HUGE text */}
-      <section className="bg-bottom p-10 rounded-4xl">
+      <section className="bg-bottom p-4 md:p-10 rounded-4xl">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-16 md:grid-cols-2 md:gap-20">
             {/* Email */}
