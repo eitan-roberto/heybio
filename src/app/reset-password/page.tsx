@@ -64,14 +64,14 @@ function ResetPasswordForm() {
   };
 
   return (
-    <div className="w-full max-w-md px-4">
+    <div className="w-full max-w-md bg-bottom px-4">
       {/* Logo */}
       <Link href="/" className="block text-center mb-8 text-pink">
         <SvgAsset src="/logos/logo-full.svg" height={48} className="mx-auto" />
       </Link>
 
       {/* Card */}
-      <div className="bg-low rounded-4xl p-6 md:p-8">
+      <div className="border border-2 border-low rounded-4xl p-6 md:p-8">
         <h1 className="text-2xl font-bold text-center mb-2 text-top">
           Set new password
         </h1>
@@ -88,10 +88,11 @@ function ResetPasswordForm() {
               Your password has been updated successfully.
             </p>
             <Button
-              className="w-full rounded-full bg-green text-top hover:bg-green/80"
+              className="w-full rounded-full py-6"
               onClick={() => router.push('/login')}
             >
               Sign in
+              <Icon icon="arrow-right" className="ml-2 w-5 h-5" />
             </Button>
           </div>
         ) : (
@@ -137,7 +138,7 @@ function ResetPasswordForm() {
 
             <Button
               type="submit"
-              className="w-full rounded-full py-6 bg-green text-top hover:bg-green/80"
+              className="w-full rounded-full py-6"
               disabled={loading}
             >
               {loading ? (
@@ -145,14 +146,6 @@ function ResetPasswordForm() {
               ) : (
                 'Update password'
               )}
-            </Button>
-
-            <Button
-              variant="outline"
-              className="w-full rounded-full"
-              asChild
-            >
-              <Link href="/login">Back to login</Link>
             </Button>
           </form>
         )}
@@ -167,7 +160,7 @@ function ResetPasswordFallback() {
       <div className="block text-center mb-8 text-pink">
         <SvgAsset src="/logos/logo-full.svg" height={48} className="mx-auto" />
       </div>
-      <div className="bg-bottom rounded-4xl p-8 flex items-center justify-center min-h-[400px]">
+      <div className="bg-low rounded-4xl p-8 flex items-center justify-center min-h-[400px]">
         <Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" />
       </div>
     </div>
@@ -176,7 +169,7 @@ function ResetPasswordFallback() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-bottom p-4">
       <Suspense fallback={<ResetPasswordFallback />}>
         <ResetPasswordForm />
       </Suspense>

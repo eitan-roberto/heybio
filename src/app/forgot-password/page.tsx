@@ -37,15 +37,15 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-bottom p-4">
+      <div className="w-full max-w-md bg-bottom px-4">
         {/* Logo */}
         <Link href="/" className="block text-center mb-8 text-pink">
           <SvgAsset src="/logos/logo-full.svg" height={48} className="mx-auto" />
         </Link>
 
         {/* Card */}
-        <div className="bg-low rounded-4xl p-6 md:p-8">
+        <div className="border border-2 border-low rounded-4xl p-6 md:p-8">
           <h1 className="text-2xl font-bold text-center mb-2 text-top">
             Reset your password
           </h1>
@@ -62,11 +62,13 @@ export default function ForgotPasswordPage() {
                 Check your email for a link to reset your password.
               </p>
               <Button
-                variant="outline"
-                className="w-full rounded-full"
+                className="w-full rounded-full py-6"
                 asChild
               >
-                <Link href="/login">Back to login</Link>
+                <Link href="/login">
+                  Back to login
+                  <Icon icon="arrow-right" className="ml-2 w-5 h-5" />
+                </Link>
               </Button>
             </div>
           ) : (
@@ -95,7 +97,7 @@ export default function ForgotPasswordPage() {
 
               <Button
                 type="submit"
-                className="w-full rounded-full py-6 bg-green text-top hover:bg-green/80"
+                className="w-full rounded-full py-6"
                 disabled={loading}
               >
                 {loading ? (
@@ -103,14 +105,6 @@ export default function ForgotPasswordPage() {
                 ) : (
                   'Send reset link'
                 )}
-              </Button>
-
-              <Button
-                variant="outline"
-                className="w-full rounded-full"
-                asChild
-              >
-                <Link href="/login">Back to login</Link>
               </Button>
             </form>
           )}
