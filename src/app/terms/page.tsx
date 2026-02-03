@@ -1,18 +1,13 @@
-import Link from 'next/link';
-import { SvgAsset } from '@/components/ui/svgasset';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-top">
-      {/* Header */}
-      <header className="bg-bottom px-4 md:px-10 py-4 rounded-bl-4xl rounded-br-4xl">
-        <Link href="/" className="text-pink inline-block">
-          <SvgAsset src="/logos/logo-full.svg" height={32} />
-        </Link>
-      </header>
+    <div className="min-h-screen flex flex-col gap-1 bg-top">
+      <Header />
 
       {/* Content */}
-      <main className="max-w-3xl mx-auto px-4 py-12">
+      <main className="flex-1 max-w-3xl mx-auto px-4 py-12">
         <h1 className="text-4xl font-bold text-bottom mb-8">Terms of Service</h1>
         
         <div className="prose prose-invert max-w-none">
@@ -100,18 +95,7 @@ export default function TermsPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-bottom px-4 md:px-10 py-8 rounded-tl-4xl rounded-tr-4xl mt-12">
-        <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <Link href="/" className="text-pink">
-            <SvgAsset src="/logos/logo-full.svg" height={24} />
-          </Link>
-          <div className="flex items-center gap-6 text-sm text-high">
-            <Link href="/privacy" className="hover:text-top">Privacy</Link>
-            <Link href="/terms" className="hover:text-top">Terms</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
