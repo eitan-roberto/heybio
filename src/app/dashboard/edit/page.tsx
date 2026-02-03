@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Icon } from '@/components/ui/icon';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -218,8 +219,7 @@ export default function EditPage() {
     }
     setSocialIcons(updatedSocials);
 
-    setMessage('Saved!');
-    setTimeout(() => setMessage(''), 2000);
+    toast.success('Changes saved!');
     setSaving(false);
   };
 
@@ -231,7 +231,7 @@ export default function EditPage() {
     const { error } = await supabase.from('pages').delete().eq('id', pageId);
 
     if (error) {
-      setMessage('Error deleting page');
+      toast.error('Failed to delete page. Please try again.');
       setDeleting(false);
       return;
     }
@@ -256,7 +256,7 @@ export default function EditPage() {
 
     if (uploadError) {
       console.error('Upload error:', uploadError);
-      setMessage('Error uploading image');
+      toast.error('Failed to upload image. Please try again.');
       setUploadingAvatar(false);
       return;
     }
@@ -271,6 +271,7 @@ export default function EditPage() {
 
     // Auto-save the avatar URL
     await supabase.from('pages').update({ avatar_url: publicUrl }).eq('id', pageId);
+    toast.success('Profile photo updated!');
   };
 
   const handleRemoveAvatar = async () => {
@@ -278,6 +279,7 @@ export default function EditPage() {
     setAvatarUrl('');
     const supabase = createClient();
     await supabase.from('pages').update({ avatar_url: null }).eq('id', pageId);
+    toast.success('Profile photo removed');
   };
 
   const addSocialIcon = (platform: string) => {
