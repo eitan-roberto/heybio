@@ -1,11 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  --font-body: "DM Sans", system-ui, sans-serif;
+@theme {
+  --font-sans: "DM Sans", system-ui, sans-serif;
+
   --color-green: #4ade80;
   --color-pink: #f472b6;
   --color-orange: #fb923c;
@@ -17,6 +16,9 @@
   --color-mid: #71717a;
   --color-low: #d4d4d8;
   --color-bottom: #fafafa;
+
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
 }
 
 html {

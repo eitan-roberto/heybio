@@ -60,14 +60,14 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md px-4">
+    <div className="w-full max-w-md bg-bottom px-4">
       {/* Logo */}
       <Link href="/" className="block text-center mb-8 text-pink">
         <SvgAsset src="/logos/logo-full.svg" height={48} className="mx-auto" />
       </Link>
 
       {/* Card */}
-      <div className="bg-low rounded-4xl p-6 md:p-8">
+      <div className="border border-2 border-low rounded-4xl p-6 md:p-8">
         <h1 className="text-2xl font-bold text-center mb-2 text-top">
           Welcome back
         </h1>
@@ -78,20 +78,20 @@ function LoginForm() {
         {/* Google Login */}
         <Button
           type="button"
-          className="w-full rounded-full py-6 mb-4 bg-blue text-top hover:bg-blue/80"
+          className="w-full rounded-full py-6 mb-4"
           onClick={handleGoogleLogin}
           disabled={loading}
         >
-          <Icon icon="github" className="w-5 h-5 mr-2" />
+          <Icon icon="google" className="w-5 h-5 mr-2" />
           Continue with Google
         </Button>
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-mid" />
+            <div className="w-full border-t border-low border-1 rounded-full" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-low text-high">or</span>
+            <span className="px-2 bg-bottom text-high">or</span>
           </div>
         </div>
 
@@ -142,7 +142,7 @@ function LoginForm() {
 
           <Button
             type="submit"
-            className="w-full rounded-full py-6 bg-green text-top hover:bg-green/80"
+            className="w-full rounded-full py-6"
             disabled={loading}
           >
             {loading ? (
@@ -183,7 +183,7 @@ function LoginFallback() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-bottom p-4">
       <Suspense fallback={<LoginFallback />}>
         <LoginForm />
       </Suspense>

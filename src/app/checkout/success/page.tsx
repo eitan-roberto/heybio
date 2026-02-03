@@ -21,7 +21,7 @@ function CheckoutSuccessContent() {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-top p-4">
+    <div className="min-h-screen flex items-center justify-center bg-bottom p-4">
       <div className="max-w-md w-full text-center space-y-6">
         <div className="w-20 h-20 bg-green rounded-full flex items-center justify-center mx-auto">
           <Icon icon="check" className="w-10 h-10 text-top" />
@@ -53,7 +53,7 @@ function CheckoutSuccessContent() {
 export default function CheckoutSuccess() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-top p-4">
+      <div className="min-h-screen flex items-center justify-center bg-bottom p-4">
         <div className="max-w-md w-full text-center space-y-6">
           <div className="w-20 h-20 bg-green rounded-full flex items-center justify-center mx-auto animate-pulse">
             <Icon icon="loader-2" className="w-10 h-10 text-top animate-spin" />
