@@ -49,7 +49,7 @@ export function DashboardLayout({ children, pageSlug }: DashboardLayoutProps) {
       <div className="flex-1 flex flex-col md:flex-row gap-1 px-1">
         {/* Sidebar */}
         <aside className="w-full md:w-64 flex-shrink-0">
-          <div className="bg-bottom rounded-4xl p-4 md:sticky md:top-4">
+          <div className="bg-low rounded-4xl p-4 md:sticky md:top-4">
             <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
               {NAV_ITEMS.map((item) => {
                 const isActive = pathname === item.href;
@@ -58,14 +58,14 @@ export function DashboardLayout({ children, pageSlug }: DashboardLayoutProps) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-2xl whitespace-nowrap transition-colors",
+                      "flex items-center gap-3 px-4 py-3 rounded-2xl whitespace-nowrap transition-colors font-medium",
                       isActive 
                         ? "bg-green text-top" 
-                        : "text-high hover:bg-low"
+                        : "text-top hover:bg-mid/30"
                     )}
                   >
                     <Icon icon={item.icon} className="w-5 h-5 flex-shrink-0" />
-                    <span className="font-medium">{item.label}</span>
+                    <span>{item.label}</span>
                   </Link>
                 );
               })}
@@ -74,7 +74,7 @@ export function DashboardLayout({ children, pageSlug }: DashboardLayoutProps) {
         </aside>
 
         {/* Content */}
-        <main className="flex-1 bg-bottom rounded-4xl p-4 md:p-8 min-h-[calc(100vh-200px)]">
+        <main className="flex-1 bg-low rounded-4xl p-4 md:p-8 min-h-[calc(100vh-200px)]">
           {children}
         </main>
       </div>
