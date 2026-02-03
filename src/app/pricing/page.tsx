@@ -229,8 +229,8 @@ export default function PricingPage() {
           </Link>
           <div className="flex items-center gap-8 text-sm text-high">
             <Link href="/pricing" className="transition-colors hover:text-top">Pricing</Link>
-            <Link href="#" className="transition-colors hover:text-top">Privacy</Link>
-            <Link href="#" className="transition-colors hover:text-top">Terms</Link>
+            <Link href="/privacy" className="transition-colors hover:text-top">Privacy</Link>
+            <Link href="/terms" className="transition-colors hover:text-top">Terms</Link>
           </div>
         </div>
       </footer>

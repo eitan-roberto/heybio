@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { SvgAsset } from '@/components/ui/svgasset';
+import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
 interface DashboardLayoutProps {
@@ -22,7 +23,28 @@ const NAV_ITEMS = [
 
 export function DashboardLayout({ children, pageSlug }: DashboardLayoutProps) {
   const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isPro, setIsPro] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkPlan = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const { data } = await supabase
+          .from('users')
+          .select('plan')
+          .eq('id', user.id)
+          .single();
+        
+        setIsPro(data?.plan === 'pro');
+      }
+      setLoading(false);
+    };
+    
+    checkPlan();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col gap-1">
@@ -33,6 +55,11 @@ export function DashboardLayout({ children, pageSlug }: DashboardLayoutProps) {
         </Link>
         
         <div className="flex items-center gap-2">
+          {!loading && isPro && (
+            <span className="px-3 py-1 rounded-full bg-pink text-top text-xs font-bold">
+              PRO
+            </span>
+          )}
           {pageSlug && (
             <Link href={`/${pageSlug}`} className="hidden md:flex items-center gap-1 text-sm text-high hover:text-top">
               View page

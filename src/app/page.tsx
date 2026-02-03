@@ -559,10 +559,10 @@ export default function LandingPage() {
             <Link href="/pricing" className="transition-colors hover:text-high">
               Pricing
             </Link>
-            <Link href="#" className="transition-colors hover:text-high">
+            <Link href="/privacy" className="transition-colors hover:text-high">
               Privacy
             </Link>
-            <Link href="#" className="transition-colors hover:text-high">
+            <Link href="/terms" className="transition-colors hover:text-high">
               Terms
             </Link>
           </div>
