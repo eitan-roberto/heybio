@@ -24,7 +24,7 @@ const RATE_LIMITS: Record<string, { limit: number; window: number }> = {
 };
 
 export function rateLimit(request: NextRequest): NextResponse | null {
-  const ip = request.ip || 'anonymous';
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous';
   const path = request.nextUrl.pathname;
   
   // Skip rate limiting for static assets
