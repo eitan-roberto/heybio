@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { SvgAsset } from '@/components/ui/svgasset';
@@ -27,7 +28,32 @@ const PRO_FEATURES = [
 ];
 
 export default function PricingPage() {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
+
+  const handleUpgrade = async () => {
+    setUpgrading(true);
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId: 'pro_monthly' }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.checkoutUrl) {
+        router.push(data.checkoutUrl);
+      } else {
+        console.error('No checkout URL returned');
+        setUpgrading(false);
+      }
+    } catch (error) {
+      console.error('Upgrade error:', error);
+      setUpgrading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col gap-1 overflow-x-hidden">
@@ -146,8 +172,15 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Button className="mt-8 w-full rounded-full py-6 bg-top text-bottom hover:bg-high" asChild>
-                <Link href="/new">Upgrade to Pro</Link>
+              <Button 
+                className="mt-8 w-full rounded-full py-6 bg-top text-bottom hover:bg-high"
+                onClick={handleUpgrade}
+                disabled={upgrading}
+              >
+                {upgrading ? (
+                  <Icon icon="loader-2" className="w-5 h-5 animate-spin mr-2" />
+                ) : null}
+                Upgrade to Pro
               </Button>
             </div>
           </div>
