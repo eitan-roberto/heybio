@@ -35,16 +35,21 @@ export default function PricingPage() {
   const handleUpgrade = async () => {
     setUpgrading(true);
     try {
+      // LemonSqueezy variant ID for Pro plan
+      // You'll need to replace this with your actual variant ID from LemonSqueezy
+      const LEMONSQUEEZY_VARIANT_ID = process.env.NEXT_PUBLIC_LEMONSQUEEZY_VARIANT_ID || 'your-variant-id';
+      
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId: 'pro_monthly' }),
+        body: JSON.stringify({ variantId: LEMONSQUEEZY_VARIANT_ID }),
       });
       
       const data = await response.json();
       
       if (data.checkoutUrl) {
-        router.push(data.checkoutUrl);
+        // Redirect to LemonSqueezy checkout
+        window.location.href = data.checkoutUrl;
       } else {
         console.error('No checkout URL returned');
         setUpgrading(false);
