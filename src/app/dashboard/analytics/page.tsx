@@ -6,11 +6,20 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
+interface LinkAnalytics {
+  id: string;
+  title: string;
+  url: string;
+  clicks: number;
+  ctr: number; // Click-through rate
+  is_active: boolean;
+}
+
 interface AnalyticsData {
   totalViews: number;
   totalClicks: number;
   clickRate: number;
-  topLinks: { title: string; clicks: number }[];
+  links: LinkAnalytics[];
   devices: { device: string; count: number }[];
   dailyStats: { date: string; views: number; clicks: number }[];
 }
@@ -46,37 +55,50 @@ export default function AnalyticsPage() {
       daysAgo.setDate(daysAgo.getDate() - timeRange);
       const since = daysAgo.toISOString();
 
+      // Get page views
       const { data: views } = await supabase
         .from('page_views')
         .select('*')
         .eq('page_id', page.id)
         .gte('timestamp', since);
 
+      // Get all link clicks
       const { data: clicks } = await supabase
         .from('link_clicks')
         .select('*')
         .eq('page_id', page.id)
         .gte('timestamp', since);
 
+      // Get all links for this page
       const { data: links } = await supabase
         .from('links')
         .select('*')
-        .eq('page_id', page.id);
+        .eq('page_id', page.id)
+        .order('order', { ascending: true });
 
+      // Calculate clicks per link
       const linkClicks: Record<string, number> = {};
       clicks?.forEach(c => {
-        const linkId = c.link_id || 'unknown';
-        linkClicks[linkId] = (linkClicks[linkId] || 0) + 1;
+        if (c.link_id) {
+          linkClicks[c.link_id] = (linkClicks[c.link_id] || 0) + 1;
+        }
       });
 
-      const topLinks = Object.entries(linkClicks)
-        .map(([linkId, count]) => {
-          const link = links?.find(l => l.id === linkId);
-          return { title: link?.title || 'Unknown', clicks: count };
-        })
-        .sort((a, b) => b.clicks - a.clicks)
-        .slice(0, 5);
+      // Build link analytics
+      const linkAnalytics: LinkAnalytics[] = (links || []).map(link => {
+        const linkClicksCount = linkClicks[link.id] || 0;
+        const linkViews = views?.length || 0;
+        return {
+          id: link.id,
+          title: link.title,
+          url: link.url,
+          clicks: linkClicksCount,
+          ctr: linkViews > 0 ? Math.round((linkClicksCount / linkViews) * 100) : 0,
+          is_active: link.is_active,
+        };
+      }).sort((a, b) => b.clicks - a.clicks);
 
+      // Device stats
       const deviceCounts: Record<string, number> = {};
       views?.forEach(v => {
         const device = v.device || 'desktop';
@@ -87,6 +109,7 @@ export default function AnalyticsPage() {
         .map(([device, count]) => ({ device, count }))
         .sort((a, b) => b.count - a.count);
 
+      // Daily stats
       const dailyMap: Record<string, { views: number; clicks: number }> = {};
       for (let i = 0; i < timeRange; i++) {
         const d = new Date();
@@ -115,7 +138,7 @@ export default function AnalyticsPage() {
         totalViews: views?.length || 0,
         totalClicks: clicks?.length || 0,
         clickRate: views?.length ? Math.round((clicks?.length || 0) / views.length * 100) : 0,
-        topLinks,
+        links: linkAnalytics,
         devices,
         dailyStats,
       });
@@ -148,10 +171,12 @@ export default function AnalyticsPage() {
   }
 
   const maxDaily = Math.max(...data.dailyStats.map(d => d.views), 1);
+  const totalLinkClicks = data.links.reduce((sum, link) => sum + link.clicks, 0);
 
   return (
     <DashboardLayout pageSlug={slug}>
       <div className="space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-top">Analytics</h1>
           <div className="flex gap-2 bg-bottom rounded-full p-1">
@@ -170,6 +195,7 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
+        {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-4xl p-6 bg-green">
             <div className="flex items-center justify-between mb-2">
@@ -184,7 +210,7 @@ export default function AnalyticsPage() {
               <span className="text-sm font-medium text-top">Link Clicks</span>
               <Icon icon="mouse-pointer-click" className="w-5 h-5 text-top" />
             </div>
-            <div className="text-3xl font-bold text-top">{data.totalClicks.toLocaleString()}</div>
+            <div className="text-3xl font-bold text-top">{totalLinkClicks.toLocaleString()}</div>
           </div>
 
           <div className="rounded-4xl p-6 bg-blue">
@@ -196,56 +222,97 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          <div className="rounded-4xl p-6 bg-bottom">
-            <h3 className="font-semibold text-top mb-4">Daily Activity</h3>
-            <div className="flex items-end gap-2 h-48">
-              {data.dailyStats.map((day, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="w-full flex gap-1">
-                    <div
-                      className="flex-1 bg-green rounded-t"
-                      style={{ height: `${(day.views / maxDaily) * 100}px` }}
-                    />
-                    <div
-                      className="flex-1 bg-pink rounded-t"
-                      style={{ height: `${(day.clicks / maxDaily) * 100}px` }}
-                    />
-                  </div>
-                  <span className="text-xs text-high">{day.date}</span>
+        {/* Daily Activity Chart */}
+        <div className="rounded-4xl p-6 bg-bottom">
+          <h3 className="font-semibold text-top mb-4">Daily Activity</h3>
+          <div className="flex items-end gap-2 h-48">
+            {data.dailyStats.map((day, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div className="w-full flex gap-1">
+                  <div
+                    className="flex-1 bg-green rounded-t"
+                    style={{ height: `${(day.views / maxDaily) * 100}px` }}
+                  />
+                  <div
+                    className="flex-1 bg-pink rounded-t"
+                    style={{ height: `${(day.clicks / maxDaily) * 100}px` }}
+                  />
                 </div>
-              ))}
-            </div>
-            <div className="flex justify-center gap-4 mt-4">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-green rounded" />
-                <span className="text-sm text-high">Views</span>
+                <span className="text-xs text-high">{day.date}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-pink rounded" />
-                <span className="text-sm text-high">Clicks</span>
-              </div>
-            </div>
+            ))}
           </div>
-
-          <div className="rounded-4xl p-6 bg-bottom">
-            <h3 className="font-semibold text-top mb-4">Top Links</h3>
-            <div className="space-y-3">
-              {data.topLinks.length > 0 ? data.topLinks.map((link, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <span className="text-lg font-bold text-high w-6">{i + 1}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-top truncate">{link.title}</p>
-                    <p className="text-sm text-high">{link.clicks} clicks</p>
-                  </div>
-                </div>
-              )) : (
-                <p className="text-high text-center py-8">No clicks yet</p>
-              )}
+          <div className="flex justify-center gap-4 mt-4">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-green rounded" />
+              <span className="text-sm text-high">Views</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-pink rounded" />
+              <span className="text-sm text-high">Clicks</span>
             </div>
           </div>
         </div>
 
+        {/* Individual Link Analytics */}
+        <div className="rounded-4xl p-6 bg-bottom">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-top">Link Performance</h3>
+            <span className="text-sm text-high">{data.links.length} links</span>
+          </div>
+          
+          {data.links.length > 0 ? (
+            <div className="space-y-3">
+              {data.links.map((link, i) => (
+                <div key={link.id} className="flex items-center gap-4 p-3 rounded-3xl bg-low">
+                  {/* Rank */}
+                  <span className="text-lg font-bold text-high w-8 text-center">
+                    {i + 1}
+                  </span>
+                  
+                  {/* Link Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-top truncate">{link.title}</p>
+                      {!link.is_active && (
+                        <span className="px-2 py-0.5 rounded-full bg-orange/20 text-orange text-xs">
+                          Hidden
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-high truncate">{link.url}</p>
+                  </div>
+                  
+                  {/* Stats */}
+                  <div className="text-right">
+                    <p className="font-bold text-top">{link.clicks}</p>
+                    <p className="text-xs text-high">clicks</p>
+                  </div>
+                  
+                  {/* CTR */}
+                  <div className="text-right min-w-[60px]">
+                    <p className="font-bold text-top">{link.ctr}%</p>
+                    <p className="text-xs text-high">CTR</p>
+                  </div>
+                  
+                  {/* Progress bar */}
+                  <div className="hidden sm:block w-24">
+                    <div className="h-2 bg-mid/30 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-green rounded-full transition-all"
+                        style={{ width: `${Math.min(link.ctr * 5, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-high text-center py-8">No links yet</p>
+          )}
+        </div>
+
+        {/* Devices */}
         {data.devices.length > 0 && (
           <div className="rounded-4xl p-6 bg-bottom">
             <h3 className="font-semibold text-top mb-4">Devices</h3>

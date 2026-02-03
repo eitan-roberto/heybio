@@ -1,7 +1,13 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { rateLimit } from './lib/rate-limit';
 
 export async function middleware(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResponse = rateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
   let supabaseResponse = NextResponse.next({
     request,
   });
