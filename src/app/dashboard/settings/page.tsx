@@ -1,259 +1,193 @@
 'use client';
 
-import { useState } from 'react';
-import { Icon, IconSize } from '@/components/ui/icon';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Icon } from '@/components/ui/icon';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
-// Demo data
-const DEMO_USER: {
-  email: string;
-  name: string;
-  plan: 'free' | 'pro';
-  createdAt: string;
-} = {
-  email: 'demo@heybio.co',
-  name: 'Demo User',
-  plan: 'free',
-  createdAt: '2026-01-15',
-};
-
 export default function SettingsPage() {
-  const [name, setName] = useState(DEMO_USER.name);
-  const [email, setEmail] = useState(DEMO_USER.email);
-  const [activeTab, setActiveTab] = useState<'account' | 'billing' | 'danger'>('account');
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [email, setEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [updating, setUpdating] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  const tabs = [
-    { id: 'account', label: 'Account', icon: 'user' },
-    { id: 'billing', label: 'Billing', icon: 'credit-card' },
-    { id: 'danger', label: 'Danger Zone', icon: 'shield' },
-  ] as const;
+  useEffect(() => {
+    const loadUser = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUser(user);
+        setEmail(user.email || '');
+      }
+      setLoading(false);
+    };
+    loadUser();
+  }, []);
+
+  const handleUpdateEmail = async () => {
+    if (!email) return;
+    setUpdating(true);
+    setMessage('');
+
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser({ email });
+
+    if (error) {
+      setMessage(`Error: ${error.message}`);
+    } else {
+      setMessage('Check your new email for confirmation link');
+    }
+    setUpdating(false);
+  };
+
+  const handleUpdatePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      setMessage('Passwords do not match');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setMessage('Password must be at least 6 characters');
+      return;
+    }
+
+    setUpdating(true);
+    setMessage('');
+
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) {
+      setMessage(`Error: ${error.message}`);
+    } else {
+      setMessage('Password updated successfully');
+      setNewPassword('');
+      setConfirmPassword('');
+    }
+    setUpdating(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    const supabase = createClient();
+    
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (currentUser) {
+      await supabase.from('pages').delete().eq('user_id', currentUser.id);
+    }
+
+    await supabase.auth.signOut();
+    router.push('/');
+  };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
-    <DashboardLayout pageSlug="demo">
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-top">Settings</h1>
-          <p className="text-top mt-1">
-            Manage your account and preferences
-          </p>
-        </div>
+    <DashboardLayout>
+      <div className="space-y-6 max-w-2xl">
+        <h1 className="text-2xl font-bold text-top">Settings</h1>
 
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Tabs */}
-          <nav className="w-full lg:w-48 flex-shrink-0">
-            <ul className="flex lg:flex-col gap-1">
-              {tabs.map((tab) => {
-                return (
-                  <li key={tab.id}>
-                    <button
-                      onClick={() => setActiveTab(tab.id)}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                        activeTab === tab.id
-                          ? "bg-low text-top"
-                          : "text-top hover:bg-bottom hover:text-top",
-                        tab.id === 'danger' && "text-red-600 hover:text-red-700"
-                      )}
-                    >
-                      <Icon icon={tab.icon} className="w-4 h-4" />
-                      {tab.label}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          {/* Content */}
-          <div className="flex-1 space-y-6">
-            {activeTab === 'account' && (
-              <>
-                {/* Profile */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Profile</CardTitle>
-                    <CardDescription>Your account information</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                    </div>
-                    <Button>
-                      <Icon icon="save" className="w-4 h-4 mr-2" />
-                      Save Changes
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* Password */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Password</CardTitle>
-                    <CardDescription>Update your password</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="currentPassword">Current Password</Label>
-                      <Input
-                        id="currentPassword"
-                        type="password"
-                        placeholder="••••••••"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="newPassword">New Password</Label>
-                      <Input
-                        id="newPassword"
-                        type="password"
-                        placeholder="••••••••"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        placeholder="••••••••"
-                      />
-                    </div>
-                    <Button>Update Password</Button>
-                  </CardContent>
-                </Card>
-              </>
-            )}
-
-            {activeTab === 'billing' && (
-              <>
-                {/* Current plan */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Current Plan</CardTitle>
-                    <CardDescription>Your subscription details</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between p-4rounded-lg">
-                      <div>
-                        <p className="font-semibold text-top">
-                          {DEMO_USER.plan === 'pro' ? 'Pro' : 'Free'} Plan
-                        </p>
-                        <p className="text-sm text-top">
-                          {DEMO_USER.plan === 'pro' 
-                            ? '$4/month • Next billing date: Feb 15, 2026'
-                            : 'Limited features'
-                          }
-                        </p>
-                      </div>
-                      {DEMO_USER.plan === 'free' ? (
-                        <Button>Upgrade to Pro</Button>
-                      ) : (
-                        <Button variant="outline">Manage Subscription</Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Payment method */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Payment Method</CardTitle>
-                    <CardDescription>Your saved payment method</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {DEMO_USER.plan === 'pro' ? (
-                      <div className="flex items-center justify-between p-4rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-low rounded">
-                            <Icon icon="credit-card" className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-top">•••• •••• •••• 4242</p>
-                            <p className="text-sm text-top">Expires 12/28</p>
-                          </div>
-                        </div>
-                        <Button variant="outline" size="sm">Update</Button>
-                      </div>
-                    ) : (
-                      <p className="text-top text-sm">
-                        No payment method saved. Add one when you upgrade to Pro.
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Billing history */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Billing History</CardTitle>
-                    <CardDescription>Your past invoices</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-top text-sm">
-                      No invoices yet.
-                    </p>
-                  </CardContent>
-                </Card>
-              </>
-            )}
-
-            {activeTab === 'danger' && (
-              <>
-                {/* Sign out */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Sign Out</CardTitle>
-                    <CardDescription>Sign out of your account</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button variant="outline">
-                      <Icon icon="log-out" className="w-4 h-4 mr-2" />
-                      Sign Out
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* Delete account */}
-                <Card className="border-red-200">
-                  <CardHeader>
-                    <CardTitle className="text-red-600">Delete Account</CardTitle>
-                    <CardDescription>
-                      Permanently delete your account and all data
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-top mb-4">
-                      This action cannot be undone. Your bio page will be removed and your
-                      username will become available for others to claim.
-                    </p>
-                    <Button variant="destructive">
-                      <Icon icon="trash-2" className="w-4 h-4 mr-2" />
-                      Delete Account
-                    </Button>
-                  </CardContent>
-                </Card>
-              </>
-            )}
+        {message && (
+          <div className={cn(
+            "rounded-4xl p-4",
+            message.includes('Error') || message.includes('not match') ? 'bg-orange' : 'bg-green'
+          )}>
+            <p className="text-top text-sm">{message}</p>
           </div>
+        )}
+
+        <div className="rounded-4xl p-6 bg-bottom space-y-4">
+          <h2 className="font-semibold text-top">Email</h2>
+          <div>
+            <label className="text-sm text-high block mb-1">Email Address</label>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="rounded-xl bg-low border-0"
+            />
+          </div>
+          <Button
+            onClick={handleUpdateEmail}
+            disabled={updating || email === user?.email}
+            className="rounded-full bg-green text-top hover:bg-green/80"
+          >
+            {updating ? <Icon icon="loader-2" className="w-4 h-4 animate-spin" /> : 'Update Email'}
+          </Button>
         </div>
+
+        <div className="rounded-4xl p-6 bg-bottom space-y-4">
+          <h2 className="font-semibold text-top">Change Password</h2>
+          <div>
+            <label className="text-sm text-high block mb-1">New Password</label>
+            <Input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="rounded-xl bg-low border-0"
+              placeholder="••••••••"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-high block mb-1">Confirm New Password</label>
+            <Input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="rounded-xl bg-low border-0"
+              placeholder="••••••••"
+            />
+          </div>
+          <Button
+            onClick={handleUpdatePassword}
+            disabled={updating || !newPassword || !confirmPassword}
+            className="rounded-full bg-green text-top hover:bg-green/80"
+          >
+            {updating ? <Icon icon="loader-2" className="w-4 h-4 animate-spin" /> : 'Update Password'}
+          </Button>
+        </div>
+
+        <div className="rounded-4xl p-6 bg-orange/20 space-y-4">
+          <h2 className="font-semibold text-orange">Danger Zone</h2>
+          <p className="text-high text-sm">
+            Once you delete your account, there is no going back. This will permanently delete your account and all your pages.
+          </p>
+          <Button
+            onClick={() => setShowDeleteDialog(true)}
+            className="rounded-full bg-orange text-top hover:bg-orange/80"
+          >
+            <Icon icon="trash-2" className="w-4 h-4 mr-2" />
+            Delete Account
+          </Button>
+        </div>
+
+        <ConfirmDialog
+          isOpen={showDeleteDialog}
+          onClose={() => setShowDeleteDialog(false)}
+          onConfirm={handleDeleteAccount}
+          title="Delete your account?"
+          description="This will permanently delete your account, all your bio pages, and all associated data. This action cannot be undone."
+          confirmText="Delete Account"
+          variant="danger"
+        />
       </div>
     </DashboardLayout>
   );
