@@ -123,7 +123,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col gap-1 overflow-x-hidden">
+    <div className="min-h-screen flex flex-col gap-4 overflow-x-hidden">
       {/* Navigation */}
       <nav className="mx-auto w-full bg-bottom px-4 md:px-10 py-3 rounded-bl-4xl rounded-br-4xl">
         <div className="mx-auto flex items-center justify-between">
