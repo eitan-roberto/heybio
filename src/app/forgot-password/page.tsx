@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
         </Link>
 
         {/* Card */}
-        <div className="bg-bottom rounded-4xl p-6 md:p-8">
+        <div className="bg-low rounded-4xl p-6 md:p-8">
           <h1 className="text-2xl font-bold text-center mb-2 text-top">
             Reset your password
           </h1>

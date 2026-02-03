@@ -67,7 +67,7 @@ function LoginForm() {
       </Link>
 
       {/* Card */}
-      <div className="bg-bottom rounded-4xl p-6 md:p-8">
+      <div className="bg-low rounded-4xl p-6 md:p-8">
         <h1 className="text-2xl font-bold text-center mb-2 text-top">
           Welcome back
         </h1>
@@ -88,10 +88,10 @@ function LoginForm() {
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-low" />
+            <div className="w-full border-t border-mid" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-bottom text-mid">or</span>
+            <span className="px-2 bg-low text-high">or</span>
           </div>
         </div>
 
@@ -174,7 +174,7 @@ function LoginFallback() {
       <div className="block text-center mb-8 text-pink">
         <SvgAsset src="/logos/logo-full.svg" height={48} className="mx-auto" />
       </div>
-      <div className="bg-bottom rounded-4xl p-8 flex items-center justify-center min-h-[400px]">
+      <div className="bg-low rounded-4xl p-8 flex items-center justify-center min-h-[400px]">
         <Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" />
       </div>
     </div>
