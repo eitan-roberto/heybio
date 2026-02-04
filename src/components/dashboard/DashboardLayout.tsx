@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
-import { SvgAsset } from '@/components/ui/svgasset';
+import { Header } from '@/components/layout/Header';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -48,35 +48,28 @@ export function DashboardLayout({ children, pageSlug }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen flex flex-col gap-1">
-      {/* Header */}
-      <header className="bg-bottom px-4 md:px-6 py-3 rounded-bl-4xl rounded-br-4xl flex items-center justify-between">
-        <Link href="/" className="text-pink">
-          <SvgAsset src="/logos/logo-full.svg" height={32} />
-        </Link>
-        
-        <div className="flex items-center gap-2">
-          {!loading && isPro && (
-            <span className="px-3 py-1 rounded-full bg-pink text-top text-xs font-bold">
-              PRO
-            </span>
-          )}
-          {pageSlug && (
-            <Link href={`/${pageSlug}`} className="hidden md:flex items-center gap-1 text-sm text-high hover:text-top">
-              View page
-              <Icon icon="external-link" className="w-4 h-4" />
-            </Link>
-          )}
-          <Button variant="outline" size="sm" className="rounded-full" asChild>
-            <Link href="/login">Log out</Link>
-          </Button>
-        </div>
-      </header>
+      <Header>
+        {!loading && isPro && (
+          <span className="px-3 py-1 rounded-full bg-pink text-top text-xs font-bold">
+            PRO
+          </span>
+        )}
+        {pageSlug && (
+          <Link href={`/${pageSlug}`} className="flex items-center gap-1 text-sm text-high hover:text-top w-full md:w-auto justify-center md:justify-start">
+            View page
+            <Icon icon="external-link" className="w-4 h-4" />
+          </Link>
+        )}
+        <Button variant="outline" size="lg" className="rounded-full w-full md:w-auto" asChild>
+          <Link href="/login">Log out</Link>
+        </Button>
+      </Header>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col md:flex-row gap-1 px-1">
         {/* Sidebar */}
         <aside className="w-full md:w-64 flex-shrink-0">
-          <div className="bg-low rounded-4xl p-4 md:sticky md:top-4">
+          <div className="bg-bottom h-full rounded-4xl p-4 md:sticky md:top-4">
             <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
               {NAV_ITEMS.map((item) => {
                 const isActive = pathname === item.href;
@@ -101,7 +94,7 @@ export function DashboardLayout({ children, pageSlug }: DashboardLayoutProps) {
         </aside>
 
         {/* Content */}
-        <main className="flex-1 bg-low rounded-4xl p-4 md:p-8 min-h-[calc(100vh-200px)]">
+        <main className="flex-1 bg-bottom rounded-4xl p-4 md:p-8 min-h-[calc(100vh-200px)]">
           {children}
         </main>
       </div>

@@ -7,7 +7,7 @@ export default function PrivacyPage() {
       <Header />
 
       {/* Content */}
-      <main className="flex-1 max-w-5xl mx-auto px-4 py-8 w-full">
+      <main className="w-full">
         <div className="bg-bottom rounded-4xl p-10">
           <h1 className="text-4xl font-bold text-top mb-8">Privacy Policy</h1>
           

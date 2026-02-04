@@ -1,29 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { SvgAsset } from '@/components/ui/svgasset';
 import { cn } from '@/lib/utils';
 
-export function Header() {
+interface HeaderProps {
+  /** Content for the right side on desktop */
+  children: ReactNode;
+}
+
+export function Header({ children }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <nav className="mx-auto w-full bg-bottom px-4 md:px-10 py-3 rounded-bl-4xl rounded-br-4xl">
-      <div className="mx-auto flex items-center justify-between">
+    <nav className="mx-auto min-h-20 w-full bg-bottom px-6 md:px-10 rounded-bl-4xl rounded-br-4xl">
+      <div className="mx-auto h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-[12px] text-pink">
           <SvgAsset src="/logos/logo-full.svg" height={42} />
         </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-2 md:gap-4">
-          <Button variant="outline" size="lg" className="rounded-full" asChild>
-            <Link href="/login">Log in</Link>
-          </Button>
-          <Button size="lg" className="rounded-full bg-top text-bottom hover:bg-high" asChild>
-            <Link href="/new">Get started</Link>
-          </Button>
+          {children}
         </div>
 
         {/* Mobile Hamburger */}
@@ -55,12 +54,7 @@ export function Header() {
         mobileMenuOpen ? "max-h-48 mt-4" : "max-h-0"
       )}>
         <div className="flex flex-col gap-2 pb-4">
-          <Button variant="outline" size="lg" className="rounded-full w-full" asChild>
-            <Link href="/login">Log in</Link>
-          </Button>
-          <Button size="lg" className="rounded-full bg-top text-bottom hover:bg-high w-full" asChild>
-            <Link href="/new">Get started</Link>
-          </Button>
+          {children}
         </div>
       </div>
     </nav>

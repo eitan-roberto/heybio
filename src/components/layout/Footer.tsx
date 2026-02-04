@@ -5,7 +5,7 @@ export function Footer() {
   return (
     <>
       {/* Footer Marquee */}
-      <div className="bg-bottom p-10 rounded-4xl">
+      <div className="bg-bottom p-6 md:p-10 rounded-4xl">
         <div className="animate-marquee flex whitespace-nowrap">
           {Array.from({ length: 10 }).map((_, i) => (
             <span key={i} className="mx-4 text-lg text-top font-bold">
@@ -16,7 +16,7 @@ export function Footer() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-bottom p-10 rounded-tl-4xl rounded-tr-4xl">
+      <footer className="bg-bottom p-6 md:p-10 rounded-tl-4xl rounded-tr-4xl">
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 md:flex-row">
           <Link href="/" className="text-pink">
             <SvgAsset src="/logos/logo-full.svg" height={120} />

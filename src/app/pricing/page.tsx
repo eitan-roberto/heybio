@@ -119,7 +119,7 @@ export default function PricingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative bg-bottom p-4 md:p-10 rounded-4xl overflow-hidden flex flex-col gap-3">
+      <section className="relative bg-bottom p-6 md:p-10 rounded-4xl overflow-hidden flex flex-col gap-3">
         <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs md:text-sm bg-pink w-fit">
           <span className="font-bold text-top">Simple & transparent</span>
         </div>
@@ -133,7 +133,7 @@ export default function PricingPage() {
       </section>
 
       {/* Pricing Cards Section */}
-      <section className="bg-bottom p-4 md:p-10 rounded-4xl">
+      <section className="bg-bottom p-6 md:p-10 rounded-4xl">
         <div className="mx-auto max-w-5xl">
           {/* Pricing Cards */}
           <div className="grid gap-4 md:gap-8 md:grid-cols-2">
@@ -204,7 +204,7 @@ export default function PricingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-bottom p-4 md:p-10 rounded-4xl">
+      <section className="bg-bottom p-6 md:p-10 rounded-4xl">
         <div className="mx-auto max-w-5xl rounded-4xl bg-yellow p-6 md:p-20 text-center">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-top">
             Ready to get started?

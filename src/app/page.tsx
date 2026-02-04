@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { SvgAsset } from "@/components/ui/svgasset";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { createClient } from "@/lib/supabase/client";
 
 const getColorClass = (color: string) => {
   const colorMap: Record<string, string> = {
@@ -76,10 +78,21 @@ const TESTIMONIALS = [
 
 export default function LandingPage() {
   const [username, setUsername] = useState("");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+
+  // Check if user is logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsLoggedIn(!!user);
+    };
+
+    checkAuth();
+  }, []);
 
   // Debounced username availability check
   useEffect(() => {
@@ -124,82 +137,33 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col gap-1 overflow-x-hidden">
-      {/* Navigation */}
-      <nav className="mx-auto w-full bg-bottom px-4 md:px-10 py-3 rounded-bl-4xl rounded-br-4xl">
-        <div className="mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-[12px] text-pink">
-            <SvgAsset src="/logos/logo-full.svg" height={42} />
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-2 md:gap-4">
-            <Button
-              variant="outline"
-              size="lg"
-              className="rounded-full"
-              asChild
-            >
+      <Header>
+        {isLoggedIn === null ? (
+          // Loading skeleton
+          <>
+            <div className="h-11 w-24 bg-mid/30 rounded-full animate-pulse" />
+            <div className="h-11 w-32 bg-mid/30 rounded-full animate-pulse hidden md:block" />
+          </>
+        ) : isLoggedIn ? (
+          // Logged in - show Dashboard button
+          <Button size="lg" className="rounded-full bg-top text-bottom hover:bg-high w-full md:w-auto" asChild>
+            <Link href="/dashboard">Dashboard</Link>
+          </Button>
+        ) : (
+          // Not logged in - show login and get started buttons
+          <>
+            <Button variant="outline" size="lg" className="rounded-full w-full md:w-auto" asChild>
               <Link href="/login">Log in</Link>
             </Button>
-            <Button
-              size="lg"
-              className="rounded-full bg-top text-bottom hover:bg-high"
-              asChild
-            >
+            <Button size="lg" className="rounded-full bg-top text-bottom hover:bg-high w-full md:w-auto" asChild>
               <Link href="/new">Get started</Link>
             </Button>
-          </div>
-
-          {/* Mobile Hamburger */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-top"
-            aria-label="Toggle menu"
-          >
-            <div className="w-6 h-6 flex flex-col justify-center gap-1.5 relative">
-              <span className={cn(
-                "block h-[3px] w-full bg-current rounded-full transition-all duration-300 absolute",
-                mobileMenuOpen ? "rotate-45 top-1/2 -translate-y-1/2" : "top-0"
-              )} />
-              <span className={cn(
-                "block h-[3px] w-full bg-current rounded-full transition-all duration-300",
-                mobileMenuOpen && "opacity-0"
-              )} />
-              <span className={cn(
-                "block h-[3px] w-full bg-current rounded-full transition-all duration-300 absolute",
-                mobileMenuOpen ? "-rotate-45 top-1/2 -translate-y-1/2" : "bottom-0"
-              )} />
-            </div>
-          </button>
-        </div>
-
-        {/* Mobile Menu Dropdown */}
-        <div className={cn(
-          "md:hidden overflow-hidden transition-all duration-300",
-          mobileMenuOpen ? "max-h-48 mt-4" : "max-h-0"
-        )}>
-          <div className="flex flex-col gap-2 pb-4">
-            <Button
-              variant="outline"
-              size="lg"
-              className="rounded-full w-full"
-              asChild
-            >
-              <Link href="/login">Log in</Link>
-            </Button>
-            <Button
-              size="lg"
-              className="rounded-full bg-top text-bottom hover:bg-high w-full"
-              asChild
-            >
-              <Link href="/new">Get started</Link>
-            </Button>
-          </div>
-        </div>
-      </nav>
+          </>
+        )}
+      </Header>
 
       {/* Hero Section */}
-      <section className="relative bg-bottom p-4 md:p-10 rounded-4xl overflow-hidden flex flex-col gap-3">
+      <section className="relative bg-bottom p-6 md:p-10 rounded-4xl overflow-hidden flex flex-col gap-3">
         {/* Badge */}
         <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs md:text-sm bg-green w-fit">
           <span className="font-bold text-top">
@@ -320,7 +284,7 @@ export default function LandingPage() {
       </section>
 
       {/* Marquee Section */}
-      <section className="overflow-hidden bg-bottom p-4 md:p-10 rounded-4xl">
+      <section className="overflow-hidden bg-bottom p-6 md:p-10 rounded-4xl">
         <div className="animate-marquee flex whitespace-nowrap">
           {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
             <div
@@ -345,7 +309,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-bottom p-4 md:p-10 rounded-4xl">
+      <section className="bg-bottom p-6 md:p-10 rounded-4xl">
         <div className="mx-auto max-w-6xl">
           {/* Section Header */}
           <div className="mb-16 text-center md:mb-20">
@@ -382,7 +346,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="bg-bottom p-10 rounded-4xl">
+      <section className="bg-bottom p-6 md:p-10 rounded-4xl">
         <div className="mx-auto max-w-6xl">
           {/* Section Header */}
           <div className="mb-16 text-center md:mb-20">
@@ -475,7 +439,7 @@ export default function LandingPage() {
       </section>
 
       {/* Big CTA Section */}
-      <section className="bg-pink p-4 md:p-10 rounded-4xl">
+      <section className="bg-pink p-6 md:p-10 rounded-4xl">
         <div className="mx-auto max-w-6xl rounded-4xl bg-bottom p-6 md:p-10 text-center text-top">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Ready to stand out?
@@ -497,7 +461,7 @@ export default function LandingPage() {
       </section>
 
       {/* Contact Section - WaxyWeb Style with HUGE text */}
-      <section className="bg-bottom p-4 md:p-10 rounded-4xl">
+      <section className="bg-bottom p-6 md:p-10 rounded-4xl">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-16 md:grid-cols-2 md:gap-20">
             {/* Email */}
@@ -537,37 +501,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer Marquee */}
-      <div className="bg-bottom p-10 rounded-4xl">
-        <div className="animate-marquee flex whitespace-nowrap">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <span key={i} className="mx-4 text-lg text-top font-bold">
-              © 2026 HeyBio. All rights reserved. ✦
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="bg-bottom p-10 rounded-tl-4xl rounded-tr-4xl">
-        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 md:flex-row">
-          <Link href="/" className="text-pink">
-            <SvgAsset src="/logos/logo-full.svg" height={120} />
-          </Link>
-
-          <div className="flex items-start gap-8 text-2xl font-bold text-top pt-2">
-            <Link href="/pricing" className="transition-colors hover:text-high">
-              Pricing
-            </Link>
-            <Link href="/privacy" className="transition-colors hover:text-high">
-              Privacy
-            </Link>
-            <Link href="/terms" className="transition-colors hover:text-high">
-              Terms
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
