@@ -19,7 +19,7 @@ export function ProfileSection({ displayName, bio, avatarUrl, theme }: ProfileSe
     .slice(0, 2);
 
   return (
-    <div className="flex flex-col items-center text-center mb-8">
+    <div className="flex flex-col items-center text-center">
       <Avatar className="w-24 h-24 mb-4 ring-4 ring-bottom/20 shadow-lg">
         {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName} />}
         <AvatarFallback 

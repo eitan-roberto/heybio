@@ -10,7 +10,7 @@ function getDeviceType(userAgent: string): 'mobile' | 'desktop' | 'tablet' {
 
 export async function POST(request: NextRequest) {
   try {
-    const { slug } = await request.json();
+    const { slug, visitorId } = await request.json();
     
     if (!slug) {
       return NextResponse.json({ error: 'Slug required' }, { status: 400 });
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     // Insert page view
     await supabase.from('page_views').insert({
       page_id: page.id,
-      timestamp: new Date().toISOString(),
+      visitor_id: visitorId ?? null,
       referrer: request.headers.get('referer') || '',
       country,
       device,

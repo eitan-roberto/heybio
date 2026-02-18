@@ -4,7 +4,7 @@ import { Footer } from '@/components/layout/Footer';
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen flex flex-col gap-1 bg-top overflow-x-hidden">
-      <Header />
+      <Header>{null}</Header>
 
       {/* Content */}
       <main className="w-full">

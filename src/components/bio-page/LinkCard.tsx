@@ -1,15 +1,16 @@
 'use client';
 
-import { Icon, IconSize } from '@/components/ui/icon';
+import { Icon } from '@/components/ui/icon';
 import { detectLinkIcon, formatUrl } from '@/lib/icons';
 import type { Theme } from '@/config/themes';
 import type { Link } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface LinkCardProps {
-  link: Pick<Link, 'title' | 'url' | 'icon'>;
+  link: Pick<Link, 'title' | 'url' | 'icon' | 'coming_soon_message'>;
   theme: Theme;
   onClick?: () => void;
+  onComingSoon?: (message: string) => void;
 }
 
 function getBorderRadius(radius: Theme['borderRadius']): string {
@@ -23,24 +24,20 @@ function getBorderRadius(radius: Theme['borderRadius']): string {
   }
 }
 
-export function LinkCard({ link, theme, onClick }: LinkCardProps) {
+export function LinkCard({ link, theme, onClick, onComingSoon }: LinkCardProps) {
   const iconName = link.icon || detectLinkIcon(link.url);
-
-  const handleClick = () => {
-    onClick?.();
-    // Actual navigation happens via the anchor tag
-  };
+  const isComingSoon = !!link.coming_soon_message;
 
   const cardStyles: React.CSSProperties = {
-    backgroundColor: theme.style === 'outline' || theme.style === 'glass' 
-      ? 'transparent' 
+    backgroundColor: theme.style === 'outline' || theme.style === 'glass'
+      ? 'transparent'
       : theme.colors.linkBg,
     color: theme.colors.linkText,
     borderRadius: getBorderRadius(theme.borderRadius),
-    border: theme.colors.linkBorder 
-      ? `1px solid ${theme.colors.linkBorder}` 
-      : theme.style === 'outline' 
-        ? `1px solid ${theme.colors.linkText}` 
+    border: theme.colors.linkBorder
+      ? `1px solid ${theme.colors.linkBorder}`
+      : theme.style === 'outline'
+        ? `1px solid ${theme.colors.linkText}`
         : 'none',
     backdropFilter: theme.style === 'glass' ? 'blur(10px)' : undefined,
     fontFamily: theme.fonts.body,
@@ -48,35 +45,67 @@ export function LinkCard({ link, theme, onClick }: LinkCardProps) {
 
   const hoverBg = theme.colors.linkHover;
 
+  const sharedClassNames = cn(
+    "group w-full flex items-center gap-3 px-5 py-4",
+    "transition-all duration-200 ease-out",
+    "hover:scale-[1.02] active:scale-[0.98]",
+    "focus:outline-none focus:ring-2 focus:ring-offset-2"
+  );
+
+  const sharedStyle = {
+    ...cardStyles,
+    // @ts-expect-error CSS custom property
+    '--hover-bg': hoverBg,
+  } as React.CSSProperties;
+
+  const sharedHover = {
+    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+      e.currentTarget.style.backgroundColor = hoverBg;
+    },
+    onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
+      e.currentTarget.style.backgroundColor =
+        theme.style === 'outline' || theme.style === 'glass' ? 'transparent' : theme.colors.linkBg;
+    },
+  };
+
+  const inner = (
+    <>
+      <Icon icon={iconName} className="w-5 h-5 flex-shrink-0 opacity-70" />
+      <span className="flex-1 font-medium text-center">{link.title}</span>
+      {!isComingSoon && (
+        <Icon icon="external-link" className="w-4 h-4 flex-shrink-0 opacity-0 group-hover:opacity-50 transition-opacity" />
+      )}
+    </>
+  );
+
+  if (isComingSoon) {
+    return (
+      <button
+        type="button"
+        className={sharedClassNames}
+        style={sharedStyle}
+        {...sharedHover}
+        onClick={() => {
+          onClick?.();
+          onComingSoon?.(link.coming_soon_message!);
+        }}
+      >
+        {inner}
+      </button>
+    );
+  }
+
   return (
     <a
       href={formatUrl(link.url)}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={handleClick}
-      className={cn(
-        "group w-full flex items-center gap-3 px-5 py-4",
-        "transition-all duration-200 ease-out",
-        "hover:scale-[1.02] active:scale-[0.98]",
-        "focus:outline-none focus:ring-2 focus:ring-offset-2"
-      )}
-      style={{
-        ...cardStyles,
-        // @ts-expect-error CSS custom property
-        '--hover-bg': hoverBg,
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = theme.style === 'outline' || theme.style === 'glass'
-          ? 'transparent'
-          : theme.colors.linkBg;
-      }}
+      className={sharedClassNames}
+      style={sharedStyle}
+      {...sharedHover}
+      onClick={onClick}
     >
-      <Icon icon={iconName} className="w-5 h-5 flex-shrink-0 opacity-70" />
-      <span className="flex-1 font-medium text-center">{link.title}</span>
-      <Icon icon="external-link" className="w-4 h-4 flex-shrink-0 opacity-0 group-hover:opacity-50 transition-opacity" />
+      {inner}
     </a>
   );
 }

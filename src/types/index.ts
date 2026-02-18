@@ -20,6 +20,9 @@ export interface Page {
   bio?: string;
   avatar_url?: string;
   theme_id: string;
+  languages: string[];
+  social_icons: SocialIcon[];
+  coming_soon_message?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -32,10 +35,12 @@ export interface Link {
   icon?: string;
   order: number;
   is_active: boolean;
+  expires_at?: string | null;
+  coming_soon_message?: string | null;
   created_at: string;
 }
 
-export type SocialPlatform = 
+export type SocialPlatform =
   | 'instagram'
   | 'twitter'
   | 'youtube'
@@ -55,11 +60,10 @@ export type SocialPlatform =
   | 'website';
 
 export interface SocialIcon {
-  id: string;
-  page_id: string;
   platform: SocialPlatform;
   url: string;
   order: number;
+  coming_soon_message?: string | null;
 }
 
 export interface PageView {
@@ -79,6 +83,30 @@ export interface LinkClick {
   referrer?: string;
 }
 
+export interface PageTranslation {
+  id: string;
+  page_id: string;
+  language_code: string;
+  display_name?: string;
+  bio?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LinkTranslation {
+  id: string;
+  link_id: string;
+  language_code: string;
+  title?: string;
+}
+
+export interface LanguageOption {
+  code: string;
+  name: string;
+  nativeName: string;
+  flag: string;
+}
+
 // Onboarding state (stored in localStorage until signup)
 export interface OnboardingDraft {
   slug: string;
@@ -87,7 +115,7 @@ export interface OnboardingDraft {
   avatar_url?: string;
   theme_id: string;
   links: Omit<Link, 'id' | 'page_id' | 'created_at'>[];
-  social_icons: Omit<SocialIcon, 'id' | 'page_id'>[];
+  social_icons: SocialIcon[];
 }
 
 // API response types

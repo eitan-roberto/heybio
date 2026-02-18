@@ -107,7 +107,7 @@ function ResetPasswordForm() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 rounded-xl py-6 bg-low border-0"
+                  className="pl-10 rounded-xl py-6 bg-bottom border-2 border-top"
                   required
                   minLength={6}
                 />
@@ -124,7 +124,7 @@ function ResetPasswordForm() {
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pl-10 rounded-xl py-6 bg-low border-0"
+                  className="pl-10 rounded-xl py-6 bg-bottom border-2 border-top"
                   required
                 />
               </div>

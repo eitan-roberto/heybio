@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import NextLink from 'next/link';
 import { redirect } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
@@ -7,8 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 
 async function getDashboardData(userId: string) {
   const supabase = await createClient();
-  
-  // Get user's pages
+
   const { data: pages } = await supabase
     .from('pages')
     .select('*')
@@ -19,7 +18,6 @@ async function getDashboardData(userId: string) {
     return { pages: [], stats: null };
   }
 
-  // Get stats for first page (simplified - in real app would aggregate)
   const page = pages[0];
   const [{ count: views }, { count: clicks }] = await Promise.all([
     supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('page_id', page.id),
@@ -27,7 +25,7 @@ async function getDashboardData(userId: string) {
   ]);
 
   return {
-    pages: pages.map(p => ({
+    pages: pages.map((p) => ({
       id: p.id,
       slug: p.slug,
       displayName: p.display_name,
@@ -35,8 +33,8 @@ async function getDashboardData(userId: string) {
       themeId: p.theme_id,
     })),
     stats: {
-      pageViews: views || 0,
-      linkClicks: clicks || 0,
+      pageViews: views ?? 0,
+      linkClicks: clicks ?? 0,
       clickRate: views && clicks ? Math.round((clicks / views) * 100) : 0,
     },
   };
@@ -44,7 +42,9 @@ async function getDashboardData(userId: string) {
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     redirect('/login?redirect=/dashboard');
@@ -64,7 +64,7 @@ export default async function DashboardPage() {
             You don&apos;t have any bio pages yet. Create one in just a few clicks.
           </p>
           <Button className="rounded-full px-8 py-6 bg-green text-top hover:bg-green/80" asChild>
-            <Link href="/new">Create your page</Link>
+            <NextLink href="/new">Create your page</NextLink>
           </Button>
         </div>
       </DashboardLayout>
@@ -74,14 +74,12 @@ export default async function DashboardPage() {
   const page = pages[0];
 
   return (
-    <DashboardLayout pageSlug={page.slug}>
+    <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold text-top">Dashboard</h1>
-          <p className="text-high mt-1">
-            Welcome back! Here&apos;s how your page is performing.
-          </p>
+          <p className="text-high mt-1">Welcome back! Here&apos;s how your page is performing.</p>
         </div>
 
         {/* Stats */}
@@ -114,17 +112,22 @@ export default async function DashboardPage() {
         )}
 
         {/* Page Card */}
-        <div className="rounded-4xl p-6 bg-bottom">
+        <div className="rounded-4xl py-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-lg font-semibold text-top">Your Page</h2>
-              <Link href={`/${page.slug}`} className="text-sm text-pink hover:underline flex items-center gap-1">
+              <NextLink
+                href={`/${page.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-pink hover:underline flex items-center gap-1"
+              >
                 heybio.co/{page.slug}
                 <Icon icon="external-link" className="w-3 h-3" />
-              </Link>
+              </NextLink>
             </div>
             <Button variant="outline" className="rounded-full" asChild>
-              <Link href="/dashboard/edit">Edit</Link>
+              <NextLink href="/dashboard/edit">Edit</NextLink>
             </Button>
           </div>
           <div className="flex items-center gap-4">
@@ -133,29 +136,46 @@ export default async function DashboardPage() {
             </div>
             <div>
               <h3 className="font-semibold text-top">{page.displayName}</h3>
-              <p className="text-sm text-high">{page.bio || 'No bio yet'}</p>
+              <p className="text-sm text-high">{page.bio ?? 'No bio yet'}</p>
             </div>
           </div>
         </div>
 
-        {/* Actions */}
+        {/* Quick Actions */}
         <div className="grid gap-4 md:grid-cols-2">
-          <Link href="/dashboard/edit" className="rounded-4xl p-6 bg-orange hover:bg-orange/80 transition-colors">
+          <NextLink
+            href="/dashboard/edit"
+            className="rounded-4xl p-6 bg-orange hover:bg-orange/80 transition-colors"
+          >
             <div className="flex items-center gap-3 mb-2">
-              <Icon icon="edit" className="w-6 h-6 text-top" />
+              <Icon icon="pencil" className="w-6 h-6 text-top" />
               <span className="font-semibold text-top">Edit your page</span>
             </div>
             <p className="text-sm text-top">Update bio, add links, change theme</p>
-          </Link>
+          </NextLink>
 
-          <Link href="/dashboard/analytics" className="rounded-4xl p-6 bg-yellow hover:bg-yellow/80 transition-colors">
+          <NextLink
+            href="/dashboard/analytics"
+            className="rounded-4xl p-6 bg-yellow hover:bg-yellow/80 transition-colors"
+          >
             <div className="flex items-center gap-3 mb-2">
               <Icon icon="bar-chart-2" className="w-6 h-6 text-top" />
               <span className="font-semibold text-top">View analytics</span>
             </div>
             <p className="text-sm text-top">See detailed stats and insights</p>
-          </Link>
+          </NextLink>
         </div>
+
+        {/* Multiple pages hint */}
+        {pages.length > 1 && (
+          <div className="rounded-3xl py-4 flex items-center gap-3">
+            <Icon icon="layers" className="w-5 h-5 text-high" />
+            <p className="text-sm text-high">
+              You have <span className="text-top font-medium">{pages.length} pages</span>. Use the
+              page selector in the header to switch between them.
+            </p>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

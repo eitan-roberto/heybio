@@ -3,14 +3,14 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { slug, url, index } = await request.json();
-    
-    if (!slug || !url) {
-      return NextResponse.json({ error: 'Slug and URL required' }, { status: 400 });
+    const { slug, url, index, linkId, visitorId } = await request.json();
+
+    if (!slug) {
+      return NextResponse.json({ error: 'Slug required' }, { status: 400 });
     }
 
     const supabase = await createClient();
-    
+
     // Get page
     const { data: page } = await supabase
       .from('pages')
@@ -22,19 +22,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Page not found' }, { status: 404 });
     }
 
-    // Get or create link
-    const { data: link } = await supabase
-      .from('links')
-      .select('id')
-      .eq('page_id', page.id)
-      .eq('url', url)
-      .maybeSingle();
+    // Resolve link_id: prefer explicit linkId, fall back to URL match
+    let resolvedLinkId: string | null = linkId ?? null;
+    if (!resolvedLinkId && url) {
+      const { data: link } = await supabase
+        .from('links')
+        .select('id')
+        .eq('page_id', page.id)
+        .eq('url', url)
+        .maybeSingle();
+      resolvedLinkId = link?.id ?? null;
+    }
 
     // Insert click
     await supabase.from('link_clicks').insert({
       page_id: page.id,
-      link_id: link?.id || null,
-      timestamp: new Date().toISOString(),
+      link_id: resolvedLinkId,
+      visitor_id: visitorId ?? null,
       referrer: request.headers.get('referer') || '',
     });
 

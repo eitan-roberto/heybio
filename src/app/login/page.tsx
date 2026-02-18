@@ -107,7 +107,7 @@ function LoginForm() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 rounded-xl py-6 bg-low border-0"
+                className="pl-10 rounded-xl py-6 bg-bottom border-2 border-top"
                 required
               />
             </div>
@@ -128,7 +128,7 @@ function LoginForm() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 rounded-xl py-6 bg-low border-0"
+                className="pl-10 rounded-xl py-6 bg-bottom border-2 border-top"
                 required
               />
             </div>

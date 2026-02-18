@@ -114,7 +114,7 @@ export default function SettingsPage() {
           </div>
         )}
 
-        <div className="rounded-4xl p-6 bg-bottom space-y-4">
+        <div className="rounded-4xl space-y-4">
           <h2 className="font-semibold text-top">Email</h2>
           <div>
             <label className="text-sm text-high block mb-1">Email Address</label>
@@ -122,7 +122,7 @@ export default function SettingsPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-xl bg-low border-0"
+              className="rounded-xl bg-bottom border-2 border-top"
             />
           </div>
           <Button
@@ -134,7 +134,7 @@ export default function SettingsPage() {
           </Button>
         </div>
 
-        <div className="rounded-4xl p-6 bg-bottom space-y-4">
+        <div className="rounded-4xl space-y-4">
           <h2 className="font-semibold text-top">Change Password</h2>
           <div>
             <label className="text-sm text-high block mb-1">New Password</label>
@@ -142,7 +142,7 @@ export default function SettingsPage() {
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="rounded-xl bg-low border-0"
+              className="rounded-xl bg-bottom border-2 border-top"
               placeholder="••••••••"
             />
           </div>
@@ -152,7 +152,7 @@ export default function SettingsPage() {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="rounded-xl bg-low border-0"
+              className="rounded-xl bg-bottom border-2 border-top"
               placeholder="••••••••"
             />
           </div>
