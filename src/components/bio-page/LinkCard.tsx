@@ -54,7 +54,6 @@ export function LinkCard({ link, theme, onClick, onComingSoon }: LinkCardProps) 
 
   const sharedStyle = {
     ...cardStyles,
-    // @ts-expect-error CSS custom property
     '--hover-bg': hoverBg,
   } as React.CSSProperties;
 
