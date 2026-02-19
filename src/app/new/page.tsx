@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
@@ -8,13 +8,7 @@ import { Input } from '@/components/ui/input';
 import { OnboardingLayout } from '@/components/onboarding';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { cn } from '@/lib/utils';
-
-// Reserved slugs that cannot be used
-const RESERVED_SLUGS = [
-  'admin', 'api', 'app', 'dashboard', 'login', 'signup', 'new', 
-  'settings', 'help', 'support', 'about', 'pricing', 'blog',
-  'terms', 'privacy', 'heybio', 'www', 'null', 'undefined'
-];
+import { RESERVED_SLUGS } from '@/lib/reserved-slugs';
 
 type ValidationState = 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
 
@@ -25,7 +19,8 @@ function UsernameForm() {
   
   const [username, setUsername] = useState('');
   const [validationState, setValidationState] = useState<ValidationState>('idle');
-  const [isChecking, setIsChecking] = useState(false);
+  const [isReserved, setIsReserved] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Check for ?u= parameter and auto-validate/skip
   useEffect(() => {
@@ -73,27 +68,41 @@ function UsernameForm() {
     // Only allow valid characters
     const cleaned = value.toLowerCase().replace(/[^a-z0-9_]/g, '');
     setUsername(cleaned);
-    
-    if (cleaned.length < 3) {
+    setIsReserved(false);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (cleaned.length === 0) {
       setValidationState('idle');
       return;
     }
-    
-    if (RESERVED_SLUGS.includes(cleaned)) {
+
+    if (cleaned.length < 3) {
       setValidationState('invalid');
       return;
     }
-    
+
+    if (RESERVED_SLUGS.includes(cleaned)) {
+      setIsReserved(true);
+      setValidationState('invalid');
+      return;
+    }
+
     if (!validateFormat(cleaned)) {
       setValidationState('invalid');
       return;
     }
-    
-    // Simulate availability check (in real app, would call API)
+
+    // Debounced API availability check
     setValidationState('checking');
-    setTimeout(() => {
-      // For MVP, just mark as available (backend will do real check)
-      setValidationState('available');
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/check-username?username=${encodeURIComponent(cleaned)}`);
+        const data = await response.json();
+        setValidationState(data.available ? 'available' : 'taken');
+      } catch {
+        setValidationState('idle');
+      }
     }, 500);
   };
 
@@ -114,9 +123,11 @@ function UsernameForm() {
       case 'available':
         return { text: `heybio.co/${username} is available!`, color: 'text-green-600' };
       case 'taken':
-        return { text: 'This username is taken', color: 'text-red-600' };
+        return { text: 'This username is already taken', color: 'text-red-600' };
       case 'invalid':
-        return { text: 'Username must be 3-30 characters (letters, numbers, underscores)', color: 'text-red-600' };
+        if (isReserved) return { text: 'This username is reserved', color: 'text-red-600' };
+        if (username.length > 0 && username.length < 3) return { text: 'Username must be at least 3 characters', color: 'text-red-600' };
+        return { text: 'Only letters, numbers, and underscores allowed', color: 'text-red-600' };
       default:
         return null;
     }
@@ -134,7 +145,7 @@ function UsernameForm() {
       <div className="space-y-6">
         {/* Username input */}
         <div className="space-y-2">
-          <div className="flex items-centerrounded-xl border border-low focus-within:ring-2 focus-within:ring-top/10 focus-within:border-mid transition-all overflow-hidden">
+          <div className="flex items-center rounded-xl border border-low focus-within:ring-2 focus-within:ring-top/10 focus-within:border-mid transition-all overflow-hidden">
             <span className="pl-4 text-top text-lg select-none">heybio.co/</span>
             <Input
               type="text"
@@ -169,7 +180,7 @@ function UsernameForm() {
         <Button
           onClick={handleContinue}
           disabled={validationState !== 'available'}
-          className="w-full py-6 text-lg rounded-xl"
+          className="w-full py-6 text-lg"
         >
           Continue
           <Icon icon="arrow-right" className="ml-2 w-5 h-5" />

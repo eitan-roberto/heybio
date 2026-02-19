@@ -562,7 +562,7 @@ export default function EditPage() {
         <div className="text-center py-12">
           <h2 className="text-xl font-bold text-top mb-2">No page found</h2>
           <p className="text-high mb-4">Create a page first to start editing</p>
-          <Button className="rounded-full bg-green text-top hover:bg-green/80" asChild>
+          <Button asChild>
             <NextLink href="/new">Create page</NextLink>
           </Button>
         </div>

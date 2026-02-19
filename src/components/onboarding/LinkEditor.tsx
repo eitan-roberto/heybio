@@ -84,7 +84,7 @@ export function LinkEditor({
             value={newUrl}
             onChange={(e) => setNewUrl(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="pl-10"
+            className="pl-10 rounded-full"
           />
         </div>
         <Button
@@ -106,7 +106,7 @@ export function LinkEditor({
             onDragOver={(e) => handleDragOver(e, index)}
             onDragEnd={handleDragEnd}
             className={cn(
-              "flex items-center gap-2 p-3border border-low rounded-lg",
+              "flex items-center gap-2 p-3 border border-low rounded-lg",
               "hover:border-mid transition-colors",
               dragIndex === index && "opacity-50"
             )}

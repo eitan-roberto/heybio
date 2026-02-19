@@ -203,7 +203,7 @@ export default function LandingPage() {
               )}
             </div>
             {error && username.length >= 3 && (
-              <p className="text-sm text-orange text-center">{error}</p>
+              <p className="text-sm text-orange font-bold text-center mt-2">{error}</p>
             )}
             <Button
               type="submit"
@@ -261,7 +261,7 @@ export default function LandingPage() {
               </Button>
             </div>
             {error && username.length >= 3 && (
-              <p className="text-sm text-orange text-center">{error}</p>
+              <p className="text-sm text-orange font-bold text-center mt-2">{error}</p>
             )}
           </div>
         </form>

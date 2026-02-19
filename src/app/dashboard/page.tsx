@@ -63,7 +63,7 @@ export default async function DashboardPage() {
           <p className="text-high mb-8 max-w-md">
             You don&apos;t have any bio pages yet. Create one in just a few clicks.
           </p>
-          <Button className="rounded-full px-8 py-6 bg-green text-top hover:bg-green/80" asChild>
+          <Button asChild>
             <NextLink href="/new">Create your page</NextLink>
           </Button>
         </div>

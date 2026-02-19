@@ -72,9 +72,9 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-bottom flex items-center justify-center">
         <div className="w-full max-w-md px-4">
-          <div className="bg-bottom rounded-4xl p-8 text-center">
+          <div className="bg-bottom rounded-4xl border-2 border-top p-8 text-center">
             <div className="w-16 h-16 rounded-full bg-green flex items-center justify-center mx-auto mb-4">
               <Icon icon="check" className="w-8 h-8 text-top" />
             </div>
@@ -82,7 +82,7 @@ export default function SignupPage() {
             <p className="text-high mb-6">
               Check your email to confirm your account.
             </p>
-            <Button className="w-full rounded-full py-6 bg-green text-top hover:bg-green/80" asChild>
+            <Button asChild>
               <Link href="/dashboard">Go to Dashboard</Link>
             </Button>
           </div>
@@ -92,7 +92,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen bg-bottom flex items-center justify-center">
       <div className="w-full max-w-md px-4">
         {/* Logo */}
         <Link href="/" className="block text-center mb-8 text-pink">
@@ -100,7 +100,7 @@ export default function SignupPage() {
         </Link>
 
         {/* Card */}
-        <div className="bg-bottom rounded-4xl p-6 md:p-8">
+        <div className="bg-bottom border-2 border-top rounded-4xl p-6 md:p-8">
           <h1 className="text-2xl font-bold text-center mb-2 text-top">
             Create your account
           </h1>
@@ -111,11 +111,11 @@ export default function SignupPage() {
           {/* Google Signup */}
           <Button
             type="button"
-            className="w-full rounded-full py-6 mb-4 bg-blue text-top hover:bg-blue/80"
+            className="w-full rounded-full py-6 mb-4"
             onClick={handleGoogleSignup}
             disabled={loading}
           >
-            <Icon icon="github" className="w-5 h-5 mr-2" />
+            <Icon icon="google" className="w-5 h-5 mr-2" />
             Continue with Google
           </Button>
 
@@ -183,7 +183,7 @@ export default function SignupPage() {
 
             <Button
               type="submit"
-              className="w-full rounded-full py-6 bg-green text-top hover:bg-green/80"
+              className="w-full rounded-full py-6"
               disabled={loading}
             >
               {loading ? (

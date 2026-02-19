@@ -56,7 +56,7 @@ function LinksContent() {
         <div className="flex flex-col gap-3">
           <Button
             onClick={handleContinue}
-            className="w-full py-6 text-lg rounded-xl"
+            className="w-full py-6 text-lg"
           >
             Continue
             <Icon icon="arrow-right" className="ml-2 w-5 h-5" />

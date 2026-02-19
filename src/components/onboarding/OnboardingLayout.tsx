@@ -66,10 +66,9 @@ export function OnboardingLayout({
         <div className="flex-shrink-0 w-20 flex justify-end">
           {showBack && (
             <Button
-              variant="ghost"
               size="sm"
               onClick={handleBack}
-              className="gap-1 text-top"
+              className="gap-1"
             >
               <Icon icon="arrow-left" className="w-4 h-4" />
               Back
@@ -79,7 +78,7 @@ export function OnboardingLayout({
       </header>
 
       {/* Content */}
-      <main className="flex-1 bg-bottom rounded-4xl mx-0 md:mx-4 p-4 md:p-8">
+      <main className="flex-1 bg-bottom rounded-4xl mx-0 p-4 md:p-8">
         <div className="max-w-lg mx-auto w-full">
           <div className="text-center mb-8">
             <h1 className="text-2xl md:text-3xl font-bold text-top mb-2">{title}</h1>

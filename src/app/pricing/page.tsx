@@ -1,30 +1,30 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Icon } from '@/components/ui/icon';
-import { Button } from '@/components/ui/button';
-import { SvgAsset } from '@/components/ui/svgasset';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Icon } from "@/components/ui/icon";
+import { Button } from "@/components/ui/button";
+import { SvgAsset } from "@/components/ui/svgasset";
+import { cn } from "@/lib/utils";
 
 const FREE_FEATURES = [
-  'Unlimited links',
-  '6 beautiful themes',
-  'Basic analytics (7 days)',
-  'Social icons',
-  'Mobile optimized',
-  'Forever free',
+  "Unlimited links",
+  "6 beautiful themes",
+  "Basic analytics (7 days)",
+  "Social icons",
+  "Mobile optimized",
+  "Forever free",
 ];
 
 const PRO_FEATURES = [
-  'Everything in Free',
-  '12 premium themes',
-  'Advanced analytics (30 days)',
-  'Traffic sources & insights',
-  'Priority support',
-  'No HeyBio badge',
-  'Custom domains (coming soon)',
+  "Everything in Free",
+  "12 premium themes",
+  "Advanced analytics (30 days)",
+  "Traffic sources & insights",
+  "Priority support",
+  "No HeyBio badge",
+  "Custom domains (coming soon)",
 ];
 
 export default function PricingPage() {
@@ -37,25 +37,26 @@ export default function PricingPage() {
     try {
       // LemonSqueezy variant ID for Pro plan
       // You'll need to replace this with your actual variant ID from LemonSqueezy
-      const LEMONSQUEEZY_VARIANT_ID = process.env.NEXT_PUBLIC_LEMONSQUEEZY_VARIANT_ID || 'your-variant-id';
-      
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const LEMONSQUEEZY_VARIANT_ID =
+        process.env.NEXT_PUBLIC_LEMONSQUEEZY_VARIANT_ID || "your-variant-id";
+
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ variantId: LEMONSQUEEZY_VARIANT_ID }),
       });
-      
+
       const data = await response.json();
-      
+
       if (data.checkoutUrl) {
         // Redirect to LemonSqueezy checkout
         window.location.href = data.checkoutUrl;
       } else {
-        console.error('No checkout URL returned');
+        console.error("No checkout URL returned");
         setUpgrading(false);
       }
     } catch (error) {
-      console.error('Upgrade error:', error);
+      console.error("Upgrade error:", error);
       setUpgrading(false);
     }
   };
@@ -71,10 +72,19 @@ export default function PricingPage() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-2 md:gap-4">
-            <Button variant="outline" size="lg" className="rounded-full" asChild>
+            <Button
+              variant="outline"
+              size="lg"
+              className="rounded-full"
+              asChild
+            >
               <Link href="/login">Log in</Link>
             </Button>
-            <Button size="lg" className="rounded-full bg-top text-bottom hover:bg-high" asChild>
+            <Button
+              size="lg"
+              className="rounded-full bg-top text-bottom hover:bg-high"
+              asChild
+            >
               <Link href="/new">Get started</Link>
             </Button>
           </div>
@@ -86,32 +96,53 @@ export default function PricingPage() {
             aria-label="Toggle menu"
           >
             <div className="w-6 h-6 flex flex-col justify-center gap-1.5 relative">
-              <span className={cn(
-                "block h-[3px] w-full bg-current rounded-full transition-all duration-300 absolute",
-                mobileMenuOpen ? "rotate-45 top-1/2 -translate-y-1/2" : "top-0"
-              )} />
-              <span className={cn(
-                "block h-[3px] w-full bg-current rounded-full transition-all duration-300",
-                mobileMenuOpen && "opacity-0"
-              )} />
-              <span className={cn(
-                "block h-[3px] w-full bg-current rounded-full transition-all duration-300 absolute",
-                mobileMenuOpen ? "-rotate-45 top-1/2 -translate-y-1/2" : "bottom-0"
-              )} />
+              <span
+                className={cn(
+                  "block h-[3px] w-full bg-current rounded-full transition-all duration-300 absolute",
+                  mobileMenuOpen
+                    ? "rotate-45 top-1/2 -translate-y-1/2"
+                    : "top-0",
+                )}
+              />
+              <span
+                className={cn(
+                  "block h-[3px] w-full bg-current rounded-full transition-all duration-300",
+                  mobileMenuOpen && "opacity-0",
+                )}
+              />
+              <span
+                className={cn(
+                  "block h-[3px] w-full bg-current rounded-full transition-all duration-300 absolute",
+                  mobileMenuOpen
+                    ? "-rotate-45 top-1/2 -translate-y-1/2"
+                    : "bottom-0",
+                )}
+              />
             </div>
           </button>
         </div>
 
         {/* Mobile Menu Dropdown */}
-        <div className={cn(
-          "md:hidden overflow-hidden transition-all duration-300",
-          mobileMenuOpen ? "max-h-48 mt-4" : "max-h-0"
-        )}>
+        <div
+          className={cn(
+            "md:hidden overflow-hidden transition-all duration-300",
+            mobileMenuOpen ? "max-h-48 mt-4" : "max-h-0",
+          )}
+        >
           <div className="flex flex-col gap-2 pb-4">
-            <Button variant="outline" size="lg" className="rounded-full w-full" asChild>
+            <Button
+              variant="outline"
+              size="lg"
+              className="rounded-full w-full"
+              asChild
+            >
               <Link href="/login">Log in</Link>
             </Button>
-            <Button size="lg" className="rounded-full bg-top text-bottom hover:bg-high w-full" asChild>
+            <Button
+              size="lg"
+              className="rounded-full bg-top text-bottom hover:bg-high w-full"
+              asChild
+            >
               <Link href="/new">Get started</Link>
             </Button>
           </div>
@@ -138,21 +169,29 @@ export default function PricingPage() {
           {/* Pricing Cards */}
           <div className="grid gap-4 md:gap-8 md:grid-cols-2">
             {/* Free Plan */}
-            <div className="rounded-4xl p-6 md:p-10 bg-green">
+            <div className="rounded-4xl p-6 md:p-10 bg-green h-full flex flex-col">
               <div className="text-sm font-bold text-top">Free Plan</div>
               <div className="mt-4 text-5xl font-bold text-top">$0</div>
-              <p className="mt-4 text-top">Everything you need to get started</p>
+              <p className="mt-4 text-top">
+                Everything you need to get started
+              </p>
 
               <ul className="mt-8 space-y-4">
                 {FREE_FEATURES.map((feature) => (
-                  <li key={feature} className="flex items-center gap-3 text-top">
+                  <li
+                    key={feature}
+                    className="flex items-center gap-3 text-top"
+                  >
                     <Icon icon="check" className="w-5 h-5 flex-shrink-0" />
                     {feature}
                   </li>
                 ))}
               </ul>
 
-              <Button className="mt-8 w-full rounded-full py-6 bg-top text-bottom hover:bg-high" asChild>
+              <Button
+                className="mt-auto w-full rounded-full py-6 bg-top text-bottom hover:bg-high"
+                asChild
+              >
                 <Link href="/new">Start for free</Link>
               </Button>
             </div>
@@ -170,14 +209,17 @@ export default function PricingPage() {
 
               <ul className="mt-8 space-y-4">
                 {PRO_FEATURES.map((feature) => (
-                  <li key={feature} className="flex items-center gap-3 text-top">
+                  <li
+                    key={feature}
+                    className="flex items-center gap-3 text-top"
+                  >
                     <Icon icon="check" className="w-5 h-5 flex-shrink-0" />
                     {feature}
                   </li>
                 ))}
               </ul>
 
-              <Button 
+              <Button
                 className="mt-8 w-full rounded-full py-6 bg-top text-bottom hover:bg-high"
                 onClick={handleUpgrade}
                 disabled={upgrading}
@@ -191,12 +233,12 @@ export default function PricingPage() {
           </div>
 
           {/* FAQ */}
-          <div className="mt-8 rounded-4xl p-6 md:p-10 bg-orange">
-            <h3 className="text-2xl font-bold text-top mb-4">Have questions?</h3>
-            <p className="text-top text-lg mb-6">
+          <div className="mt-8 rounded-4xl p-6 md:p-10 bg-orange flex flex-col gap-y-6 items-center">
+            <h3 className="text-2xl font-bold text-top">Have questions?</h3>
+            <p className="text-top text-lg">
               Both plans include 24/7 support. Upgrade or downgrade anytime.
             </p>
-            <Button className="rounded-full bg-top text-bottom hover:bg-high" asChild>
+            <Button asChild>
               <Link href="mailto:hello@heybio.co">Contact us</Link>
             </Button>
           </div>
@@ -205,14 +247,14 @@ export default function PricingPage() {
 
       {/* CTA Section */}
       <section className="bg-bottom p-6 md:p-10 rounded-4xl">
-        <div className="mx-auto max-w-5xl rounded-4xl bg-yellow p-6 md:p-20 text-center">
+        <div className="mx-auto max-w-5xl rounded-4xl bg-yellow p-6 md:p-20 text-center flex flex-col gap-y-6 items-center">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-top">
             Ready to get started?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-top">
+          <p className="mx-auto max-w-xl text-lg text-top">
             Join creators who've upgraded their online presence.
           </p>
-          <Button className="mt-8 rounded-full px-8 py-6 text-lg bg-top text-bottom hover:bg-high" asChild>
+          <Button className="w-fit" asChild>
             <Link href="/new">
               Create your free page
               <Icon icon="arrow-right" className="ml-2 w-5 h-5" />
@@ -228,9 +270,15 @@ export default function PricingPage() {
             <SvgAsset src="/logos/logo-full.svg" height={32} />
           </Link>
           <div className="flex items-center gap-8 text-sm text-high">
-            <Link href="/pricing" className="transition-colors hover:text-top">Pricing</Link>
-            <Link href="/privacy" className="transition-colors hover:text-top">Privacy</Link>
-            <Link href="/terms" className="transition-colors hover:text-top">Terms</Link>
+            <Link href="/pricing" className="transition-colors hover:text-top">
+              Pricing
+            </Link>
+            <Link href="/privacy" className="transition-colors hover:text-top">
+              Privacy
+            </Link>
+            <Link href="/terms" className="transition-colors hover:text-top">
+              Terms
+            </Link>
           </div>
         </div>
       </footer>

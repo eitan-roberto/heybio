@@ -112,7 +112,7 @@ export default function PreviewPage() {
     <div className="min-h-screen bg-low flex flex-col">
       {/* Header */}
       <header className="bg-bottom border-b border-low px-6 py-4 flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={handleBack} className="gap-1">
+        <Button size="sm" onClick={handleBack} className="gap-1">
           <Icon icon="arrow-left" className="w-4 h-4" />
           Back
         </Button>
@@ -181,9 +181,9 @@ export default function PreviewPage() {
               
               <Button
                 onClick={handleGoogleAuth}
-                className="w-full py-6 text-lg rounded-full gap-2 bg-blue text-top hover:bg-blue/80"
+                className="w-full py-6 text-lg gap-2"
               >
-                <Icon icon="github" className="w-5 h-5" />
+                <Icon icon="google" className="w-5 h-5" />
                 Continue with Google
               </Button>
               

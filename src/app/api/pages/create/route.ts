@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import type { OnboardingDraft } from '@/types';
+import { RESERVED_SLUGS } from '@/lib/reserved-slugs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +21,17 @@ export async function POST(request: NextRequest) {
 
     if (!draft.slug || !draft.display_name || !draft.theme_id) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    // Validate slug format
+    const validSlugRegex = /^[a-zA-Z0-9_]{3,30}$/;
+    if (!validSlugRegex.test(draft.slug)) {
+      return NextResponse.json({ error: 'Invalid username format' }, { status: 400 });
+    }
+
+    // Check reserved slugs
+    if (RESERVED_SLUGS.includes(draft.slug.toLowerCase())) {
+      return NextResponse.json({ error: 'This username is reserved' }, { status: 400 });
     }
 
     // Ensure profile exists (in case trigger didn't fire for existing auth users)

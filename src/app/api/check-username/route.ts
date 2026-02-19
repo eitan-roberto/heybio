@@ -1,13 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
-
-// Reserved slugs that cannot be used
-const RESERVED_SLUGS = [
-  'admin', 'api', 'app', 'dashboard', 'login', 'signup', 'new', 
-  'settings', 'help', 'support', 'about', 'pricing', 'blog',
-  'terms', 'privacy', 'heybio', 'www', 'null', 'undefined',
-  'auth', 'api', 'static', '_next', 'favicon'
-];
+import { RESERVED_SLUGS } from '@/lib/reserved-slugs';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
