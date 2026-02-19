@@ -31,11 +31,11 @@ function UsernameForm() {
       
       // Check if valid and available
       const validateAndSkip = async () => {
-        setIsChecking(true);
+        setValidationState('checking');
         try {
           const response = await fetch(`/api/check-username?username=${encodeURIComponent(cleaned)}`);
           const data = await response.json();
-          
+
           if (data.available) {
             setValidationState('available');
             initDraft(cleaned);
@@ -48,8 +48,6 @@ function UsernameForm() {
           }
         } catch {
           setValidationState('idle');
-        } finally {
-          setIsChecking(false);
         }
       };
       
