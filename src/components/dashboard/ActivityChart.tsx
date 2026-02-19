@@ -7,6 +7,7 @@ interface DayStat {
   date: string;
   views: number;
   clicks: number;
+  uniqueVisitors: number;
 }
 
 interface ActivityChartProps {
@@ -27,6 +28,7 @@ export function ActivityChart({ data }: ActivityChartProps) {
     const TOP = css.getPropertyValue("--color-top").trim();
     const GREEN = css.getPropertyValue("--color-green").trim();
     const PINK = css.getPropertyValue("--color-pink").trim();
+    const BLUE = css.getPropertyValue("--color-blue").trim();
 
     let destroyed = false;
 
@@ -119,6 +121,12 @@ export function ActivityChart({ data }: ActivityChartProps) {
             name: "Views",
             data: data.map((d) => d.views),
             color: GREEN,
+          },
+          {
+            type: "column" as const,
+            name: "Unique Visitors",
+            data: data.map((d) => d.uniqueVisitors),
+            color: BLUE,
           },
           {
             type: "column" as const,

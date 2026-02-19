@@ -22,10 +22,9 @@ interface AnalyticsData {
   totalViews: number;
   uniqueVisitors: number;
   totalClicks: number;
-  clickRate: number;
   links: LinkAnalytics[];
   devices: { device: string; count: number }[];
-  dailyStats: { date: string; views: number; clicks: number }[];
+  dailyStats: { date: string; views: number; clicks: number; uniqueVisitors: number }[];
 }
 
 export default function AnalyticsPage() {
@@ -114,15 +113,18 @@ export default function AnalyticsPage() {
       .sort((a, b) => b.count - a.count);
 
     // Daily stats
-    const dailyMap: Record<string, { views: number; clicks: number }> = {};
+    const dailyMap: Record<string, { views: number; clicks: number; visitorIds: Set<string> }> = {};
     for (let i = 0; i < timeRange; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      dailyMap[d.toISOString().split('T')[0]] = { views: 0, clicks: 0 };
+      dailyMap[d.toISOString().split('T')[0]] = { views: 0, clicks: 0, visitorIds: new Set() };
     }
     views?.forEach((v) => {
       const date = v.created_at?.split('T')[0];
-      if (date && dailyMap[date]) dailyMap[date].views++;
+      if (date && dailyMap[date]) {
+        dailyMap[date].views++;
+        if (v.visitor_id) dailyMap[date].visitorIds.add(v.visitor_id);
+      }
     });
     clicks?.forEach((c) => {
       const date = c.created_at?.split('T')[0];
@@ -130,9 +132,11 @@ export default function AnalyticsPage() {
     });
 
     const dailyStats = Object.entries(dailyMap)
-      .map(([date, stats]) => ({
+      .map(([date, { views, clicks, visitorIds }]) => ({
         date: new Date(date + 'T12:00:00').toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' }),
-        ...stats,
+        views,
+        clicks,
+        uniqueVisitors: visitorIds.size,
       }))
       .reverse();
 
@@ -146,7 +150,6 @@ export default function AnalyticsPage() {
       totalViews,
       uniqueVisitors,
       totalClicks,
-      clickRate: totalViews ? Math.round((totalClicks / totalViews) * 100) : 0,
       links: linkAnalytics,
       devices,
       dailyStats,
@@ -206,7 +209,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
           <div className="rounded-4xl p-6 bg-green">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-top">Page Views</span>
@@ -231,13 +234,6 @@ export default function AnalyticsPage() {
             <div className="text-3xl font-bold text-top">{totalLinkClicks.toLocaleString()}</div>
           </div>
 
-          <div className="rounded-4xl p-6 bg-yellow">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-top">Click Rate</span>
-              <Icon icon="bar-chart-2" className="w-5 h-5 text-top" />
-            </div>
-            <div className="text-3xl font-bold text-top">{data.clickRate}%</div>
-          </div>
         </div>
 
         {/* Daily Activity Chart */}
