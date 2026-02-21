@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { Metadata, Viewport } from 'next';
 import { BioPage } from '@/components/bio-page';
 import { getTheme } from '@/config/themes';
-import { createClient } from '@/lib/supabase/server';
+import { createStaticClient } from '@/lib/supabase/static';
 import type { PageTranslation, LinkTranslation, SocialPlatform } from '@/types';
 
 // Demo pages for testing / landing page previews
@@ -66,7 +66,7 @@ async function getPageData(username: string) {
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     const { data: page } = await supabase
       .from('pages')
       .select('*')
