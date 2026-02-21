@@ -176,7 +176,7 @@ export async function generateViewport({
   return { themeColor: theme?.colors.background ?? '#ffffff' };
 }
 
-export const dynamic = 'force-dynamic';
+// Pages are statically generated and revalidated on-demand when edited
 export const dynamicParams = true;
 
 export default async function PublicBioPage({

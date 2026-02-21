@@ -255,7 +255,7 @@ export function BioPage({
 
   const comingSoonOverlay = comingSoonPopup && (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
       onClick={() => setComingSoonPopup(null)}
     >
@@ -272,7 +272,7 @@ export function BioPage({
         <p className="text-base font-medium mb-5" style={{ color: theme.colors.text }}>{comingSoonPopup}</p>
         <button
           onClick={() => setComingSoonPopup(null)}
-          className="px-6 py-2.5 rounded-full text-sm font-semibold transition-opacity hover:opacity-80"
+          className="w-full py-2.5 rounded-full w-full text-sm font-semibold transition-opacity hover:opacity-80"
           style={{ backgroundColor: theme.colors.linkBg, color: theme.colors.linkText }}
         >
           Got it

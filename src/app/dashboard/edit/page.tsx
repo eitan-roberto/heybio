@@ -405,6 +405,15 @@ export default function EditPage() {
       isPro,
     });
 
+    // Revalidate the public page so the static cache is updated
+    if (slug) {
+      fetch('/api/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug }),
+      }).catch(() => {});
+    }
+
     analyticsService.track('page_updated', { page_id: pageId });
     toast.success('Changes saved!');
     setSaving(false);
