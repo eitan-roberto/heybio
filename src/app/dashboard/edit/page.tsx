@@ -72,6 +72,8 @@ export default function EditPage() {
   const [deleting, setDeleting] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [coverImageUrl, setCoverImageUrl] = useState('');
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [isPro, setIsPro] = useState(false);
 
   // Language state
@@ -93,6 +95,7 @@ export default function EditPage() {
         setBio(cached.bio);
         setThemeId(cached.themeId);
         setAvatarUrl(cached.avatarUrl);
+        setCoverImageUrl(cached.coverImageUrl ?? '');
         setPageLanguages(cached.languages);
         setLinks(cached.links);
         setSocialIcons(cached.socialIcons);
@@ -112,6 +115,22 @@ export default function EditPage() {
         setLinkTranslations(cached.linkTranslations);
         setIsPro(cached.isPro);
         setLoading(false);
+
+        // Always re-check Pro status from DB (plan can change server-side)
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('plan')
+            .eq('id', user.id)
+            .single();
+          const freshPro = profile?.plan === 'pro';
+          if (freshPro !== cached.isPro) {
+            setIsPro(freshPro);
+            setCachedPage(targetPageId, { ...cached, isPro: freshPro });
+          }
+        }
         return;
       }
     }
@@ -159,6 +178,7 @@ export default function EditPage() {
       setBio(page.bio ?? '');
       setThemeId(page.theme_id);
       setAvatarUrl(page.avatar_url ?? '');
+      setCoverImageUrl(page.cover_image_url ?? '');
       setPageLanguages(page.languages ?? ['en']);
 
       // Load links
@@ -237,6 +257,7 @@ export default function EditPage() {
         bio: page.bio ?? '',
         themeId: page.theme_id,
         avatarUrl: page.avatar_url ?? '',
+        coverImageUrl: page.cover_image_url ?? '',
         languages: page.languages ?? ['en'],
         links: mappedLinks,
         socialIcons: mappedSocial,
@@ -270,6 +291,7 @@ export default function EditPage() {
         theme_id: themeId,
         languages: pageLanguages,
         social_icons: socialIcons.map((s, i) => ({ platform: s.platform, url: s.url, order: i, coming_soon_message: s.coming_soon_message ?? null })),
+        cover_image_url: coverImageUrl || null,
       })
       .eq('id', pageId);
 
@@ -374,6 +396,7 @@ export default function EditPage() {
       bio,
       themeId,
       avatarUrl,
+      coverImageUrl,
       languages: pageLanguages,
       links: updatedLinks,
       socialIcons,
@@ -434,6 +457,48 @@ export default function EditPage() {
     const supabase = createClient();
     await supabase.from('pages').update({ avatar_url: null }).eq('id', pageId);
     toast.success('Profile photo removed');
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !pageId) return;
+    if (!isPro) {
+      toast.error('Upgrade to Pro to use cover images');
+      return;
+    }
+    setUploadingCover(true);
+    const supabase = createClient();
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${pageId}/cover.${fileExt}`;
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file, { upsert: true });
+    if (uploadError) {
+      logService.error('cover_upload_error', { error: uploadError });
+      toast.error('Failed to upload cover image. Please try again.');
+      setUploadingCover(false);
+      return;
+    }
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from('avatars').getPublicUrl(filePath);
+    setCoverImageUrl(publicUrl);
+    analyticsService.track('cover_image_uploaded', { page_id: pageId });
+    toast.success('Cover image uploaded!');
+    setUploadingCover(false);
+  };
+
+  const handleRemoveCover = async () => {
+    if (!pageId) return;
+    setCoverImageUrl('');
+    const supabase = createClient();
+    // Try to remove from storage (best effort)
+    const extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+    for (const ext of extensions) {
+      await supabase.storage.from('avatars').remove([`${pageId}/cover.${ext}`]);
+    }
+    analyticsService.track('cover_image_removed', { page_id: pageId });
+    toast.success('Cover image removed');
   };
 
   // Link helpers
@@ -937,6 +1002,65 @@ export default function EditPage() {
             {/* DESIGN TAB */}
             {activeTab === 'design' && (
               <div className="rounded-4xl py-4 space-y-4">
+                {/* Cover Image */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <h3 className="font-medium text-top">Cover Image</h3>
+                    {!isPro && (
+                      <span className="px-2 py-0.5 rounded-full bg-pink text-top text-xs font-bold">
+                        PRO
+                      </span>
+                    )}
+                  </div>
+                  {isPro ? (
+                    <div className="space-y-3">
+                      {coverImageUrl ? (
+                        <div className="relative rounded-2xl overflow-hidden">
+                          <img
+                            src={coverImageUrl}
+                            alt="Cover"
+                            className="w-full h-32 object-cover"
+                          />
+                          <button
+                            onClick={handleRemoveCover}
+                            className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                          >
+                            <Icon icon="x" className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : null}
+                      <label className={cn(
+                        'flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border-2 border-dashed border-top cursor-pointer hover:bg-low/20 transition-colors',
+                        uploadingCover && 'opacity-50 pointer-events-none'
+                      )}>
+                        {uploadingCover ? (
+                          <Icon icon="loader-2" className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <Icon icon="image" className="w-5 h-5 text-high" />
+                        )}
+                        <span className="text-sm text-high">
+                          {coverImageUrl ? 'Change cover image' : 'Upload cover image'}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleCoverUpload}
+                          className="hidden"
+                          disabled={uploadingCover}
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => toast.error('Upgrade to Pro to use cover images')}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border-2 border-dashed border-top opacity-60 cursor-pointer hover:opacity-80 transition-opacity"
+                    >
+                      <Icon icon="lock" className="w-5 h-5 text-high" />
+                      <span className="text-sm text-high">Upgrade to Pro</span>
+                    </button>
+                  )}
+                </div>
+
                 <div>
                   <h3 className="font-medium text-top mb-3">Free Themes</h3>
                   <div className="grid grid-cols-2 gap-3">
@@ -1122,6 +1246,8 @@ export default function EditPage() {
                   page={previewPage}
                   links={previewLinks}
                   socialIcons={previewSocialIcons}
+                  coverImageUrl={coverImageUrl || undefined}
+                  isPro={isPro}
                   showBadge={true}
                   isPreview={true}
                 />

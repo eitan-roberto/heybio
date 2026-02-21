@@ -19,6 +19,7 @@ const FREE_FEATURES = [
 
 const PRO_FEATURES = [
   "Everything in Free",
+  "Cover image with parallax",
   "12 premium themes",
   "Advanced analytics (30 days)",
   "Traffic sources & insights",

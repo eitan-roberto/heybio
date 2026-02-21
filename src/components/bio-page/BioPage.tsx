@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ProfileSection } from './ProfileSection';
 import { LinkCard } from './LinkCard';
 import { SocialBar } from './SocialBar';
+import { CoverBackground, CoverBanner } from './CoverImage';
 import { getTheme, type Theme } from '@/config/themes';
 import { getLanguage, isRtl } from '@/lib/languages';
 import type { Page, Link, SocialIcon, SocialPlatform, PageTranslation, LinkTranslation } from '@/types';
@@ -18,8 +19,10 @@ interface BioPageProps {
   translations?: PageTranslation[];
   linkTranslations?: LinkTranslation[];
   onLinkClick?: (linkIndex: number) => void;
+  coverImageUrl?: string;
   onSocialClick?: (platform: SocialPlatform) => void;
   showBadge?: boolean;
+  isPro?: boolean;
   /** When true, skip analytics tracking (used in dashboard preview) */
   isPreview?: boolean;
 }
@@ -122,9 +125,11 @@ export function BioPage({
   socialIcons,
   translations = [],
   linkTranslations = [],
+  coverImageUrl,
   onLinkClick,
   onSocialClick,
   showBadge = true,
+  isPro = false,
   isPreview = false,
 }: BioPageProps) {
   const theme = getTheme(page.theme_id);
@@ -179,6 +184,150 @@ export function BioPage({
 
   const rtl = isRtl(selectedLang);
 
+  const hasCoverImage = !!coverImageUrl;
+
+  const mainContent = (
+    <>
+      {/* Language switcher */}
+      {languages.length > 1 && (
+        <LanguageSwitcher
+          languages={languages}
+          selected={selectedLang}
+          onSelect={setSelectedLang}
+          theme={theme}
+        />
+      )}
+
+      <div>
+        <ProfileSection
+          displayName={displayName}
+          bio={bio}
+          avatarUrl={page.avatar_url}
+          theme={theme}
+          hasCoverImage={hasCoverImage}
+          showVerified={hasCoverImage && isPro}
+        />
+      </div>
+
+      {socialIcons.length > 0 && (
+        <div>
+          <SocialBar
+            socialIcons={socialIcons}
+            theme={theme}
+            onIconClick={onSocialClick}
+            onComingSoon={(msg) => setComingSoonPopup(msg)}
+          />
+        </div>
+      )}
+
+      {activeLinks.length > 0 && (
+        <div className="flex-1 flex flex-col gap-4">
+          {activeLinks.map((link, index) => {
+            const linkIdForTrans = (link as Link).id;
+            const ltForLink = linkIdForTrans
+              ? linkTranslations.find((lt) => lt.link_id === linkIdForTrans)
+              : null;
+            const translatedTitle =
+              selectedLang !== 'en' && ltForLink?.title ? ltForLink.title : link.title;
+
+            const showsExpiry =
+              link.expires_at &&
+              new Date(link.expires_at).getTime() - Date.now() < 24 * 60 * 60 * 1000 * 3;
+
+            return (
+              <div key={index}>
+                {showsExpiry && link.expires_at && (
+                  <ExpiryBadge expiresAt={link.expires_at} theme={theme} />
+                )}
+                <LinkCard
+                  link={{ ...link, title: translatedTitle }}
+                  theme={theme}
+                  onClick={() => handleLinkClick(index, link.url, linkIdForTrans)}
+                  onComingSoon={(msg) => setComingSoonPopup(msg)}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+
+  const comingSoonOverlay = comingSoonPopup && (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
+      onClick={() => setComingSoonPopup(null)}
+    >
+      <div
+        className="w-full max-w-sm rounded-3xl p-6 text-center shadow-2xl"
+        style={{ backgroundColor: theme.colors.background, fontFamily: theme.fonts.body }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: theme.colors.linkBg }}>
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: theme.colors.primary }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <p className="text-base font-medium mb-5" style={{ color: theme.colors.text }}>{comingSoonPopup}</p>
+        <button
+          onClick={() => setComingSoonPopup(null)}
+          className="px-6 py-2.5 rounded-full text-sm font-semibold transition-opacity hover:opacity-80"
+          style={{ backgroundColor: theme.colors.linkBg, color: theme.colors.linkText }}
+        >
+          Got it
+        </button>
+      </div>
+    </div>
+  );
+
+  const badge = showBadge && (
+    <footer className="py-6 text-center">
+      <a
+        href="https://heybio.co"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 text-xs opacity-60 hover:opacity-100 transition-opacity"
+        style={{ color: theme.colors.textMuted }}
+      >
+        <span>Made with</span>
+        <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            fillRule="evenodd"
+            d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+            clipRule="evenodd"
+          />
+        </svg>
+        <span>HeyBio</span>
+      </a>
+    </footer>
+  );
+
+  // --- Cover image layout ---
+  if (hasCoverImage) {
+    return (
+      <div className="min-h-screen w-full relative overflow-hidden" dir={rtl ? 'rtl' : 'ltr'}>
+        <CoverBackground imageUrl={coverImageUrl} isPreview={isPreview} />
+
+        <div className="relative z-10 min-h-screen flex flex-col items-center px-4 py-4">
+          <div
+            className="w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+            style={{ ...getBackgroundStyle(theme), minHeight: isPreview ? undefined : 'calc(100vh - 2rem)' }}
+          >
+            <CoverBanner imageUrl={coverImageUrl} fadeColor={theme.colors.background} />
+            <div className="px-6 pb-8 flex-1 flex flex-col gap-4 -mt-12 relative z-10">
+              {mainContent}
+            </div>
+            {badge}
+          </div>
+        </div>
+
+        {comingSoonOverlay}
+      </div>
+    );
+  }
+
+  // --- Standard layout (no cover image) ---
   return (
     <div
       className="min-h-screen w-full flex flex-col"
@@ -186,119 +335,11 @@ export function BioPage({
       dir={rtl ? 'rtl' : 'ltr'}
     >
       <main className="flex-1 w-full max-w-lg mx-auto px-6 py-12 flex flex-col gap-4">
-        {/* Language switcher */}
-        {languages.length > 1 && (
-          <LanguageSwitcher
-            languages={languages}
-            selected={selectedLang}
-            onSelect={setSelectedLang}
-            theme={theme}
-          />
-        )}
-
-        <div className="">
-          <ProfileSection
-            displayName={displayName}
-            bio={bio}
-            avatarUrl={page.avatar_url}
-            theme={theme}
-          />
-        </div>
-
-        {socialIcons.length > 0 && (
-          <div className="">
-            <SocialBar
-              socialIcons={socialIcons}
-              theme={theme}
-              onIconClick={onSocialClick}
-              onComingSoon={(msg) => setComingSoonPopup(msg)}
-            />
-          </div>
-        )}
-
-        {activeLinks.length > 0 && (
-          <div className="flex-1 flex flex-col gap-4">
-            {activeLinks.map((link, index) => {
-              // Apply link title translation
-              const linkIdForTrans = (link as Link).id;
-              const ltForLink = linkIdForTrans
-                ? linkTranslations.find((lt) => lt.link_id === linkIdForTrans)
-                : null;
-              const translatedTitle =
-                selectedLang !== 'en' && ltForLink?.title ? ltForLink.title : link.title;
-
-              const showsExpiry =
-                link.expires_at &&
-                new Date(link.expires_at).getTime() - Date.now() < 24 * 60 * 60 * 1000 * 3;
-
-              return (
-                <div key={index}>
-                  {showsExpiry && link.expires_at && (
-                    <ExpiryBadge expiresAt={link.expires_at} theme={theme} />
-                  )}
-                  <LinkCard
-                    link={{ ...link, title: translatedTitle }}
-                    theme={theme}
-                    onClick={() => handleLinkClick(index, link.url, linkIdForTrans)}
-                    onComingSoon={(msg) => setComingSoonPopup(msg)}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        )}
+        {mainContent}
       </main>
 
-      {/* Coming soon popup */}
-      {comingSoonPopup && (
-        <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
-          onClick={() => setComingSoonPopup(null)}
-        >
-          <div
-            className="w-full max-w-sm rounded-3xl p-6 text-center shadow-2xl"
-            style={{ backgroundColor: theme.colors.background, fontFamily: theme.fonts.body }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: theme.colors.linkBg }}>
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: theme.colors.primary }}>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <p className="text-base font-medium mb-5" style={{ color: theme.colors.text }}>{comingSoonPopup}</p>
-            <button
-              onClick={() => setComingSoonPopup(null)}
-              className="px-6 py-2.5 rounded-full text-sm font-semibold transition-opacity hover:opacity-80"
-              style={{ backgroundColor: theme.colors.linkBg, color: theme.colors.linkText }}
-            >
-              Got it
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showBadge && (
-        <footer className="py-6 text-center">
-          <a
-            href="https://heybio.co"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs opacity-60 hover:opacity-100 transition-opacity"
-            style={{ color: theme.colors.textMuted }}
-          >
-            <span>Made with</span>
-            <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-              <path
-                fillRule="evenodd"
-                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span>HeyBio</span>
-          </a>
-        </footer>
-      )}
+      {comingSoonOverlay}
+      {badge}
     </div>
   );
 }

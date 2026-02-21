@@ -34,7 +34,7 @@ const iconNames: Record<SocialPlatform, string> = {
 };
 
 const sharedClassName = cn(
-  "p-2 rounded-full transition-all duration-200",
+  "w-11 h-11 flex items-center justify-center rounded-full transition-all duration-200 bg-bottom",
   "hover:scale-110 active:scale-95",
   "focus:outline-none focus:ring-2 focus:ring-offset-2"
 );
@@ -74,7 +74,7 @@ export function SocialBar({ socialIcons, theme, onIconClick, onComingSoon }: Soc
                   onComingSoon?.(icon.coming_soon_message!);
                 }}
               >
-                <Icon icon={iconName} className="w-5 h-5" />
+                <Icon icon={iconName} className="w-6 h-6" />
               </button>
             );
           }
@@ -88,7 +88,7 @@ export function SocialBar({ socialIcons, theme, onIconClick, onComingSoon }: Soc
               {...sharedProps}
               onClick={() => onIconClick?.(icon.platform)}
             >
-              <Icon icon={iconName} className="w-5 h-5" />
+              <Icon icon={iconName} className="w-6 h-6" />
             </a>
           );
         })}

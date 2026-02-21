@@ -44,6 +44,7 @@ export interface CachedPageData {
   socialIcons: CachedSocialIcon[];
   translations: Record<string, CachedTranslation>;
   linkTranslations: Record<string, Record<string, string>>;
+  coverImageUrl: string;
   isPro: boolean;
 }
 
@@ -99,7 +100,7 @@ export const useDashboardStore = create<DashboardStore>()(
     }),
     {
       name: 'heybio-dashboard',
-      version: 2,
+      version: 3,
       migrate: () => ({ pages: [], selectedPageId: null, pageCache: {} }),
     }
   )

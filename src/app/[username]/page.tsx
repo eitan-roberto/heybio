@@ -62,7 +62,7 @@ const DEMO_PAGES: Record<string, {
 
 async function getPageData(username: string) {
   if (DEMO_PAGES[username]) {
-    return { ...DEMO_PAGES[username], translations: [], linkTranslations: [] };
+    return { ...DEMO_PAGES[username], translations: [], linkTranslations: [], isPro: false };
   }
 
   try {
@@ -102,6 +102,17 @@ async function getPageData(username: string) {
       linkTranslations = lt ?? [];
     }
 
+    // Fetch user's plan to determine Pro status
+    let isPro = false;
+    if (page.user_id) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', page.user_id)
+        .single();
+      isPro = profile?.plan === 'pro';
+    }
+
     return {
       page: {
         display_name: page.display_name,
@@ -110,6 +121,7 @@ async function getPageData(username: string) {
         theme_id: page.theme_id,
         slug: page.slug,
         languages: pageLanguages,
+        cover_image_url: page.cover_image_url ?? undefined,
       },
       links: (links ?? []).map((l) => ({
         ...l,
@@ -119,6 +131,7 @@ async function getPageData(username: string) {
       socialIcons: ((page.social_icons ?? []) as import('@/types').SocialIcon[]),
       translations: (pageTrans ?? []) as PageTranslation[],
       linkTranslations,
+      isPro,
     };
   } catch {
     return null;
@@ -182,6 +195,8 @@ export default async function PublicBioPage({
       socialIcons={data.socialIcons}
       translations={data.translations}
       linkTranslations={data.linkTranslations}
+      coverImageUrl={'cover_image_url' in data.page ? data.page.cover_image_url : undefined}
+      isPro={data.isPro}
       showBadge={true}
     />
   );

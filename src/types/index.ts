@@ -23,6 +23,7 @@ export interface Page {
   languages: string[];
   social_icons: SocialIcon[];
   coming_soon_message?: string | null;
+  cover_image_url?: string;
   created_at: string;
   updated_at: string;
 }
