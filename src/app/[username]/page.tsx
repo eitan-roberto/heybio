@@ -102,16 +102,8 @@ async function getPageData(username: string) {
       linkTranslations = lt ?? [];
     }
 
-    // Fetch user's plan to determine Pro status
-    let isPro = false;
-    if (page.user_id) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('plan')
-        .eq('id', page.user_id)
-        .single();
-      isPro = profile?.plan === 'pro';
-    }
+    // Cover image upload is gated to Pro, so its presence implies Pro
+    const isPro = !!page.cover_image_url;
 
     return {
       page: {
