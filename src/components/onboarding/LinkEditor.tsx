@@ -44,6 +44,7 @@ export function LinkEditor({
       icon,
       order: links.length,
       is_active: true,
+      is_nsfw: false,
     });
     
     setNewUrl('');

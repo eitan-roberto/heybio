@@ -36,6 +36,7 @@ export interface Link {
   icon?: string;
   order: number;
   is_active: boolean;
+  is_nsfw: boolean;
   expires_at?: string | null;
   coming_soon_message?: string | null;
   created_at: string;

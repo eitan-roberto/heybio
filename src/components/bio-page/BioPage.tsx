@@ -14,7 +14,7 @@ interface BioPageProps {
   page: Pick<Page, 'display_name' | 'bio' | 'avatar_url' | 'theme_id' | 'slug'> & {
     languages?: string[];
   };
-  links: Pick<Link, 'title' | 'url' | 'icon' | 'is_active' | 'order' | 'expires_at' | 'coming_soon_message'>[];
+  links: Pick<Link, 'title' | 'url' | 'icon' | 'is_active' | 'is_nsfw' | 'order' | 'expires_at' | 'coming_soon_message'>[];
   socialIcons: Pick<SocialIcon, 'platform' | 'url' | 'order' | 'coming_soon_message'>[];
   translations?: PageTranslation[];
   linkTranslations?: LinkTranslation[];

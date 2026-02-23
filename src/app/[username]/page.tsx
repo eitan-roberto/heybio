@@ -15,7 +15,7 @@ const DEMO_PAGES: Record<string, {
     avatar_url?: string;
     languages?: string[];
   };
-  links: { title: string; url: string; order: number; is_active: boolean; expires_at?: string | null; coming_soon_message?: string | null }[];
+  links: { title: string; url: string; order: number; is_active: boolean; is_nsfw?: boolean; expires_at?: string | null; coming_soon_message?: string | null }[];
   socialIcons: { platform: SocialPlatform; url: string; order: number }[];
 }> = {
   demo: {
@@ -62,7 +62,14 @@ const DEMO_PAGES: Record<string, {
 
 async function getPageData(username: string) {
   if (DEMO_PAGES[username]) {
-    return { ...DEMO_PAGES[username], translations: [], linkTranslations: [], isPro: false };
+    const demo = DEMO_PAGES[username];
+    return {
+      ...demo,
+      links: demo.links.map((l) => ({ ...l, is_nsfw: l.is_nsfw ?? false })),
+      translations: [],
+      linkTranslations: [],
+      isPro: false,
+    };
   }
 
   try {
@@ -118,6 +125,7 @@ async function getPageData(username: string) {
       links: (links ?? []).map((l) => ({
         ...l,
         is_active: l.is_active ?? true,
+        is_nsfw: l.is_nsfw ?? false,
         expires_at: l.expires_at ?? null,
       })),
       socialIcons: ((page.social_icons ?? []) as import('@/types').SocialIcon[]),

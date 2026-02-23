@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Icon } from '@/components/ui/icon';
 import { detectLinkIcon, formatUrl } from '@/lib/icons';
 import type { Theme } from '@/config/themes';
@@ -7,7 +8,7 @@ import type { Link } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface LinkCardProps {
-  link: Pick<Link, 'title' | 'url' | 'icon' | 'coming_soon_message'>;
+  link: Pick<Link, 'title' | 'url' | 'icon' | 'coming_soon_message' | 'is_nsfw'>;
   theme: Theme;
   onClick?: () => void;
   onComingSoon?: (message: string) => void;
@@ -27,6 +28,7 @@ function getBorderRadius(radius: Theme['borderRadius']): string {
 export function LinkCard({ link, theme, onClick, onComingSoon }: LinkCardProps) {
   const iconName = link.icon || detectLinkIcon(link.url);
   const isComingSoon = !!link.coming_soon_message;
+  const [showNsfwWarning, setShowNsfwWarning] = useState(false);
 
   const cardStyles: React.CSSProperties = {
     backgroundColor: theme.style === 'outline' || theme.style === 'glass'
@@ -77,6 +79,31 @@ export function LinkCard({ link, theme, onClick, onComingSoon }: LinkCardProps) 
     </>
   );
 
+  // NSFW warning overlay content
+  const nsfwContent = (
+    <div className="flex flex-col items-center gap-2 py-1">
+      <span className="text-sm font-medium opacity-80">
+        18+ May Contain Sensitive Content
+      </span>
+      <a
+        href={formatUrl(link.url)}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick?.();
+        }}
+        className="px-4 py-1.5 rounded-full text-xs font-semibold transition-opacity hover:opacity-80"
+        style={{
+          backgroundColor: theme.colors.primary,
+          color: theme.colors.background,
+        }}
+      >
+        Continue (+18)
+      </a>
+    </div>
+  );
+
   if (isComingSoon) {
     return (
       <button
@@ -90,6 +117,46 @@ export function LinkCard({ link, theme, onClick, onComingSoon }: LinkCardProps) 
         }}
       >
         {inner}
+      </button>
+    );
+  }
+
+  // NSFW link — render as button that reveals warning on click
+  if (link.is_nsfw) {
+    return (
+      <button
+        type="button"
+        className={cn(sharedClassNames, "relative overflow-hidden")}
+        style={{
+          ...sharedStyle,
+          cursor: showNsfwWarning ? 'default' : 'pointer',
+        }}
+        {...sharedHover}
+        onClick={() => {
+          if (!showNsfwWarning) {
+            setShowNsfwWarning(true);
+          }
+        }}
+      >
+        {/* Original content — fades out */}
+        <div
+          className={cn(
+            "flex items-center gap-3 w-full transition-all duration-300 ease-out",
+            showNsfwWarning ? "opacity-0 scale-95 absolute inset-0 pointer-events-none" : "opacity-100 scale-100"
+          )}
+        >
+          {inner}
+        </div>
+
+        {/* NSFW warning — fades in */}
+        <div
+          className={cn(
+            "w-full transition-all duration-300 ease-out",
+            showNsfwWarning ? "opacity-100 scale-100" : "opacity-0 scale-95 absolute inset-0 pointer-events-none"
+          )}
+        >
+          {nsfwContent}
+        </div>
       </button>
     );
   }

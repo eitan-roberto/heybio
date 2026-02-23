@@ -25,6 +25,7 @@ interface EditLink {
   url: string;
   order: number;
   is_active: boolean;
+  is_nsfw: boolean;
   expires_at?: string | null;
   coming_soon_message?: string | null;
 }
@@ -97,7 +98,7 @@ export default function EditPage() {
         setAvatarUrl(cached.avatarUrl);
         setCoverImageUrl(cached.coverImageUrl ?? '');
         setPageLanguages(cached.languages);
-        setLinks(cached.links);
+        setLinks(cached.links.map((l) => ({ ...l, is_nsfw: l.is_nsfw ?? false })));
         setSocialIcons(cached.socialIcons);
         const restoredTrans: Record<string, PageTranslation> = {};
         Object.entries(cached.translations).forEach(([code, t]) => {
@@ -199,6 +200,7 @@ export default function EditPage() {
           url: l.url,
           order: l.order,
           is_active: l.is_active ?? true,
+          is_nsfw: l.is_nsfw ?? false,
           expires_at: l.expires_at ?? null,
           coming_soon_message: l.coming_soon_message ?? null,
         })) ?? [];
@@ -314,6 +316,7 @@ export default function EditPage() {
             url: link.url,
             order: link.order,
             is_active: link.is_active,
+            is_nsfw: link.is_nsfw,
             expires_at: link.expires_at ?? null,
             coming_soon_message: link.coming_soon_message ?? null,
           })
@@ -328,6 +331,7 @@ export default function EditPage() {
             url: link.url,
             order: link.order,
             is_active: link.is_active,
+            is_nsfw: link.is_nsfw,
             expires_at: link.expires_at ?? null,
             coming_soon_message: link.coming_soon_message ?? null,
           })
@@ -512,7 +516,7 @@ export default function EditPage() {
 
   // Link helpers
   const addLink = () =>
-    setLinks([...links, { title: '', url: '', order: links.length, is_active: true }]);
+    setLinks([...links, { title: '', url: '', order: links.length, is_active: true, is_nsfw: false }]);
 
   const updateLink = (index: number, updates: Partial<EditLink>) => {
     const n = [...links];
@@ -862,6 +866,21 @@ export default function EditPage() {
                             />
                           </div>
                         )}
+
+                        {/* 18+ / NSFW */}
+                        <button
+                          type="button"
+                          onClick={() => updateLink(index, { is_nsfw: !link.is_nsfw })}
+                          className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-bottom text-sm transition-colors"
+                        >
+                          <div className={cn(
+                            'w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors',
+                            link.is_nsfw ? 'bg-red-500 border-red-500' : 'border-high'
+                          )}>
+                            {link.is_nsfw && <Icon icon="check" className="w-2.5 h-2.5 text-white" />}
+                          </div>
+                          <span className="text-high">18+ content</span>
+                        </button>
 
                         {/* Temporary / expiry */}
                         <button
