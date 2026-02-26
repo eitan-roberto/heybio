@@ -1,7 +1,6 @@
 import NextLink from 'next/link';
 import { redirect } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/server';
@@ -42,28 +41,25 @@ export default async function DashboardPage() {
 
   if (pages.length === 0) {
     return (
-      <DashboardLayout>
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-          <div className="w-20 h-20 rounded-full bg-green flex items-center justify-center mb-6">
-            <Icon icon="plus" className="w-10 h-10 text-top" />
-          </div>
-          <h1 className="text-2xl font-bold text-top mb-2">Create your first page</h1>
-          <p className="text-high mb-8 max-w-md">
-            You don&apos;t have any bio pages yet. Create one in just a few clicks.
-          </p>
-          <Button asChild>
-            <NextLink href="/new">Create your page</NextLink>
-          </Button>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <div className="w-20 h-20 rounded-full bg-green flex items-center justify-center mb-6">
+          <Icon icon="plus" className="w-10 h-10 text-top" />
         </div>
-      </DashboardLayout>
+        <h1 className="text-2xl font-bold text-top mb-2">Create your first page</h1>
+        <p className="text-high mb-8 max-w-md">
+          You don&apos;t have any bio pages yet. Create one in just a few clicks.
+        </p>
+        <Button asChild>
+          <NextLink href="/new">Create your page</NextLink>
+        </Button>
+      </div>
     );
   }
 
   const page = pages[0];
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold text-top">Dashboard</h1>
@@ -134,11 +130,10 @@ export default async function DashboardPage() {
             <Icon icon="layers" className="w-5 h-5 text-high" />
             <p className="text-sm text-high">
               You have <span className="text-top font-medium">{pages.length} pages</span>. Use the
-              page selector in the header to switch between them.
+              page selector in the sidebar to switch between them.
             </p>
           </div>
         )}
       </div>
-    </DashboardLayout>
   );
 }

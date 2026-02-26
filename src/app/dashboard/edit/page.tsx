@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import NextLink from 'next/link';
 import { toast } from 'sonner';
 import { Icon } from '@/components/ui/icon';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BioPage } from '@/components/bio-page';
@@ -626,33 +625,28 @@ export default function EditPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" />
-        </div>
-      </DashboardLayout>
+      <div className="flex items-center justify-center h-64">
+        <Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" />
+      </div>
     );
   }
 
   if (!pageId) {
     return (
-      <DashboardLayout>
-        <div className="text-center py-12">
-          <h2 className="text-xl font-bold text-top mb-2">No page found</h2>
-          <p className="text-high mb-4">Create a page first to start editing</p>
-          <Button asChild>
-            <NextLink href="/new">Create page</NextLink>
-          </Button>
-        </div>
-      </DashboardLayout>
+      <div className="text-center py-12">
+        <h2 className="text-xl font-bold text-top mb-2">No page found</h2>
+        <p className="text-high mb-4">Create a page first to start editing</p>
+        <Button asChild>
+          <NextLink href="/new">Create page</NextLink>
+        </Button>
+      </div>
     );
   }
 
   const allThemes = [...FREE_THEMES, ...(isPro ? PRO_THEMES : [])];
 
   return (
-    <DashboardLayout>
-      <div className="space-y-4">
+    <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h1 className="text-2xl font-bold text-top">Edit Page</h1>
@@ -1283,8 +1277,6 @@ export default function EditPage() {
             </div>
           </div>
         </div>
-      </div>
-
       <ConfirmDialog
         isOpen={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
@@ -1295,7 +1287,7 @@ export default function EditPage() {
         cancelText="Cancel"
         variant="danger"
       />
-    </DashboardLayout>
+    </div>
   );
 }
 

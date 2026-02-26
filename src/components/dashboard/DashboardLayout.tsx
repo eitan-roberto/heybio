@@ -48,20 +48,20 @@ function PageSelector({
   if (!selectedPage) return null;
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative w-full">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-low hover:bg-low/20 transition-colors text-sm font-medium text-top"
+        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-low hover:bg-low/80 transition-colors text-sm font-medium text-top"
       >
-        <span className="w-2 h-2 rounded-full bg-green" />
-        <span className="max-w-[120px] truncate">{selectedPage.slug}</span>
+        <span className="w-2 h-2 rounded-full bg-green flex-shrink-0" />
+        <span className="flex-1 truncate text-left">{selectedPage.slug}</span>
         {pages.length > 1 && (
-          <Icon icon="chevron-down" className={cn('w-3.5 h-3.5 text-high transition-transform', open && 'rotate-180')} />
+          <Icon icon="chevron-down" className={cn('w-3.5 h-3.5 text-high transition-transform flex-shrink-0', open && 'rotate-180')} />
         )}
       </button>
 
       {open && pages.length > 1 && (
-        <div className="absolute top-full mt-1 right-0 z-50 w-48 bg-bottom rounded-2xl shadow-lg border border-low p-1">
+        <div className="absolute top-full mt-1 left-0 right-0 z-50 bg-bottom rounded-2xl shadow-lg border border-low p-1">
           {pages.map((page) => (
             <button
               key={page.id}
@@ -90,7 +90,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isPro, setIsPro] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  const { pages, selectedPageId, setPages, selectPage, getSelectedPage } = useDashboardStore();
+  const { pages, setPages, selectPage, getSelectedPage } = useDashboardStore();
   const selectedPage = getSelectedPage();
 
   useEffect(() => {
@@ -152,34 +152,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col gap-1">
       <Header>
-        {/* Page selector */}
-        {!loadingUser && selectedPage && (
-          <PageSelector
-            pages={pages}
-            selectedPage={selectedPage}
-            onSelect={selectPage}
-          />
-        )}
-
-        {/* View live page */}
-        {!loadingUser && selectedPage && (
-          <Link
-            href={`/${selectedPage.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 text-sm text-high hover:text-top"
-          >
-            View page
-            <Icon icon="external-link" className="w-3.5 h-3.5" />
-          </Link>
-        )}
-
-        {/* Pro badge */}
-        {!loadingUser && isPro && (
-          <span className="px-3 py-1 rounded-full bg-pink text-top text-xs font-bold">PRO</span>
-        )}
-
-        {/* Logout */}
         <Button
           variant="outline"
           size="lg"
@@ -194,7 +166,50 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="flex-1 flex flex-col md:flex-row gap-1 px-1">
         {/* Sidebar */}
         <aside className="w-full md:w-64 flex-shrink-0">
-          <div className="bg-bottom h-full rounded-4xl p-4 md:sticky md:top-4">
+          <div className="bg-bottom h-full rounded-4xl p-4 md:sticky md:top-4 flex flex-col gap-3">
+
+            {/* Plan badge + view link */}
+            <div className="flex items-center justify-between">
+              {loadingUser ? (
+                <div className="h-6 w-12 rounded-full bg-low animate-pulse" />
+              ) : (
+                <span className={cn(
+                  'px-3 py-1 rounded-full text-xs font-bold',
+                  isPro ? 'bg-pink text-top' : 'bg-low text-high'
+                )}>
+                  {isPro ? 'PRO' : 'Free'}
+                </span>
+              )}
+
+              {!loadingUser && selectedPage && (
+                <Link
+                  href={`/${selectedPage.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-high hover:text-top transition-colors"
+                >
+                  View page
+                  <Icon icon="external-link" className="w-3.5 h-3.5" />
+                </Link>
+              )}
+            </div>
+
+            {/* Page selector */}
+            {!loadingUser && (
+              <PageSelector
+                pages={pages}
+                selectedPage={selectedPage}
+                onSelect={selectPage}
+              />
+            )}
+            {loadingUser && (
+              <div className="h-10 rounded-2xl bg-low animate-pulse" />
+            )}
+
+            {/* Divider */}
+            <div className="h-px bg-low" />
+
+            {/* Nav */}
             <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
               {NAV_ITEMS.map((item) => {
                 const isActive = pathname === item.href;
@@ -204,7 +219,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     href={item.href}
                     className={cn(
                       'flex items-center gap-3 px-4 py-3 rounded-2xl whitespace-nowrap transition-colors font-medium',
-                      isActive ? 'bg-green text-top' : 'text-top hover:bg-low/20/30'
+                      isActive ? 'bg-green text-top' : 'text-top hover:bg-low/20'
                     )}
                   >
                     <Icon icon={item.icon} className="w-5 h-5 flex-shrink-0" />

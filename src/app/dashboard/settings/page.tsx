@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -92,17 +91,14 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" />
-        </div>
-      </DashboardLayout>
+      <div className="flex items-center justify-center h-64">
+        <Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" />
+      </div>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-2xl">
         <h1 className="text-2xl font-bold text-top">Settings</h1>
 
         {message && (
@@ -189,6 +185,5 @@ export default function SettingsPage() {
           variant="danger"
         />
       </div>
-    </DashboardLayout>
   );
 }

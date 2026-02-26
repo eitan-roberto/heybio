@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { ActivityChart } from '@/components/dashboard/ActivityChart';
 import { PieChart } from '@/components/dashboard/PieChart';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -308,8 +307,7 @@ export default function AnalyticsPage() {
   const range = dateRangeForDays(activeDays);
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h1 className="text-2xl font-bold text-top">Analytics</h1>
           <TimeRangeSelector activeDays={activeDays} onChange={setActiveDays} />
@@ -331,6 +329,5 @@ export default function AnalyticsPage() {
           </>
         )}
       </div>
-    </DashboardLayout>
   );
 }
