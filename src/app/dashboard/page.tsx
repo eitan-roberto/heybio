@@ -2,6 +2,7 @@ import NextLink from 'next/link';
 import { redirect } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/server';
 
@@ -10,19 +11,11 @@ async function getDashboardData(userId: string) {
 
   const { data: pages } = await supabase
     .from('pages')
-    .select('*')
+    .select('id, slug, display_name, bio, theme_id')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
-  if (!pages || pages.length === 0) {
-    return { pages: [], stats: null };
-  }
-
-  const page = pages[0];
-  const [{ count: views }, { count: clicks }] = await Promise.all([
-    supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('page_id', page.id),
-    supabase.from('link_clicks').select('*', { count: 'exact', head: true }).eq('page_id', page.id),
-  ]);
+  if (!pages || pages.length === 0) return { pages: [] };
 
   return {
     pages: pages.map((p) => ({
@@ -32,11 +25,6 @@ async function getDashboardData(userId: string) {
       bio: p.bio,
       themeId: p.theme_id,
     })),
-    stats: {
-      pageViews: views ?? 0,
-      linkClicks: clicks ?? 0,
-      clickRate: views && clicks ? Math.round((clicks / views) * 100) : 0,
-    },
   };
 }
 
@@ -50,7 +38,7 @@ export default async function DashboardPage() {
     redirect('/login?redirect=/dashboard');
   }
 
-  const { pages, stats } = await getDashboardData(user.id);
+  const { pages } = await getDashboardData(user.id);
 
   if (pages.length === 0) {
     return (
@@ -83,33 +71,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Stats */}
-        {stats && (
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-3xl p-6 bg-green">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-top">Page Views</span>
-                <Icon icon="eye" className="w-5 h-5 text-top" />
-              </div>
-              <div className="text-3xl font-bold text-top">{stats.pageViews.toLocaleString()}</div>
-            </div>
-
-            <div className="rounded-3xl p-6 bg-pink">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-top">Link Clicks</span>
-                <Icon icon="mouse-pointer-click" className="w-5 h-5 text-top" />
-              </div>
-              <div className="text-3xl font-bold text-top">{stats.linkClicks.toLocaleString()}</div>
-            </div>
-
-            <div className="rounded-3xl p-6 bg-blue">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-top">Click Rate</span>
-                <Icon icon="bar-chart-2" className="w-5 h-5 text-top" />
-              </div>
-              <div className="text-3xl font-bold text-top">{stats.clickRate}%</div>
-            </div>
-          </div>
-        )}
+        <DashboardStats />
 
         {/* Page Card */}
         <div className="rounded-4xl py-6">

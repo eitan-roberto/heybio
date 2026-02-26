@@ -1,365 +1,334 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Icon } from '@/components/ui/icon';
+import { useState } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
-import { createClient } from '@/lib/supabase/client';
-import { useDashboardStore } from '@/stores/dashboardStore';
-import { cn } from '@/lib/utils';
 import { ActivityChart } from '@/components/dashboard/ActivityChart';
+import { PieChart } from '@/components/dashboard/PieChart';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Icon } from '@/components/ui/icon';
+import { useAnalyticsData } from '@/hooks/useAnalyticsData';
+import { usePageId } from '@/hooks/usePageId';
+import {
+  pageAnalyticsService,
+  dateRangeForDays,
+  type DateRange,
+} from '@/services/pageAnalyticsService';
+import { cn } from '@/lib/utils';
 
-interface LinkAnalytics {
-  id: string;
-  title: string;
-  url: string;
-  clicks: number;
-  ctr: number;
-  is_active: boolean;
-  expires_at?: string | null;
+// ─── Time range selector ─────────────────────────────────────────────────────
+
+const PRESET_DAYS = [7, 30] as const;
+type PresetDays = (typeof PRESET_DAYS)[number];
+
+function TimeRangeSelector({
+  activeDays,
+  onChange,
+}: {
+  activeDays: PresetDays;
+  onChange: (days: PresetDays) => void;
+}) {
+  return (
+    <div className="flex gap-2 bg-bottom rounded-full p-1">
+      {PRESET_DAYS.map((days) => (
+        <button
+          key={days}
+          onClick={() => onChange(days)}
+          className={cn(
+            'px-4 py-2 rounded-full text-sm font-medium transition-colors',
+            activeDays === days ? 'bg-green text-top' : 'text-high hover:bg-low'
+          )}
+        >
+          {days} days
+        </button>
+      ))}
+    </div>
+  );
 }
 
-interface AnalyticsData {
-  totalViews: number;
-  uniqueVisitors: number;
-  totalClicks: number;
-  links: LinkAnalytics[];
-  devices: { device: string; count: number }[];
-  dailyStats: { date: string; views: number; clicks: number; uniqueVisitors: number }[];
-}
+// ─── Summary cards ───────────────────────────────────────────────────────────
 
-export default function AnalyticsPage() {
-  const { getSelectedPage } = useDashboardStore();
-  const selectedPage = getSelectedPage();
-
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [timeRange, setTimeRange] = useState<7 | 30>(7);
-
-  const loadAnalytics = useCallback(async () => {
-    setLoading(true);
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    // Get the page: selected from store or first page
-    let page;
-    if (selectedPage) {
-      const { data: p } = await supabase
-        .from('pages')
-        .select('*')
-        .eq('id', selectedPage.id)
-        .single();
-      page = p;
-    } else {
-      const { data: pages } = await supabase
-        .from('pages')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1);
-      page = pages?.[0] ?? null;
-    }
-
-    if (!page) {
-      setLoading(false);
-      return;
-    }
-
-    const daysAgo = new Date();
-    daysAgo.setDate(daysAgo.getDate() - timeRange);
-    const since = daysAgo.toISOString();
-
-    const [{ data: views }, { data: clicks }, { data: links }] = await Promise.all([
-      supabase.from('page_views').select('*').eq('page_id', page.id).gte('created_at', since),
-      supabase.from('link_clicks').select('*').eq('page_id', page.id).gte('created_at', since),
-      supabase.from('links').select('*').eq('page_id', page.id).order('order', { ascending: true }),
-    ]);
-
-    // Clicks per link
-    const linkClickMap: Record<string, number> = {};
-    clicks?.forEach((c) => {
-      if (c.link_id) linkClickMap[c.link_id] = (linkClickMap[c.link_id] ?? 0) + 1;
-    });
-
-    const linkAnalytics: LinkAnalytics[] = (links ?? [])
-      .map((link) => {
-        const linkClicksCount = linkClickMap[link.id] ?? 0;
-        const linkViews = views?.length ?? 0;
-        return {
-          id: link.id,
-          title: link.title,
-          url: link.url,
-          clicks: linkClicksCount,
-          ctr: linkViews > 0 ? Math.round((linkClicksCount / linkViews) * 100) : 0,
-          is_active: link.is_active,
-          expires_at: link.expires_at ?? null,
-        };
-      })
-      .sort((a, b) => b.clicks - a.clicks);
-
-    // Device stats
-    const deviceCounts: Record<string, number> = {};
-    views?.forEach((v) => {
-      const device = v.device ?? 'desktop';
-      deviceCounts[device] = (deviceCounts[device] ?? 0) + 1;
-    });
-    const devices = Object.entries(deviceCounts)
-      .map(([device, count]) => ({ device, count }))
-      .sort((a, b) => b.count - a.count);
-
-    // Daily stats
-    const dailyMap: Record<string, { views: number; clicks: number; visitorIds: Set<string> }> = {};
-    for (let i = 0; i < timeRange; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      dailyMap[d.toISOString().split('T')[0]] = { views: 0, clicks: 0, visitorIds: new Set() };
-    }
-    views?.forEach((v) => {
-      const date = v.created_at?.split('T')[0];
-      if (date && dailyMap[date]) {
-        dailyMap[date].views++;
-        if (v.visitor_id) dailyMap[date].visitorIds.add(v.visitor_id);
-      }
-    });
-    clicks?.forEach((c) => {
-      const date = c.created_at?.split('T')[0];
-      if (date && dailyMap[date]) dailyMap[date].clicks++;
-    });
-
-    const dailyStats = Object.entries(dailyMap)
-      .map(([date, { views, clicks, visitorIds }]) => ({
-        date: new Date(date + 'T12:00:00').toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' }),
-        views,
-        clicks,
-        uniqueVisitors: visitorIds.size,
-      }))
-      .reverse();
-
-    const totalClicks = clicks?.length ?? 0;
-    const totalViews = views?.length ?? 0;
-    const uniqueVisitors = new Set(
-      (views ?? []).map((v) => v.visitor_id).filter(Boolean)
-    ).size;
-
-    setData({
-      totalViews,
-      uniqueVisitors,
-      totalClicks,
-      links: linkAnalytics,
-      devices,
-      dailyStats,
-    });
-    setLoading(false);
-  }, [selectedPage?.id, timeRange]);
-
-  useEffect(() => {
-    loadAnalytics();
-  }, [loadAnalytics]);
+function SummaryCards({ pageId, range }: { pageId: string; range: DateRange }) {
+  const { data, loading } = useAnalyticsData(
+    () => pageAnalyticsService.getSummary(pageId, range),
+    [pageId, range.start, range.end]
+  );
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" />
-        </div>
-      </DashboardLayout>
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
+        <Skeleton className="h-28" />
+        <Skeleton className="h-28" />
+        <Skeleton className="h-28" />
+      </div>
     );
   }
 
-  if (!data) {
-    return (
-      <DashboardLayout>
-        <div className="text-center py-12">
-          <h2 className="text-xl font-bold text-top">No data yet</h2>
-          <p className="text-high">Share your page to start seeing analytics</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
+  const cards = [
+    { label: 'Page Views', value: data?.totalViews ?? 0, icon: 'eye', color: 'bg-green' },
+    { label: 'Unique Visitors', value: data?.uniqueVisitors ?? 0, icon: 'users', color: 'bg-blue' },
+    { label: 'Link Clicks', value: data?.totalClicks ?? 0, icon: 'mouse-pointer-click', color: 'bg-pink' },
+  ] as const;
 
-  const totalLinkClicks = data.links.reduce((sum, l) => sum + l.clicks, 0);
+  return (
+    <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
+      {cards.map((c) => (
+        <div key={c.label} className={cn('rounded-4xl p-6', c.color)}>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-top">{c.label}</span>
+            <Icon icon={c.icon} className="w-5 h-5 text-top" />
+          </div>
+          <div className="text-3xl font-bold text-top">{c.value.toLocaleString()}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Daily activity chart ────────────────────────────────────────────────────
+
+function DailyChart({ pageId, range }: { pageId: string; range: DateRange }) {
+  const { data, loading } = useAnalyticsData(
+    () => pageAnalyticsService.getDaily(pageId, range),
+    [pageId, range.start, range.end]
+  );
+
+  if (loading) return <Skeleton className="h-[320px]" />;
+
+  const chartData = (data ?? []).map((d) => ({
+    // Append T12:00:00Z so Date parsing is UTC-noon — avoids off-by-one from locale timezone
+    date: new Date(d.date + 'T12:00:00Z').toLocaleDateString('en', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    }),
+    views: d.views,
+    uniqueVisitors: d.uniqueVisitors,
+    clicks: d.clicks,
+  }));
+
+  return (
+    <div className="rounded-4xl py-6">
+      <h3 className="font-semibold text-top mb-4">Daily Activity</h3>
+      <ActivityChart data={chartData} />
+    </div>
+  );
+}
+
+// ─── Pie charts ──────────────────────────────────────────────────────────────
+
+function SourcesPie({ pageId, range }: { pageId: string; range: DateRange }) {
+  const { data, loading } = useAnalyticsData(
+    () => pageAnalyticsService.getSources(pageId, range),
+    [pageId, range.start, range.end]
+  );
+  return (
+    <div className="rounded-4xl bg-bottom">
+      <h3 className="font-semibold text-top mb-2">Traffic Sources</h3>
+      {loading ? (
+        <Skeleton className="h-[220px] mt-2" />
+      ) : (
+        <PieChart title="Sources" data={(data ?? []).map((s) => ({ name: s.source, y: s.count }))} />
+      )}
+    </div>
+  );
+}
+
+function CountriesPie({ pageId, range }: { pageId: string; range: DateRange }) {
+  const { data, loading } = useAnalyticsData(
+    () => pageAnalyticsService.getCountries(pageId, range),
+    [pageId, range.start, range.end]
+  );
+  return (
+    <div className="rounded-4xl bg-bottom">
+      <h3 className="font-semibold text-top mb-2">Countries</h3>
+      {loading ? (
+        <Skeleton className="h-[220px] mt-2" />
+      ) : (
+        <PieChart title="Countries" data={(data ?? []).map((c) => ({ name: c.country, y: c.count }))} />
+      )}
+    </div>
+  );
+}
+
+function DevicesPie({ pageId, range }: { pageId: string; range: DateRange }) {
+  const { data, loading } = useAnalyticsData(
+    () => pageAnalyticsService.getDevices(pageId, range),
+    [pageId, range.start, range.end]
+  );
+  return (
+    <div className="rounded-4xl bg-bottom">
+      <h3 className="font-semibold text-top mb-2">Devices</h3>
+      {loading ? (
+        <Skeleton className="h-[220px] mt-2" />
+      ) : (
+        <PieChart title="Devices" data={(data ?? []).map((d) => ({ name: d.device, y: d.count }))} />
+      )}
+    </div>
+  );
+}
+
+// ─── Link performance ────────────────────────────────────────────────────────
+
+function LinkPerformance({ pageId, range }: { pageId: string; range: DateRange }) {
+  const { data: links, loading } = useAnalyticsData(
+    () => pageAnalyticsService.getLinks(pageId, range),
+    [pageId, range.start, range.end]
+  );
+
   const now = new Date().toISOString();
-  const temporaryLinks = data.links.filter((l) => l.expires_at);
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        <Skeleton className="h-6 w-40" />
+        {[...Array(3)].map((_, i) => (
+          <Skeleton key={i} className="h-16 rounded-3xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!links?.length) return null;
+
+  const temporaryLinks = links.filter((l) => l.expires_at);
+
+  return (
+    <div className="space-y-6">
+      {temporaryLinks.length > 0 && (
+        <div className="rounded-4xl py-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Icon icon="clock" className="w-5 h-5 text-high" />
+            <h3 className="font-semibold text-top">Temporary Links</h3>
+          </div>
+          <div className="space-y-3">
+            {temporaryLinks.map((link) => {
+              const isExpired = !!link.expires_at && link.expires_at < now;
+              return (
+                <div key={link.id} className="flex items-center gap-4 p-3 rounded-3xl border-2 border-top">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-top truncate">{link.title}</p>
+                      <span className={cn('px-2 py-0.5 rounded-full text-xs', isExpired ? 'bg-orange/20 text-orange' : 'bg-yellow/20 text-yellow-700')}>
+                        {isExpired ? 'Expired' : 'Active'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-high">
+                      {isExpired ? 'Expired' : 'Expires'}{' '}
+                      {new Date(link.expires_at!).toLocaleString('en', { dateStyle: 'medium', timeStyle: 'short' })}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-top">{link.clicks.toLocaleString()}</p>
+                    <p className="text-xs text-high">clicks</p>
+                  </div>
+                  <div className="text-right min-w-[50px]">
+                    <p className="font-bold text-top">{link.ctr}%</p>
+                    <p className="text-xs text-high">CTR</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-4xl py-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-top">Link Performance</h3>
+          <span className="text-sm text-high">{links.length} links</span>
+        </div>
+        <div className="space-y-3">
+          {links.map((link, i) => (
+            <div key={link.id} className="flex items-center gap-4 p-3 rounded-3xl border-2 border-top">
+              <span className="text-lg font-bold text-high w-8 text-center">{i + 1}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-medium text-top truncate">{link.title}</p>
+                  {!link.is_active && (
+                    <span className="px-2 py-0.5 rounded-full bg-orange/20 text-orange text-xs">Hidden</span>
+                  )}
+                  {link.expires_at && (
+                    <span className="px-2 py-0.5 rounded-full bg-yellow/20 text-yellow-700 text-xs">⏳ Temp</span>
+                  )}
+                </div>
+                <p className="text-sm text-high truncate">{link.url}</p>
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-top">{link.clicks.toLocaleString()}</p>
+                <p className="text-xs text-high">clicks</p>
+              </div>
+              <div className="text-right min-w-[60px]">
+                <p className="font-bold text-top">{link.ctr}%</p>
+                <p className="text-xs text-high">CTR</p>
+              </div>
+              <div className="hidden sm:block w-24">
+                <div className="h-2 bg-mid/30 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-green rounded-full transition-all"
+                    style={{ width: `${Math.min(link.ctr * 5, 100)}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Full page skeleton ──────────────────────────────────────────────────────
+
+function PageSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
+        <Skeleton className="h-28" />
+        <Skeleton className="h-28" />
+        <Skeleton className="h-28" />
+      </div>
+      <Skeleton className="h-[320px]" />
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
+        <Skeleton className="h-[280px]" />
+        <Skeleton className="h-[280px]" />
+        <Skeleton className="h-[280px]" />
+      </div>
+    </div>
+  );
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────────
+
+export default function AnalyticsPage() {
+  const pageId = usePageId();
+  const [activeDays, setActiveDays] = useState<PresetDays>(7);
+
+  // Derive the date range from the active preset.
+  // Computed fresh on every render so it's always "last N days from now".
+  const range = dateRangeForDays(activeDays);
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h1 className="text-2xl font-bold text-top">Analytics</h1>
-          <div className="flex gap-2 bg-bottom rounded-full p-1">
-            {([7, 30] as const).map((days) => (
-              <button
-                key={days}
-                onClick={() => setTimeRange(days)}
-                className={cn(
-                  'px-4 py-2 rounded-full text-sm font-medium transition-colors',
-                  timeRange === days ? 'bg-green text-top' : 'text-high hover:bg-low'
-                )}
-              >
-                {days} days
-              </button>
-            ))}
-          </div>
+          <TimeRangeSelector activeDays={activeDays} onChange={setActiveDays} />
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
-          <div className="rounded-4xl p-6 bg-green">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-top">Page Views</span>
-              <Icon icon="eye" className="w-5 h-5 text-top" />
+        {/* Always render skeleton until pageId is resolved — avoids hydration mismatch */}
+        {!pageId ? (
+          <PageSkeleton />
+        ) : (
+          <>
+            <SummaryCards pageId={pageId} range={range} />
+            <DailyChart pageId={pageId} range={range} />
+            <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
+              <SourcesPie pageId={pageId} range={range} />
+              <CountriesPie pageId={pageId} range={range} />
+              <DevicesPie pageId={pageId} range={range} />
             </div>
-            <div className="text-3xl font-bold text-top">{data.totalViews.toLocaleString()}</div>
-          </div>
-
-          <div className="rounded-4xl p-6 bg-blue">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-top">Unique Visitors</span>
-              <Icon icon="users" className="w-5 h-5 text-top" />
-            </div>
-            <div className="text-3xl font-bold text-top">{data.uniqueVisitors.toLocaleString()}</div>
-          </div>
-
-          <div className="rounded-4xl p-6 bg-pink">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-top">Link Clicks</span>
-              <Icon icon="mouse-pointer-click" className="w-5 h-5 text-top" />
-            </div>
-            <div className="text-3xl font-bold text-top">{totalLinkClicks.toLocaleString()}</div>
-          </div>
-
-        </div>
-
-        {/* Daily Activity Chart */}
-        <div className="rounded-4xl py-6">
-          <h3 className="font-semibold text-top mb-4">Daily Activity</h3>
-          <ActivityChart data={data.dailyStats} />
-        </div>
-
-        {/* Temporary Links Section */}
-        {temporaryLinks.length > 0 && (
-          <div className="rounded-4xl py-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Icon icon="clock" className="w-5 h-5 text-high" />
-              <h3 className="font-semibold text-top">Temporary Links</h3>
-            </div>
-            <div className="space-y-3">
-              {temporaryLinks.map((link) => {
-                const isExpired = link.expires_at! < now;
-                const expiresDate = new Date(link.expires_at!);
-                return (
-                  <div key={link.id} className="flex items-center gap-4 p-3 rounded-3xl border border-2 border-top">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-top truncate">{link.title}</p>
-                        <span
-                          className={cn(
-                            'px-2 py-0.5 rounded-full text-xs',
-                            isExpired ? 'bg-orange/20 text-orange' : 'bg-yellow/20 text-yellow-700'
-                          )}
-                        >
-                          {isExpired ? 'Expired' : 'Active'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-high">
-                        {isExpired ? 'Expired' : 'Expires'}{' '}
-                        {expiresDate.toLocaleString('en', { dateStyle: 'medium', timeStyle: 'short' })}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-top">{link.clicks}</p>
-                      <p className="text-xs text-high">clicks</p>
-                    </div>
-                    <div className="text-right min-w-[50px]">
-                      <p className="font-bold text-top">{link.ctr}%</p>
-                      <p className="text-xs text-high">CTR</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Individual Link Analytics */}
-        <div className="rounded-4xl py-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-top">Link Performance</h3>
-            <span className="text-sm text-high">{data.links.length} links</span>
-          </div>
-
-          {data.links.length > 0 ? (
-            <div className="space-y-3">
-              {data.links.map((link, i) => (
-                <div key={link.id} className="flex items-center gap-4 p-3 rounded-3xl border border-2 border-top">
-                  <span className="text-lg font-bold text-high w-8 text-center">{i + 1}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium text-top truncate">{link.title}</p>
-                      {!link.is_active && (
-                        <span className="px-2 py-0.5 rounded-full bg-orange/20 text-orange text-xs">
-                          Hidden
-                        </span>
-                      )}
-                      {link.expires_at && (
-                        <span className="px-2 py-0.5 rounded-full bg-yellow/20 text-yellow-700 text-xs">
-                          ⏳ Temp
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-high truncate">{link.url}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-top">{link.clicks}</p>
-                    <p className="text-xs text-high">clicks</p>
-                  </div>
-                  <div className="text-right min-w-[60px]">
-                    <p className="font-bold text-top">{link.ctr}%</p>
-                    <p className="text-xs text-high">CTR</p>
-                  </div>
-                  <div className="hidden sm:block w-24">
-                    <div className="h-2 bg-mid/30 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-green rounded-full transition-all"
-                        style={{ width: `${Math.min(link.ctr * 5, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-high text-center py-8">No links yet</p>
-          )}
-        </div>
-
-        {/* Devices */}
-        {data.devices.length > 0 && (
-          <div className="rounded-4xl py-6">
-            <h3 className="font-semibold text-top mb-4">Devices</h3>
-            <div className="flex gap-6 flex-wrap">
-              {data.devices.map((d) => (
-                <div key={d.device} className="flex items-center gap-2">
-                  <Icon
-                    icon={
-                      d.device === 'mobile' ? 'smartphone' : d.device === 'tablet' ? 'tablet' : 'monitor'
-                    }
-                    className="w-5 h-5 text-high"
-                  />
-                  <span className="text-high capitalize">{d.device}</span>
-                  <span className="text-top font-medium">
-                    {data.totalViews > 0 ? Math.round((d.count / data.totalViews) * 100) : 0}%
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+            <LinkPerformance pageId={pageId} range={range} />
+          </>
         )}
       </div>
     </DashboardLayout>
