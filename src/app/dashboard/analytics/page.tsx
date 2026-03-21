@@ -166,6 +166,27 @@ function DevicesPie({ pageId, range }: { pageId: string; range: DateRange }) {
   );
 }
 
+function FirstClickPie({ pageId, range }: { pageId: string; range: DateRange }) {
+  const { data, loading } = useAnalyticsData(
+    () => pageAnalyticsService.getFirstClicks(pageId, range),
+    [pageId, range.start, range.end]
+  );
+  return (
+    <div className="rounded-4xl bg-bottom md:col-span-3">
+      <h3 className="font-semibold text-top mb-2">First Click</h3>
+      <p className="text-xs text-high mb-2">The first link each unique visitor tapped</p>
+      {loading ? (
+        <Skeleton className="h-[220px] mt-2" />
+      ) : (
+        <PieChart
+          title="First Click"
+          data={(data ?? []).map((d) => ({ name: d.title, y: d.count }))}
+        />
+      )}
+    </div>
+  );
+}
+
 // ─── Link performance ────────────────────────────────────────────────────────
 
 function LinkPerformance({ pageId, range }: { pageId: string; range: DateRange }) {
@@ -324,6 +345,7 @@ export default function AnalyticsPage() {
               <SourcesPie pageId={pageId} range={range} />
               <CountriesPie pageId={pageId} range={range} />
               <DevicesPie pageId={pageId} range={range} />
+              <FirstClickPie pageId={pageId} range={range} />
             </div>
             <LinkPerformance pageId={pageId} range={range} />
           </>

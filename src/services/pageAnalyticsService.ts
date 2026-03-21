@@ -42,6 +42,12 @@ export interface AnalyticsLink {
   ctr: number;
 }
 
+export interface AnalyticsFirstClick {
+  link_id: string;
+  title: string;
+  count: number;
+}
+
 export interface DateRange {
   start: string; // YYYY-MM-DD UTC
   end: string;   // YYYY-MM-DD UTC
@@ -83,4 +89,7 @@ export const pageAnalyticsService = {
 
   getLinks: (pageId: string, range: DateRange) =>
     get<AnalyticsLink[]>('links', pageId, range),
+
+  getFirstClicks: (pageId: string, range: DateRange) =>
+    get<AnalyticsFirstClick[]>('first-click', pageId, range),
 };
