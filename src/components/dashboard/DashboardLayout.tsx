@@ -87,7 +87,7 @@ function PageSelector({
                   : 'text-top hover:bg-low'
               )}
             >
-              <span className="flex-1 truncate">heybio.co/{page.slug}</span>
+              <span className="flex-1 truncate">/{page.slug}</span>
               {selectedPage.id === page.id && (
                 <Icon icon="check" className="w-3.5 h-3.5 shrink-0" />
               )}
@@ -184,80 +184,91 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         )}
       </header>
 
-      {/* ── Desktop sidebar ────────────────────────────── */}
-      <aside className="hidden md:flex fixed inset-y-0 left-0 w-56 flex-col bg-bottom border-r border-low z-40">
-        <div className="flex flex-col h-full p-4 gap-4 overflow-y-auto">
+      {/* ── Desktop: centered sidebar + content ────────── */}
+      <div className="hidden md:flex max-w-[1200px] mx-auto min-h-[100dvh]">
 
-          {/* Logo + plan badge */}
-          <div className="flex items-center justify-between pt-1 pb-1">
-            <Link href="/" className="text-pink">
-              <SvgAsset src="/logos/logo-full.svg" height={28} />
-            </Link>
-            {!loadingUser && (
-              <Badge variant={isPro ? 'pro' : 'free'}>
-                {isPro ? 'PRO' : 'Free'}
-              </Badge>
-            )}
-          </div>
+        {/* Sidebar — sticky so it travels with the centered container */}
+        <aside className="w-56 shrink-0 sticky top-0 h-screen flex flex-col bg-bottom border-l border-r border-low overflow-y-auto z-40">
+          <div className="flex flex-col h-full p-4 gap-4">
 
-          {/* Page selector */}
-          {loadingUser ? (
-            <div className="h-10 rounded-xl bg-low animate-pulse" />
-          ) : selectedPage ? (
-            <div className="flex flex-col gap-2">
-              <PageSelector pages={pages} selectedPage={selectedPage} onSelect={selectPage} twoLine />
-              <Button variant="outline" size="sm" asChild className="w-full">
-                <Link
-                  href={`/${selectedPage.slug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Icon icon="external-link" className="w-3.5 h-3.5" />
-                  View live page
-                </Link>
-              </Button>
+            {/* Logo + plan badge */}
+            <div className="flex items-center justify-between pt-1 pb-1">
+              <Link href="/" className="text-pink">
+                <SvgAsset src="/logos/logo-full.svg" height={28} />
+              </Link>
+              {!loadingUser && (
+                <Badge variant={isPro ? 'pro' : 'free'}>
+                  {isPro ? 'PRO' : 'Free'}
+                </Badge>
+              )}
             </div>
-          ) : null}
 
-          <div className="h-px bg-low" />
+            {/* Page selector */}
+            {loadingUser ? (
+              <div className="h-10 rounded-xl bg-low animate-pulse" />
+            ) : selectedPage ? (
+              <div className="flex flex-col gap-2">
+                <PageSelector pages={pages} selectedPage={selectedPage} onSelect={selectPage} twoLine />
+                <Button variant="outline" size="sm" asChild className="w-full">
+                  <Link
+                    href={`/${selectedPage.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Icon icon="external-link" className="w-3.5 h-3.5" />
+                    View live page
+                  </Link>
+                </Button>
+              </div>
+            ) : null}
 
-          {/* Nav links */}
-          <nav className="flex flex-col gap-0.5">
-            {NAV_ITEMS.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors text-sm',
-                    isActive
-                      ? 'bg-top text-bottom'
-                      : 'text-high hover:bg-low hover:text-top'
-                  )}
-                >
-                  <Icon icon={item.icon} className="w-4 h-4 shrink-0" />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
+            <div className="h-px bg-low" />
 
-          <div className="flex-1" />
+            {/* Nav links */}
+            <nav className="flex flex-col gap-0.5">
+              {NAV_ITEMS.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors text-sm',
+                      isActive
+                        ? 'bg-top text-bottom'
+                        : 'text-high hover:bg-low hover:text-top'
+                    )}
+                  >
+                    <Icon icon={item.icon} className="w-4 h-4 shrink-0" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
 
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-high hover:bg-low hover:text-top transition-colors font-medium text-sm"
-          >
-            <Icon icon="log-out" className="w-4 h-4 shrink-0" />
-            Log out
-          </button>
-        </div>
-      </aside>
+            <div className="flex-1" />
 
-      {/* ── Main content ───────────────────────────────── */}
-      <main className="md:ml-56 pt-14 pb-24 md:pt-0 md:pb-0 min-h-[100dvh]">
-        <div className="p-4 md:p-8 max-w-4xl mx-auto">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-high hover:bg-low hover:text-top transition-colors font-medium text-sm"
+            >
+              <Icon icon="log-out" className="w-4 h-4 shrink-0" />
+              Log out
+            </button>
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <main className="flex-1 min-w-0 border-r border-low">
+          <div className="p-8 max-w-4xl">
+            {children}
+          </div>
+        </main>
+      </div>
+
+      {/* ── Mobile: main content ───────────────────────── */}
+      <main className="md:hidden pt-14 pb-24 min-h-[100dvh]">
+        <div className="p-4">
           {children}
         </div>
       </main>
