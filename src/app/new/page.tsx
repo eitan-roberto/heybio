@@ -40,10 +40,6 @@ function UsernameForm() {
       const res  = await fetch(`/api/check-username?username=${encodeURIComponent(value)}`);
       const data = await res.json();
       setState(data.available ? 'available' : 'taken');
-      if (data.available) {
-        initDraft(value);
-        setTimeout(() => router.push('/new/links'), 400);
-      }
     } catch {
       setState('idle');
     }

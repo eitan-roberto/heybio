@@ -4,6 +4,7 @@ import { usePageId } from '@/hooks/usePageId';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Icon } from '@/components/ui/icon';
+import { formatCount } from '@/lib/utils';
 
 interface OverviewStats {
   pageViews: number;
@@ -46,7 +47,7 @@ export function DashboardStats() {
     <div className="grid grid-cols-3 gap-3">
       {STAT_CARDS.map(({ key, label, icon, color }) => {
         const raw = stats[key];
-        const display = key === 'clickRate' ? `${raw}%` : raw.toLocaleString();
+        const display = key === 'clickRate' ? `${raw}%` : formatCount(raw);
         return (
           <div key={key} className={`${color} rounded-3xl p-4 md:p-5`}>
             <Icon icon={icon} className="w-4 h-4 text-top mb-2 opacity-70" />

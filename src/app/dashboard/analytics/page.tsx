@@ -8,6 +8,7 @@ import { Icon } from '@/components/ui/icon';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { usePageId } from '@/hooks/usePageId';
 import { pageAnalyticsService, dateRangeForDays, type DateRange } from '@/services/pageAnalyticsService';
+import { formatCount } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 const PRESET_DAYS = [7, 30] as const;
@@ -42,7 +43,7 @@ function SummaryCards({ pageId, range }: { pageId: string; range: DateRange }) {
       {cards.map((c) => (
         <div key={c.label} className={cn('rounded-3xl p-4 md:p-5', c.color)}>
           <Icon icon={c.icon} className="w-4 h-4 text-top mb-2 opacity-70" />
-          <div className="text-2xl md:text-3xl font-bold text-top leading-none">{c.value.toLocaleString()}</div>
+          <div className="text-2xl md:text-3xl font-bold text-top leading-none">{formatCount(c.value)}</div>
           <div className="text-xs font-medium text-top/70 mt-1">{c.label}</div>
         </div>
       ))}
@@ -146,7 +147,7 @@ function LinkPerformance({ pageId, range }: { pageId: string; range: DateRange }
             <p className="text-xs text-mid truncate">{link.url}</p>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-sm font-bold text-top">{link.clicks.toLocaleString()}</p>
+            <p className="text-sm font-bold text-top">{formatCount(link.clicks)}</p>
             <p className="text-xs text-mid">{link.ctr}% CTR</p>
           </div>
           <div className="hidden sm:block w-16">
