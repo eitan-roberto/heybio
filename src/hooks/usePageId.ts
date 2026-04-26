@@ -5,12 +5,14 @@ import { useDashboardStore } from '@/stores/dashboardStore';
 import { createClient } from '@/lib/supabase/client';
 
 /**
- * Resolves the active page ID on the client.
- * Tries the Zustand store (selected page) first, falls back to the first page from Supabase.
- * Always starts as null to avoid hydration mismatches.
+ * Returns the active page ID, reactive to page-selector changes.
+ * Starts as null to avoid hydration mismatches.
  */
 export function usePageId(): string | null {
   const [pageId, setPageId] = useState<string | null>(null);
+
+  // Subscribe to selectedPageId so the effect re-runs on every page switch
+  const selectedPageId = useDashboardStore((state) => state.selectedPageId);
 
   useEffect(() => {
     const selected = useDashboardStore.getState().getSelectedPage();
@@ -19,6 +21,7 @@ export function usePageId(): string | null {
       return;
     }
 
+    // Fallback: fetch first page from DB if store is empty
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
@@ -31,7 +34,7 @@ export function usePageId(): string | null {
           if (data?.[0]) setPageId(data[0].id);
         });
     });
-  }, []);
+  }, [selectedPageId]); // re-run whenever the selected page changes
 
   return pageId;
 }

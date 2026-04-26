@@ -136,7 +136,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col gap-1 overflow-x-hidden">
+    <div className="min-h-screen flex flex-col gap-1 overflow-x-hidden bg-top">
       <Header>
         {isLoggedIn === null ? (
           // Loading skeleton

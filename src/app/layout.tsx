@@ -16,13 +16,18 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         {children}
-        <Toaster 
-          position="top-center"
+        <Toaster
+          position="bottom-center"
           toastOptions={{
+            duration: 2500,
             style: {
-              background: '#09090b',
-              color: '#fafafa',
-              border: '1px solid #3f3f46',
+              background: '#ffffff',
+              color: '#09090b',
+              border: '1px solid #d4d4d8',
+              borderRadius: '16px',
+              fontFamily: '"DM Sans", system-ui, sans-serif',
+              fontWeight: '500',
+              fontSize: '14px',
             },
           }}
         />

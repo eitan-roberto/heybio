@@ -19,6 +19,8 @@
 
   --radius-3xl: 1.5rem;
   --radius-4xl: 2rem;
+
+  --animate-marquee: marquee 30s linear infinite;
 }
 
 html {
@@ -27,7 +29,7 @@ html {
 
 body {
   font-family: "DM Sans", system-ui, sans-serif;
-  background-color: var(--color-top);
+  background-color: var(--color-bottom);
   color: var(--color-high);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -36,4 +38,8 @@ body {
 ::selection {
   background-color: var(--color-green);
   color: var(--color-top);
+}
+
+@keyframes marquee {
+  to { transform: translateX(-50%); }
 }

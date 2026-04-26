@@ -4,190 +4,121 @@ import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { OnboardingLayout } from '@/components/onboarding';
 import { useOnboardingStore } from '@/stores/onboardingStore';
-import { cn } from '@/lib/utils';
 import { RESERVED_SLUGS } from '@/lib/reserved-slugs';
+import { cn } from '@/lib/utils';
 
-type ValidationState = 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
+type State = 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
 
 function UsernameForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { initDraft } = useOnboardingStore();
-  
+
   const [username, setUsername] = useState('');
-  const [validationState, setValidationState] = useState<ValidationState>('idle');
-  const [isReserved, setIsReserved] = useState(false);
+  const [state,    setState]    = useState<State>('idle');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Check for ?u= parameter and auto-validate/skip
+  // ?u= pre-fill from landing page
   useEffect(() => {
     const u = searchParams.get('u');
-    if (u && u.length >= 3) {
-      const cleaned = u.toLowerCase().replace(/[^a-z0-9_]/g, '');
-      setUsername(cleaned);
-      
-      // Check if valid and available
-      const validateAndSkip = async () => {
-        setValidationState('checking');
-        try {
-          const response = await fetch(`/api/check-username?username=${encodeURIComponent(cleaned)}`);
-          const data = await response.json();
+    if (!u || u.length < 3) return;
+    const cleaned = u.toLowerCase().replace(/[^a-z0-9_]/g, '');
+    setUsername(cleaned);
+    check(cleaned);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-          if (data.available) {
-            setValidationState('available');
-            initDraft(cleaned);
-            // Auto-skip to links after short delay
-            setTimeout(() => {
-              router.push('/new/links');
-            }, 500);
-          } else {
-            setValidationState('taken');
-          }
-        } catch {
-          setValidationState('idle');
-        }
-      };
-      
-      validateAndSkip();
+  const check = async (value: string) => {
+    if (value.length < 3 || RESERVED_SLUGS.includes(value)) {
+      setState(value.length > 0 && value.length < 3 ? 'invalid' : RESERVED_SLUGS.includes(value) ? 'invalid' : 'idle');
+      return;
     }
-  }, [searchParams, router, initDraft]);
-
-  // Validate username format
-  const validateFormat = (value: string): boolean => {
-    // 3-30 chars, alphanumeric and underscores only
-    const regex = /^[a-zA-Z0-9_]{3,30}$/;
-    return regex.test(value);
+    setState('checking');
+    try {
+      const res  = await fetch(`/api/check-username?username=${encodeURIComponent(value)}`);
+      const data = await res.json();
+      setState(data.available ? 'available' : 'taken');
+      if (data.available) {
+        initDraft(value);
+        setTimeout(() => router.push('/new/links'), 400);
+      }
+    } catch {
+      setState('idle');
+    }
   };
 
-  const handleUsernameChange = (value: string) => {
-    // Only allow valid characters
+  const handleChange = (value: string) => {
     const cleaned = value.toLowerCase().replace(/[^a-z0-9_]/g, '');
     setUsername(cleaned);
-    setIsReserved(false);
-
     if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    if (cleaned.length === 0) {
-      setValidationState('idle');
-      return;
-    }
-
-    if (cleaned.length < 3) {
-      setValidationState('invalid');
-      return;
-    }
-
-    if (RESERVED_SLUGS.includes(cleaned)) {
-      setIsReserved(true);
-      setValidationState('invalid');
-      return;
-    }
-
-    if (!validateFormat(cleaned)) {
-      setValidationState('invalid');
-      return;
-    }
-
-    // Debounced API availability check
-    setValidationState('checking');
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const response = await fetch(`/api/check-username?username=${encodeURIComponent(cleaned)}`);
-        const data = await response.json();
-        setValidationState(data.available ? 'available' : 'taken');
-      } catch {
-        setValidationState('idle');
-      }
-    }, 500);
+    if (!cleaned) { setState('idle'); return; }
+    if (cleaned.length < 3) { setState('invalid'); return; }
+    if (RESERVED_SLUGS.includes(cleaned)) { setState('invalid'); return; }
+    setState('checking');
+    debounceRef.current = setTimeout(() => check(cleaned), 500);
   };
 
   const handleContinue = () => {
-    if (validationState !== 'available') return;
-    
-    // Initialize the draft with the chosen username
+    if (state !== 'available') return;
     initDraft(username);
-    
-    // Navigate to next step
     router.push('/new/links');
   };
 
-  const getValidationMessage = () => {
-    switch (validationState) {
-      case 'checking':
-        return { text: 'Checking availability...', color: 'text-top' };
-      case 'available':
-        return { text: `heybio.co/${username} is available!`, color: 'text-green-600' };
-      case 'taken':
-        return { text: 'This username is already taken', color: 'text-red-600' };
-      case 'invalid':
-        if (isReserved) return { text: 'This username is reserved', color: 'text-red-600' };
-        if (username.length > 0 && username.length < 3) return { text: 'Username must be at least 3 characters', color: 'text-red-600' };
-        return { text: 'Only letters, numbers, and underscores allowed', color: 'text-red-600' };
-      default:
-        return null;
-    }
-  };
-
-  const validationMessage = getValidationMessage();
+  const hint = {
+    idle:      null,
+    checking:  null,
+    available: { text: `heybio.co/${username} is yours!`, ok: true  },
+    taken:     { text: 'Already taken — try another',    ok: false },
+    invalid:   { text: username.length > 0 && username.length < 3 ? 'At least 3 characters' : 'Letters, numbers and _ only', ok: false },
+  }[state];
 
   return (
-    <OnboardingLayout
-      step={1}
-      title="Claim your link"
-      subtitle="Choose a unique username for your bio page"
-      showBack={false}
-    >
-      <div className="space-y-6">
-        {/* Username input */}
-        <div className="space-y-2">
-          <div className="flex items-center rounded-xl border border-low focus-within:ring-2 focus-within:ring-top/10 focus-within:border-mid transition-all overflow-hidden">
-            <span className="pl-4 text-top text-lg select-none">heybio.co/</span>
-            <Input
-              type="text"
-              placeholder="yourname"
-              value={username}
-              onChange={(e) => handleUsernameChange(e.target.value)}
-              className="flex-1 border-0 text-lg focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-top"
-              maxLength={30}
-              autoFocus
-            />
-            <div className="pr-4">
-              {validationState === 'checking' && (
-                <Icon icon="loader-2" className="w-5 h-5 text-top animate-spin" />
-              )}
-              {validationState === 'available' && (
-                <Icon icon="check" className="w-5 h-5 text-green-500" />
-              )}
-              {(validationState === 'taken' || validationState === 'invalid') && (
-                <Icon icon="x" className="w-5 h-5 text-red-500" />
-              )}
-            </div>
+    <OnboardingLayout step={1} title="Claim your link" subtitle="Choose a unique username" showBack={false}>
+      <div className="space-y-4">
+        {/* Input */}
+        <div className={cn(
+          'flex items-center rounded-2xl border-2 transition-colors overflow-hidden bg-white',
+          state === 'available' ? 'border-green' : state === 'taken' || state === 'invalid' ? 'border-orange' : 'border-low focus-within:border-top'
+        )}>
+          <span className="pl-4 pr-1 text-mid text-base select-none whitespace-nowrap">heybio.co/</span>
+          <input
+            type="text"
+            placeholder="yourname"
+            value={username}
+            onChange={(e) => handleChange(e.target.value)}
+            maxLength={30}
+            autoFocus
+            autoCapitalize="none"
+            autoCorrect="off"
+            className="flex-1 h-12 pr-4 text-base text-top font-semibold outline-none bg-transparent placeholder:text-mid"
+          />
+          <div className="pr-4 flex items-center">
+            {state === 'checking'  && <Icon icon="loader-2" className="w-4 h-4 text-mid animate-spin" />}
+            {state === 'available' && <Icon icon="check"   className="w-4 h-4 text-green"            />}
+            {(state === 'taken' || state === 'invalid') && <Icon icon="x" className="w-4 h-4 text-orange" />}
           </div>
-          
-          {validationMessage && (
-            <p className={cn("text-sm", validationMessage.color)}>
-              {validationMessage.text}
-            </p>
-          )}
         </div>
 
-        {/* Continue button */}
+        {hint && (
+          <p className={cn('text-sm', hint.ok ? 'text-green-700' : 'text-orange')}>
+            {hint.text}
+          </p>
+        )}
+
         <Button
           onClick={handleContinue}
-          disabled={validationState !== 'available'}
-          className="w-full py-6 text-lg"
+          disabled={state !== 'available'}
+          loading={state === 'checking'}
+          size="lg"
+          className="w-full"
         >
           Continue
-          <Icon icon="arrow-right" className="ml-2 w-5 h-5" />
+          <Icon icon="arrow-right" className="w-4 h-4" />
         </Button>
 
-        {/* Hint */}
-        <p className="text-xs text-center text-top">
-          You can change this later in settings
-        </p>
+        <p className="text-xs text-center text-mid">You can change this later</p>
       </div>
     </OnboardingLayout>
   );
@@ -195,7 +126,11 @@ function UsernameForm() {
 
 export default function ChooseUsernamePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" /></div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Icon icon="loader-2" className="w-6 h-6 animate-spin text-mid" />
+      </div>
+    }>
       <UsernameForm />
     </Suspense>
   );

@@ -3,10 +3,10 @@
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { SvgAsset } from '@/components/ui/svgasset';
 import { createClient } from '@/lib/supabase/client';
 
@@ -14,177 +14,117 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
-  
-  const [email, setEmail] = useState('');
+
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading,  setLoading]  = useState(false);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
-
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      setError(error.message);
+      toast.error(error.message);
       setLoading(false);
       return;
     }
-
     router.push(redirect);
     router.refresh();
   };
 
   const handleGoogleLogin = async () => {
-    setError('');
     setLoading(true);
-
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}`,
-      },
+      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}` },
     });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    }
+    if (error) { toast.error(error.message); setLoading(false); }
   };
 
   return (
-    <div className="w-full max-w-md bg-bottom px-4">
-      {/* Logo */}
-      <Link href="/" className="block text-center mb-8 text-pink">
-        <SvgAsset src="/logos/logo-full.svg" height={48} className="mx-auto" />
+    <div className="w-full max-w-sm">
+      <Link href="/" className="flex justify-center mb-8 text-pink">
+        <SvgAsset src="/logos/logo-full.svg" height={40} />
       </Link>
 
-      {/* Card */}
-      <div className="border border-2 border-low rounded-4xl p-6 md:p-8">
-        <h1 className="text-2xl font-bold text-center mb-2 text-top">
-          Welcome back
-        </h1>
-        <p className="text-center text-high mb-8">
-          Sign in to manage your bio page
-        </p>
+      <div className="bg-bottom rounded-3xl p-6 shadow-sm border border-low">
+        <h1 className="text-xl font-bold text-top mb-1">Welcome back</h1>
+        <p className="text-sm text-high mb-6">Sign in to manage your page</p>
 
-        {/* Google Login */}
         <Button
-          type="button"
-          className="w-full rounded-full py-6 mb-4"
           onClick={handleGoogleLogin}
-          disabled={loading}
+          loading={loading}
+          size="md"
+          className="w-full mb-4"
         >
-          <Icon icon="google" className="w-5 h-5 mr-2" />
+          <Icon icon="google" className="w-4 h-4" />
           Continue with Google
         </Button>
 
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-low border-1 rounded-full" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-bottom text-high">or</span>
-          </div>
+        <div className="flex items-center gap-3 my-4">
+          <div className="flex-1 h-px bg-low" />
+          <span className="text-xs text-mid">or</span>
+          <div className="flex-1 h-px bg-low" />
         </div>
 
-        {/* Email Login Form */}
-        <form onSubmit={handleEmailLogin} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-top">Email</Label>
-            <div className="relative">
-              <Icon icon="mail" className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-high" />
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 rounded-xl py-6 bg-bottom border-2 border-top"
-                required
-              />
-            </div>
+        <form onSubmit={handleEmailLogin} className="space-y-3">
+          <div>
+            <label className="text-xs font-semibold text-high mb-1.5 block">Email</label>
+            <Input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
           </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-top">Password</Label>
-              <Link href="/forgot-password" className="text-sm text-pink hover:underline">
-                Forgot password?
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold text-high">Password</label>
+              <Link href="/forgot-password" className="text-xs text-mid hover:text-top transition-colors">
+                Forgot?
               </Link>
             </div>
-            <div className="relative">
-              <Icon icon="lock" className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-high" />
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 rounded-xl py-6 bg-bottom border-2 border-top"
-                required
-              />
-            </div>
+            <Input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+            />
           </div>
 
-          {error && (
-            <div className="p-3 rounded-xl bg-orange/20 text-orange text-sm">
-              {error}
-            </div>
-          )}
-
-          <Button
-            type="submit"
-            className="w-full rounded-full py-6"
-            disabled={loading}
-          >
-            {loading ? (
-              <Icon icon="loader-2" className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                Sign in
-                <Icon icon="arrow-right" className="ml-2 w-5 h-5" />
-              </>
-            )}
+          <Button type="submit" loading={loading} size="md" className="w-full mt-2">
+            Sign in
           </Button>
         </form>
       </div>
 
-      {/* Sign up link */}
-      <p className="text-center mt-6 text-high">
-        Don&apos;t have an account?{' '}
-        <Link href="/signup" className="text-pink font-medium hover:underline">
-          Sign up
+      <p className="text-center mt-5 text-sm text-high">
+        No account?{' '}
+        <Link href="/signup" className="font-semibold text-top hover:underline">
+          Sign up free
         </Link>
       </p>
     </div>
   );
 }
 
-function LoginFallback() {
-  return (
-    <div className="w-full max-w-md px-4">
-      <div className="block text-center mb-8 text-pink">
-        <SvgAsset src="/logos/logo-full.svg" height={48} className="mx-auto" />
-      </div>
-      <div className="bg-low rounded-4xl p-8 flex items-center justify-center min-h-[400px]">
-        <Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" />
-      </div>
-    </div>
-  );
-}
-
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bottom p-4">
-      <Suspense fallback={<LoginFallback />}>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <Suspense fallback={
+        <div className="w-full max-w-sm">
+          <div className="flex justify-center mb-8">
+            <div className="h-10 w-32 bg-high/20 rounded-full animate-pulse" />
+          </div>
+          <div className="bg-bottom rounded-3xl p-6 h-80 animate-pulse" />
+        </div>
+      }>
         <LoginForm />
       </Suspense>
     </div>

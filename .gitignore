@@ -23,6 +23,9 @@
 # misc
 .DS_Store
 *.pem
+*.sql
+/supabase
+/.claude/*
 
 # debug
 npm-debug.log*

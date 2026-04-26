@@ -2,188 +2,206 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { ConfirmSheet } from '@/components/ui/confirm-sheet';
 import { createClient } from '@/lib/supabase/client';
-import { cn } from '@/lib/utils';
+import { useDashboardStore } from '@/stores/dashboardStore';
+import { analyticsService } from '@/services/analyticsService';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [email, setEmail] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [updating, setUpdating] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const { pages, setPages, getSelectedPage, selectPage } = useDashboardStore();
+  const selectedPage = getSelectedPage();
+
+  const [loading,          setLoading]          = useState(true);
+  const [email,            setEmail]            = useState('');
+  const [newPassword,      setNewPassword]      = useState('');
+  const [confirmPassword,  setConfirmPassword]  = useState('');
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+  const [showDeletePage,   setShowDeletePage]   = useState(false);
+  const [deletingPage,     setDeletingPage]     = useState(false);
+  const [showDeleteAccount,setShowDeleteAccount]= useState(false);
+  const [deletingAccount,  setDeletingAccount]  = useState(false);
 
   useEffect(() => {
-    const loadUser = async () => {
+    const load = async () => {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUser(user);
-        setEmail(user.email || '');
-      }
+      if (user) setEmail(user.email || '');
       setLoading(false);
     };
-    loadUser();
+    load();
   }, []);
 
-  const handleUpdateEmail = async () => {
-    if (!email) return;
-    setUpdating(true);
-    setMessage('');
-
-    const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ email });
-
-    if (error) {
-      setMessage(`Error: ${error.message}`);
-    } else {
-      setMessage('Check your new email for confirmation link');
-    }
-    setUpdating(false);
-  };
-
   const handleUpdatePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      setMessage('Passwords do not match');
-      return;
-    }
-    if (newPassword.length < 6) {
-      setMessage('Password must be at least 6 characters');
-      return;
-    }
-
-    setUpdating(true);
-    setMessage('');
-
+    if (!newPassword) return;
+    if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }
+    if (newPassword.length < 6) { toast.error('Password must be at least 6 characters'); return; }
+    setUpdatingPassword(true);
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password: newPassword });
-
     if (error) {
-      setMessage(`Error: ${error.message}`);
+      toast.error(error.message);
     } else {
-      setMessage('Password updated successfully');
+      toast.success('Password updated!');
       setNewPassword('');
       setConfirmPassword('');
     }
-    setUpdating(false);
+    setUpdatingPassword(false);
+  };
+
+  const handleDeletePage = async () => {
+    if (!selectedPage) return;
+    setDeletingPage(true);
+    const supabase = createClient();
+    const { error } = await supabase.from('pages').delete().eq('id', selectedPage.id);
+    if (error) {
+      toast.error('Could not delete page. Try again.');
+      setDeletingPage(false);
+      return;
+    }
+    const remaining = pages.filter((p) => p.id !== selectedPage.id);
+    setPages(remaining);
+    if (remaining.length > 0) selectPage(remaining[0].id);
+    analyticsService.track('page_deleted', { page_id: selectedPage.id });
+    toast.success('Page deleted');
+    router.push('/dashboard');
   };
 
   const handleDeleteAccount = async () => {
-    setDeleting(true);
+    setDeletingAccount(true);
     const supabase = createClient();
-    
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
-    if (currentUser) {
-      await supabase.from('pages').delete().eq('user_id', currentUser.id);
-    }
-
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) await supabase.from('pages').delete().eq('user_id', user.id);
     await supabase.auth.signOut();
+    analyticsService.track('account_deleted', {});
     router.push('/');
+  };
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/login');
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Icon icon="loader-2" className="w-8 h-8 animate-spin text-mid" />
+      <div className="space-y-6 max-w-lg">
+        <Skeleton className="h-8 w-24" />
+        <Skeleton className="h-32 rounded-3xl" />
+        <Skeleton className="h-40 rounded-3xl" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-        <h1 className="text-2xl font-bold text-top">Settings</h1>
+    <div className="space-y-5 max-w-lg">
+      <h1 className="text-xl font-bold text-top">Settings</h1>
 
-        {message && (
-          <div className={cn(
-            "rounded-4xl p-4",
-            message.includes('Error') || message.includes('not match') ? 'bg-orange' : 'bg-green'
-          )}>
-            <p className="text-top text-sm">{message}</p>
+      {/* Account info */}
+      <div className="bg-bottom border border-low rounded-3xl p-5 space-y-1">
+        <p className="text-sm font-semibold text-top">Account</p>
+        <p className="text-sm text-mid">{email}</p>
+      </div>
+
+      {/* Password */}
+      <div className="bg-bottom border border-low rounded-3xl p-5 space-y-4">
+        <p className="text-sm font-semibold text-top">Change password</p>
+        <Input
+          type="password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          placeholder="New password"
+        />
+        <Input
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="Confirm new password"
+        />
+        <Button
+          onClick={handleUpdatePassword}
+          loading={updatingPassword}
+          disabled={!newPassword || !confirmPassword}
+          variant="success"
+          size="sm"
+        >
+          Update password
+        </Button>
+      </div>
+
+      {/* Log out (mobile only) */}
+      <div className="md:hidden bg-bottom border border-low rounded-3xl p-5">
+        <Button variant="outline" size="md" className="w-full" onClick={handleLogout}>
+          <Icon icon="log-out" className="w-4 h-4" />
+          Log out
+        </Button>
+      </div>
+
+      {/* Danger zone */}
+      <div className="border-2 border-orange/30 rounded-3xl p-5 space-y-4">
+        <p className="text-sm font-semibold text-orange">Danger zone</p>
+
+        {/* Delete page */}
+        {selectedPage && (
+          <div className="space-y-2">
+            <p className="text-sm text-high">
+              Delete <span className="font-semibold text-top">{selectedPage.displayName}</span> — removes the page and all its links permanently.
+            </p>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => setShowDeletePage(true)}
+            >
+              <Icon icon="trash-2" className="w-4 h-4" />
+              Delete page
+            </Button>
           </div>
         )}
 
-        <div className="rounded-4xl space-y-4">
-          <h2 className="font-semibold text-top">Email</h2>
-          <div>
-            <label className="text-sm text-high block mb-1">Email Address</label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="rounded-xl bg-bottom border-2 border-top"
-            />
-          </div>
-          <Button
-            onClick={handleUpdateEmail}
-            disabled={updating || email === user?.email}
-            className="rounded-full bg-green text-top hover:bg-green/80"
-          >
-            {updating ? <Icon icon="loader-2" className="w-4 h-4 animate-spin" /> : 'Update Email'}
-          </Button>
-        </div>
+        <div className="h-px bg-orange/20" />
 
-        <div className="rounded-4xl space-y-4">
-          <h2 className="font-semibold text-top">Change Password</h2>
-          <div>
-            <label className="text-sm text-high block mb-1">New Password</label>
-            <Input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="rounded-xl bg-bottom border-2 border-top"
-              placeholder="••••••••"
-            />
-          </div>
-          <div>
-            <label className="text-sm text-high block mb-1">Confirm New Password</label>
-            <Input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="rounded-xl bg-bottom border-2 border-top"
-              placeholder="••••••••"
-            />
-          </div>
-          <Button
-            onClick={handleUpdatePassword}
-            disabled={updating || !newPassword || !confirmPassword}
-            className="rounded-full bg-green text-top hover:bg-green/80"
-          >
-            {updating ? <Icon icon="loader-2" className="w-4 h-4 animate-spin" /> : 'Update Password'}
-          </Button>
-        </div>
-
-        <div className="rounded-4xl p-6 bg-orange/20 space-y-4">
-          <h2 className="font-semibold text-orange">Danger Zone</h2>
-          <p className="text-high text-sm">
-            Once you delete your account, there is no going back. This will permanently delete your account and all your pages.
+        {/* Delete account */}
+        <div className="space-y-2">
+          <p className="text-sm text-high">
+            Delete account — permanently removes your account and all pages. Cannot be undone.
           </p>
           <Button
-            onClick={() => setShowDeleteDialog(true)}
-            className="rounded-full bg-orange text-top hover:bg-orange/80"
+            variant="danger"
+            size="sm"
+            onClick={() => setShowDeleteAccount(true)}
           >
-            <Icon icon="trash-2" className="w-4 h-4 mr-2" />
-            Delete Account
+            <Icon icon="trash-2" className="w-4 h-4" />
+            Delete account
           </Button>
         </div>
-
-        <ConfirmDialog
-          isOpen={showDeleteDialog}
-          onClose={() => setShowDeleteDialog(false)}
-          onConfirm={handleDeleteAccount}
-          title="Delete your account?"
-          description="This will permanently delete your account, all your bio pages, and all associated data. This action cannot be undone."
-          confirmText="Delete Account"
-          variant="danger"
-        />
       </div>
+
+      <ConfirmSheet
+        open={showDeletePage}
+        onClose={() => setShowDeletePage(false)}
+        onConfirm={handleDeletePage}
+        title={`Delete "${selectedPage?.displayName}"?`}
+        description="This will permanently delete this page and all its links. This cannot be undone."
+        confirmText="Delete page"
+        cancelText="Keep it"
+        loading={deletingPage}
+      />
+
+      <ConfirmSheet
+        open={showDeleteAccount}
+        onClose={() => setShowDeleteAccount(false)}
+        onConfirm={handleDeleteAccount}
+        title="Delete your account?"
+        description="This will permanently delete your account, all your pages, and all data. This cannot be undone."
+        confirmText="Delete account"
+        cancelText="Keep account"
+        loading={deletingAccount}
+      />
+    </div>
   );
 }

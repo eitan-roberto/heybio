@@ -6,6 +6,7 @@ export interface DashboardPage {
   slug: string;
   displayName: string;
   bio?: string;
+  avatarUrl?: string;
   themeId: string;
 }
 
@@ -101,7 +102,7 @@ export const useDashboardStore = create<DashboardStore>()(
     }),
     {
       name: 'heybio-dashboard',
-      version: 3,
+      version: 4,
       migrate: () => ({ pages: [], selectedPageId: null, pageCache: {} }),
     }
   )

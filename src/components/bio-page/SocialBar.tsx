@@ -15,7 +15,7 @@ interface SocialBarProps {
 
 const iconNames: Record<SocialPlatform, string> = {
   instagram: 'instagram',
-  twitter: 'twitter',
+  twitter: 'x-social',
   youtube: 'youtube',
   tiktok: 'tiktok',
   spotify: 'music',

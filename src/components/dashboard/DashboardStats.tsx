@@ -17,6 +17,12 @@ async function fetchOverview(pageId: string): Promise<OverviewStats> {
   return res.json();
 }
 
+const STAT_CARDS = [
+  { key: 'pageViews',  label: 'Page views',  icon: 'eye',                  color: 'bg-green' },
+  { key: 'linkClicks', label: 'Link clicks',  icon: 'mouse-pointer-click',  color: 'bg-pink'  },
+  { key: 'clickRate',  label: 'Click rate',   icon: 'bar-chart-2',          color: 'bg-blue'  },
+] as const;
+
 export function DashboardStats() {
   const pageId = usePageId();
   const { data: stats, loading } = useAnalyticsData(
@@ -26,10 +32,10 @@ export function DashboardStats() {
 
   if (!pageId || loading) {
     return (
-      <div className="grid gap-4 md:grid-cols-3">
-        <Skeleton className="h-[100px]" />
-        <Skeleton className="h-[100px]" />
-        <Skeleton className="h-[100px]" />
+      <div className="grid grid-cols-3 gap-3">
+        <Skeleton className="h-24" />
+        <Skeleton className="h-24" />
+        <Skeleton className="h-24" />
       </div>
     );
   }
@@ -37,30 +43,18 @@ export function DashboardStats() {
   if (!stats) return null;
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      <div className="rounded-3xl p-6 bg-green">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-top">Page Views</span>
-          <Icon icon="eye" className="w-5 h-5 text-top" />
-        </div>
-        <div className="text-3xl font-bold text-top">{stats.pageViews.toLocaleString()}</div>
-      </div>
-
-      <div className="rounded-3xl p-6 bg-pink">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-top">Link Clicks</span>
-          <Icon icon="mouse-pointer-click" className="w-5 h-5 text-top" />
-        </div>
-        <div className="text-3xl font-bold text-top">{stats.linkClicks.toLocaleString()}</div>
-      </div>
-
-      <div className="rounded-3xl p-6 bg-blue">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-top">Click Rate</span>
-          <Icon icon="bar-chart-2" className="w-5 h-5 text-top" />
-        </div>
-        <div className="text-3xl font-bold text-top">{stats.clickRate}%</div>
-      </div>
+    <div className="grid grid-cols-3 gap-3">
+      {STAT_CARDS.map(({ key, label, icon, color }) => {
+        const raw = stats[key];
+        const display = key === 'clickRate' ? `${raw}%` : raw.toLocaleString();
+        return (
+          <div key={key} className={`${color} rounded-3xl p-4 md:p-5`}>
+            <Icon icon={icon} className="w-4 h-4 text-top mb-2 opacity-70" />
+            <div className="text-2xl md:text-3xl font-bold text-top leading-none">{display}</div>
+            <div className="text-xs font-medium text-top/70 mt-1">{label}</div>
+          </div>
+        );
+      })}
     </div>
   );
 }
