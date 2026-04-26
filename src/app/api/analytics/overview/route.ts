@@ -20,9 +20,11 @@ export async function GET(request: NextRequest) {
       .single();
     if (!page) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
     const [{ count: pageViews }, { count: linkClicks }] = await Promise.all([
-      supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('page_id', pageId),
-      supabase.from('link_clicks').select('*', { count: 'exact', head: true }).eq('page_id', pageId),
+      supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('page_id', pageId).gte('created_at', since),
+      supabase.from('link_clicks').select('*', { count: 'exact', head: true }).eq('page_id', pageId).gte('created_at', since),
     ]);
 
     const views = pageViews ?? 0;

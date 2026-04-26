@@ -173,7 +173,7 @@ export default function AnalyticsPage() {
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-top">Analytics</h1>
+        <h1 className="text-xl font-bold text-top">Stats</h1>
         <div className="flex bg-low/50 rounded-full p-1 gap-1">
           {PRESET_DAYS.map((days) => (
             <button
