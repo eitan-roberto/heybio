@@ -14,6 +14,28 @@ import { useDashboardStore } from '@/stores/dashboardStore';
 import { analyticsService } from '@/services/analyticsService';
 import { useSubscription } from '@/hooks/useSubscription';
 
+function BillingPortalButton() {
+  const [loading, setLoading] = useState(false);
+
+  const open = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/billing-portal');
+      const { url } = await res.json();
+      if (url) window.open(url, '_blank', 'noopener');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Button size="sm" variant="outline" onClick={open} loading={loading}>
+      <Icon icon="receipt" className="w-4 h-4" />
+      Invoices, receipts & cancel
+    </Button>
+  );
+}
+
 export default function SettingsPage() {
   const router = useRouter();
   const { pages, setPages, getSelectedPage, selectPage } = useDashboardStore();
@@ -116,17 +138,16 @@ export default function SettingsPage() {
         <div className="bg-bottom border border-low rounded-3xl p-5 space-y-3">
           <p className="text-sm font-semibold text-top">Plan</p>
           {subscription.isPro ? (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-pink text-top">PRO</span>
                 {subscription.isTrialing && subscription.trialDaysLeft !== null && (
                   <span className="text-xs text-mid">Trial ends in {subscription.trialDaysLeft} day{subscription.trialDaysLeft !== 1 ? 's' : ''}</span>
                 )}
                 {subscription.status === 'active' && <span className="text-xs text-mid">Active · $2/month</span>}
-                {subscription.status === 'cancelled' && <span className="text-xs text-orange">Cancelled</span>}
+                {subscription.status === 'cancelled' && <span className="text-xs text-orange">Cancelled · access until period ends</span>}
               </div>
-              <p className="text-xs text-mid">Manage your subscription on LemonSqueezy.</p>
-            </div>
+              <BillingPortalButton /></div>
           ) : (
             <div className="space-y-2">
               <p className="text-sm text-mid">You're on the Free plan.</p>
