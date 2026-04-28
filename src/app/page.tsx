@@ -146,7 +146,7 @@ export default function LandingPage() {
           </>
         ) : isLoggedIn ? (
           // Logged in - show Dashboard button
-          <Button size="lg" className="rounded-full bg-top text-bottom hover:bg-high w-full md:w-auto" asChild>
+          <Button size="lg" className="rounded-full w-full md:w-auto" asChild>
             <Link href="/dashboard">Dashboard</Link>
           </Button>
         ) : (
@@ -155,7 +155,7 @@ export default function LandingPage() {
             <Button variant="outline" size="lg" className="rounded-full w-full md:w-auto" asChild>
               <Link href="/login">Log in</Link>
             </Button>
-            <Button size="lg" className="rounded-full bg-top text-bottom hover:bg-high w-full md:w-auto" asChild>
+            <Button size="lg" className="rounded-full w-full md:w-auto" asChild>
               <Link href="/new">Get started</Link>
             </Button>
           </>

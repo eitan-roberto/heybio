@@ -67,7 +67,7 @@ export default function PricingPage() {
             <Button variant="outline" size="lg" className="rounded-full" asChild>
               <Link href="/login">Log in</Link>
             </Button>
-            <Button size="lg" className="rounded-full bg-top text-bottom hover:bg-high" asChild>
+            <Button size="lg" className="rounded-full" asChild>
               <Link href="/new">Get started</Link>
             </Button>
           </div>
@@ -90,7 +90,7 @@ export default function PricingPage() {
             <Button variant="outline" size="lg" className="rounded-full w-full" asChild>
               <Link href="/login">Log in</Link>
             </Button>
-            <Button size="lg" className="rounded-full bg-top text-bottom hover:bg-high w-full" asChild>
+            <Button size="lg" className="rounded-full w-full" asChild>
               <Link href="/new">Get started</Link>
             </Button>
           </div>
@@ -130,7 +130,7 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Button className="mt-auto w-full rounded-full py-6 bg-top text-bottom hover:bg-high" asChild>
+              <Button className="mt-auto w-full rounded-full py-6" asChild>
                 <Link href="/new">Start for free</Link>
               </Button>
             </div>
@@ -159,7 +159,7 @@ export default function PricingPage() {
 
               <div className="mt-8 space-y-2">
                 <Button
-                  className="w-full rounded-full py-6 bg-top text-bottom hover:bg-high font-bold"
+                  className="w-full rounded-full py-6 font-bold"
                   onClick={handleStartTrial}
                   disabled={upgrading}
                 >

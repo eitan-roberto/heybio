@@ -61,8 +61,9 @@ export function TrialStartSheet({ open, onClose, onUseFreeTheme, context = 'them
           <Button
             onClick={handleStartTrial}
             loading={loading}
+            variant="pro"
             size="lg"
-            className="w-full bg-pink hover:bg-pink/90 text-top font-bold"
+            className="w-full font-bold"
           >
             <Icon icon="sparkles" className="w-4 h-4" />
             Start free trial

@@ -9,10 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ConfirmSheet } from '@/components/ui/confirm-sheet';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { createClient } from '@/lib/supabase/client';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import { analyticsService } from '@/services/analyticsService';
 import { useSubscription } from '@/hooks/useSubscription';
+import { cn } from '@/lib/utils';
 
 function BillingPortalButton() {
   const [loading, setLoading] = useState(false);
@@ -36,6 +38,137 @@ function BillingPortalButton() {
   );
 }
 
+function DeleteAccountSheet({
+  open,
+  onClose,
+  hasActiveSubscription,
+}: {
+  open: boolean;
+  onClose: () => void;
+  hasActiveSubscription: boolean;
+}) {
+  const router = useRouter();
+  const [confirmText, setConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [openingPortal, setOpeningPortal] = useState(false);
+
+  const handleDelete = async () => {
+    if (confirmText !== 'DELETE') return;
+    setDeleting(true);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) await supabase.from('pages').delete().eq('user_id', user.id);
+      await supabase.auth.signOut();
+      analyticsService.track('account_deleted', {});
+      router.push('/');
+    } catch {
+      toast.error('Could not delete account. Try again.');
+      setDeleting(false);
+    }
+  };
+
+  const handleOpenPortal = async () => {
+    setOpeningPortal(true);
+    try {
+      const res = await fetch('/api/billing-portal');
+      const { url } = await res.json();
+      if (url) window.open(url, '_blank', 'noopener');
+    } finally {
+      setOpeningPortal(false);
+    }
+  };
+
+  // Reset when closed
+  const handleClose = () => {
+    setConfirmText('');
+    onClose();
+  };
+
+  return (
+    <BottomSheet open={open} onClose={handleClose} title="Delete account">
+      {hasActiveSubscription ? (
+        <div className="space-y-5">
+          <div className="flex gap-3 p-4 rounded-2xl bg-orange/10 border border-orange/20">
+            <Icon icon="alert-triangle" className="w-5 h-5 text-orange shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-top">Active subscription detected</p>
+              <p className="text-sm text-high leading-relaxed">
+                Cancel your Pro subscription before deleting your account. Otherwise you'll keep getting charged with no account to use.
+              </p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Button
+              size="md"
+              className="w-full"
+              onClick={handleOpenPortal}
+              loading={openingPortal}
+            >
+              <Icon icon="receipt" className="w-4 h-4" />
+              Cancel subscription first
+            </Button>
+            <Button variant="ghost" size="md" className="w-full" onClick={handleClose}>
+              Keep my account
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          <div className="space-y-3">
+            <p className="text-sm text-high leading-relaxed">
+              This will permanently delete:
+            </p>
+            <ul className="space-y-1.5 text-sm text-high">
+              {['Your account and login', 'All bio pages you created', 'All links and social icons', 'All analytics data', 'Everything. Forever.'].map((item) => (
+                <li key={item} className="flex items-center gap-2">
+                  <Icon icon="x" className="w-3.5 h-3.5 text-orange shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-top">
+              Type <span className="font-mono bg-low px-1.5 py-0.5 rounded text-orange">DELETE</span> to confirm
+            </p>
+            <Input
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
+              placeholder="DELETE"
+              className={cn(
+                'font-mono transition-colors',
+                confirmText === 'DELETE' && 'border-orange focus:ring-orange/20'
+              )}
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Button
+              variant="danger"
+              size="md"
+              className="w-full"
+              onClick={handleDelete}
+              disabled={confirmText !== 'DELETE'}
+              loading={deleting}
+            >
+              <Icon icon="trash-2" className="w-4 h-4" />
+              Delete my account permanently
+            </Button>
+            <Button variant="ghost" size="md" className="w-full" onClick={handleClose} disabled={deleting}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+    </BottomSheet>
+  );
+}
+
 export default function SettingsPage() {
   const router = useRouter();
   const { pages, setPages, getSelectedPage, selectPage } = useDashboardStore();
@@ -50,7 +183,6 @@ export default function SettingsPage() {
   const [showDeletePage,   setShowDeletePage]   = useState(false);
   const [deletingPage,     setDeletingPage]     = useState(false);
   const [showDeleteAccount,setShowDeleteAccount]= useState(false);
-  const [deletingAccount,  setDeletingAccount]  = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -97,21 +229,15 @@ export default function SettingsPage() {
     router.push('/dashboard');
   };
 
-  const handleDeleteAccount = async () => {
-    setDeletingAccount(true);
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) await supabase.from('pages').delete().eq('user_id', user.id);
-    await supabase.auth.signOut();
-    analyticsService.track('account_deleted', {});
-    router.push('/');
-  };
-
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push('/login');
   };
+
+  // Block deletion if subscription is active or trialing
+  const hasActiveSubscription = subscription.isPro &&
+    (subscription.status === 'active' || subscription.status === 'trialing');
 
   if (loading) {
     return (
@@ -147,11 +273,12 @@ export default function SettingsPage() {
                 {subscription.status === 'active' && <span className="text-xs text-mid">Active · $2/month</span>}
                 {subscription.status === 'cancelled' && <span className="text-xs text-orange">Cancelled · access until period ends</span>}
               </div>
-              <BillingPortalButton /></div>
+              <BillingPortalButton />
+            </div>
           ) : (
             <div className="space-y-2">
               <p className="text-sm text-mid">You're on the Free plan.</p>
-              <Button size="sm" asChild className="bg-pink hover:bg-pink/90 text-top">
+              <Button variant="pro" size="sm" asChild>
                 <NextLink href="/pricing">
                   <Icon icon="sparkles" className="w-4 h-4" />
                   Start 30-day free trial
@@ -206,11 +333,7 @@ export default function SettingsPage() {
             <p className="text-sm text-high">
               Delete <span className="font-semibold text-top">{selectedPage.displayName}</span> — removes the page and all its links permanently.
             </p>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={() => setShowDeletePage(true)}
-            >
+            <Button variant="danger" size="sm" onClick={() => setShowDeletePage(true)}>
               <Icon icon="trash-2" className="w-4 h-4" />
               Delete page
             </Button>
@@ -222,13 +345,9 @@ export default function SettingsPage() {
         {/* Delete account */}
         <div className="space-y-2">
           <p className="text-sm text-high">
-            Delete account — permanently removes your account and all pages. Cannot be undone.
+            Delete account — permanently removes your account, all pages, and all data.
           </p>
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => setShowDeleteAccount(true)}
-          >
+          <Button variant="danger" size="sm" onClick={() => setShowDeleteAccount(true)}>
             <Icon icon="trash-2" className="w-4 h-4" />
             Delete account
           </Button>
@@ -246,15 +365,10 @@ export default function SettingsPage() {
         loading={deletingPage}
       />
 
-      <ConfirmSheet
+      <DeleteAccountSheet
         open={showDeleteAccount}
         onClose={() => setShowDeleteAccount(false)}
-        onConfirm={handleDeleteAccount}
-        title="Delete your account?"
-        description="This will permanently delete your account, all your pages, and all data. This cannot be undone."
-        confirmText="Delete account"
-        cancelText="Keep account"
-        loading={deletingAccount}
+        hasActiveSubscription={hasActiveSubscription}
       />
     </div>
   );

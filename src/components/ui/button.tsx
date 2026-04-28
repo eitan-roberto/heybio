@@ -31,6 +31,8 @@ const buttonVariants = cva(
         // primary
         default: "bg-top text-bottom hover:bg-high",
         solid:   "bg-top text-bottom hover:bg-high",
+        // pro / upsell
+        pro:     "bg-pink text-top hover:bg-pink/90",
         // secondary
         outline: "border-2 border-top text-top hover:bg-top hover:text-bottom",
         // tertiary
