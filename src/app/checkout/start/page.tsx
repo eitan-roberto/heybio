@@ -18,7 +18,7 @@ export default function CheckoutStartPage() {
       const res = await fetch('/api/checkout', { method: 'POST' });
 
       if (res.status === 401) {
-        router.replace('/signup?next=/checkout/start');
+        router.replace('/login?redirect=/checkout/start');
         return;
       }
 

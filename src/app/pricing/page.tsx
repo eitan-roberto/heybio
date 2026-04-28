@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/icon";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { SvgAsset } from "@/components/ui/svgasset";
 import { cn } from "@/lib/utils";
 import { analyticsService } from "@/services/analyticsService";
+import { createClient } from "@/lib/supabase/client";
 
 const FREE_FEATURES = [
   "Unlimited links",
@@ -32,10 +33,22 @@ const PRO_FEATURES = [
 export default function PricingPage() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-  const handleStartTrial = () => {
-    analyticsService.track("pricing_trial_clicked", {});
-    router.push("/checkout/start");
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data: { user } }) => {
+      setIsLoggedIn(!!user);
+    });
+  }, []);
+
+  const handleProCTA = () => {
+    if (isLoggedIn) {
+      analyticsService.track("pricing_trial_clicked", { logged_in: true });
+      router.push("/checkout/start");
+    } else {
+      analyticsService.track("pricing_trial_clicked", { logged_in: false });
+      router.push("/new");
+    }
   };
 
   return (
@@ -144,14 +157,16 @@ export default function PricingPage() {
               <div className="mt-8 space-y-2">
                 <Button
                   className="w-full rounded-full py-6 font-bold"
-                  onClick={handleStartTrial}
+                  onClick={handleProCTA}
                 >
                   <Icon icon="sparkles" className="w-4 h-4 mr-2" />
-                  Start free trial
+                  {isLoggedIn ? "Start free trial" : "Get started free"}
                 </Button>
-                <p className="text-center text-xs text-top/70">
-                  Card required · Cancel anytime · $2/mo after 30 days
-                </p>
+                {isLoggedIn && (
+                  <p className="text-center text-xs text-top/70">
+                    Card required · Cancel anytime · $2/mo after 30 days
+                  </p>
+                )}
               </div>
             </div>
           </div>
