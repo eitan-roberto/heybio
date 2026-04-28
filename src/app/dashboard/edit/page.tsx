@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ConfirmSheet } from '@/components/ui/confirm-sheet';
 import { BioPage } from '@/components/bio-page';
-import { getTheme } from '@/config/themes';
+import { getTheme } from '@/components/bio-page/themes';
 import { createClient } from '@/lib/supabase/client';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import type { CachedTranslation } from '@/stores/dashboardStore';
@@ -677,7 +677,7 @@ export default function EditPage() {
             <div className="space-y-5">
 
               {/* Cover image — only shown for themes with a custom layout */}
-              {getTheme(themeId).layout && getTheme(themeId).layout !== 'standard' && (
+              {getTheme(themeId).hasCustomLayout && (
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-sm font-semibold text-top">Cover photo</span>

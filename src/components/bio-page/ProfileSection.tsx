@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SvgIcon } from '@/components/ui/svg-icon';
-import type { Theme } from '@/config/themes';
+import type { ThemeSpec as Theme } from './themes/types';
 
 interface ProfileSectionProps {
   displayName: string;

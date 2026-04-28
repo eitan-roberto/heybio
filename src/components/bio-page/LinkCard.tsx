@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Icon } from '@/components/ui/icon';
 import { detectLinkIcon, formatUrl } from '@/lib/icons';
-import type { Theme } from '@/config/themes';
+import type { ThemeSpec as Theme } from './themes/types';
 import type { Link } from '@/types';
 import { cn } from '@/lib/utils';
 

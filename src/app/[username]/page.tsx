@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import { Metadata, Viewport } from 'next';
 import { BioPage } from '@/components/bio-page';
-import { getTheme } from '@/config/themes';
 import { createStaticClient } from '@/lib/supabase/static';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { PageTranslation, LinkTranslation, SocialPlatform } from '@/types';
@@ -179,8 +178,13 @@ export async function generateViewport({
 }): Promise<Viewport> {
   const { username } = await params;
   const data = await getPageData(username);
-  const theme = data ? getTheme(data.page.theme_id) : null;
-  return { themeColor: theme?.colors.background ?? '#ffffff' };
+  const BG: Record<string, string> = {
+    clean: '#ffffff', soft: '#faf5f0', bold: '#fef3c7', dark: '#0a0a0a',
+    warm: '#fef2f2', minimal: '#ffffff', gradient: '#667eea', ocean: '#0f172a',
+    sunset: '#f97316', forest: '#14532d', midnight: '#020617', cream: '#fffbeb',
+    superstar: '#0c0c14',
+  };
+  return { themeColor: data ? (BG[data.page.theme_id] ?? '#ffffff') : '#ffffff' };
 }
 
 // Pages are statically generated and revalidated on-demand when edited

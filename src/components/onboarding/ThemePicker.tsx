@@ -1,7 +1,7 @@
 'use client';
 
 import { Icon, IconSize } from '@/components/ui/icon';
-import { freeThemes, proThemes, type Theme } from '@/config/themes';
+import { freeThemes, proThemes, type Theme } from '@/components/bio-page/themes';
 import { cn } from '@/lib/utils';
 
 interface ThemePickerProps {

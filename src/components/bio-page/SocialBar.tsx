@@ -2,7 +2,7 @@
 
 import { Icon } from '@/components/ui/icon';
 import { formatUrl, getPlatformConfig } from '@/lib/icons';
-import type { Theme } from '@/config/themes';
+import type { ThemeSpec as Theme } from './themes/types';
 import type { SocialIcon, SocialPlatform } from '@/types';
 
 interface SocialBarProps {
