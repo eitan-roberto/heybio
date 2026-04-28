@@ -56,11 +56,11 @@ function DeleteAccountSheet({
     if (confirmText !== 'DELETE') return;
     setDeleting(true);
     try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) await supabase.from('pages').delete().eq('user_id', user.id);
-      await supabase.auth.signOut();
+      const res = await fetch('/api/delete-account', { method: 'DELETE' });
+      if (!res.ok) throw new Error('delete_failed');
       analyticsService.track('account_deleted', {});
+      const supabase = createClient();
+      await supabase.auth.signOut();
       router.push('/');
     } catch {
       toast.error('Could not delete account. Try again.');

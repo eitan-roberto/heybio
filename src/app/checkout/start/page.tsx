@@ -36,33 +36,33 @@ export default function CheckoutStartPage() {
   useEffect(() => { initCheckout(); }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-6 bg-base">
-      <SvgAsset src="/logos/logo-full.svg" height={36} className="invert" />
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-6 bg-bottom">
+      <SvgAsset src="/logos/logo-full.svg" height={36} />
 
       {error ? (
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="w-14 h-14 rounded-full bg-bottom flex items-center justify-center">
+          <div className="w-14 h-14 rounded-full bg-low/40 flex items-center justify-center">
             <Icon icon="alert-circle" className="w-7 h-7 text-high" />
           </div>
-          <p className="text-bottom font-medium">Something went wrong. Please try again.</p>
+          <p className="text-top font-medium">Something went wrong. Please try again.</p>
           <Button variant="pro" onClick={initCheckout}>
             <Icon icon="refresh-cw" className="w-4 h-4" />
             Try again
           </Button>
           <button
             onClick={() => router.push('/pricing')}
-            className="text-sm text-bottom/60 hover:text-bottom transition-colors"
+            className="text-sm text-mid hover:text-top transition-colors"
           >
             Back to pricing
           </button>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="w-14 h-14 rounded-full bg-pink/20 flex items-center justify-center">
+          <div className="w-14 h-14 rounded-full bg-pink/10 flex items-center justify-center">
             <Icon icon="loader-2" className="w-7 h-7 text-pink animate-spin" />
           </div>
-          <p className="text-bottom font-medium">Setting up your free trial…</p>
-          <p className="text-sm text-bottom/60">You'll be redirected to checkout in a moment.</p>
+          <p className="text-top font-medium">Setting up your free trial…</p>
+          <p className="text-sm text-mid">You'll be redirected to checkout in a moment.</p>
         </div>
       )}
     </div>
