@@ -12,6 +12,7 @@ import { useDashboardStore, type DashboardPage } from '@/stores/dashboardStore';
 import { cn } from '@/lib/utils';
 import { analyticsService } from '@/services/analyticsService';
 import { logService } from '@/services/logService';
+import { useSubscription } from '@/hooks/useSubscription';
 
 const NAV_ITEMS = [
   { href: '/dashboard',            label: 'Overview', icon: 'layout-dashboard' },
@@ -106,6 +107,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
   const [isPro, setIsPro]             = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
+  const subscription = useSubscription();
 
   const { pages, setPages, selectPage, getSelectedPage } = useDashboardStore();
   const selectedPage = getSelectedPage();
@@ -248,6 +250,26 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
             <div className="flex-1" />
 
+            {subscription.isTrialing && subscription.trialDaysLeft !== null && (
+              <Link
+                href="/pricing"
+                className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-pink/20 hover:bg-pink/30 transition-colors text-sm"
+              >
+                <Icon icon="clock" className="w-4 h-4 text-pink shrink-0" />
+                <span className="text-top font-medium">{subscription.trialDaysLeft}d trial left</span>
+              </Link>
+            )}
+
+            {!isPro && !loadingUser && !subscription.isTrialing && (
+              <Link
+                href="/pricing"
+                className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-pink/10 hover:bg-pink/20 transition-colors text-sm border border-pink/20"
+              >
+                <Icon icon="sparkles" className="w-4 h-4 text-pink shrink-0" />
+                <span className="text-top font-medium">Try Pro free</span>
+              </Link>
+            )}
+
             <button
               onClick={handleLogout}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-high hover:bg-low hover:text-top transition-colors font-medium text-sm"
@@ -266,8 +288,18 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
+      {/* ── Trial banner (mobile) ──────────────────────── */}
+      {subscription.isTrialing && subscription.trialDaysLeft !== null && (
+        <div className="md:hidden fixed top-14 inset-x-0 z-30 bg-pink px-4 py-1.5 flex items-center justify-between">
+          <p className="text-xs font-medium text-top">
+            Trial ends in {subscription.trialDaysLeft} day{subscription.trialDaysLeft !== 1 ? 's' : ''}
+          </p>
+          <Link href="/pricing" className="text-xs font-bold text-top underline">Manage</Link>
+        </div>
+      )}
+
       {/* ── Mobile: main content ───────────────────────── */}
-      <main className="md:hidden pt-14 pb-24 min-h-[100dvh]">
+      <main className={cn('md:hidden pb-24 min-h-[100dvh]', subscription.isTrialing ? 'pt-[calc(3.5rem+32px)]' : 'pt-14')}>
         <div className="p-4">
           {children}
         </div>

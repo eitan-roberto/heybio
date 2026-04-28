@@ -1,46 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { logService } from '@/services/logService';
 
-// LemonSqueezy checkout integration
-// Docs: https://docs.lemonsqueezy.com/guides/developer-guide/checkout
-
-const LEMON_SQUEEZY_STORE_ID = process.env.LEMON_SQUEEZY_STORE_ID;
-const LEMON_SQUEEZY_VARIANT_ID = process.env.LEMON_SQUEEZY_VARIANT_ID; // Pro plan variant
-const LEMON_SQUEEZY_API_KEY = process.env.LEMON_SQUEEZY_API_KEY;
+const STORE_SLUG    = process.env.LEMON_SQUEEZY_STORE_SLUG;   // e.g. "heybio"
+const VARIANT_ID    = process.env.LEMON_SQUEEZY_VARIANT_ID;   // pro monthly variant id
+const APP_URL       = process.env.NEXT_PUBLIC_APP_URL || 'https://heybio.co';
 
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!STORE_SLUG || !VARIANT_ID) {
+      logService.error('checkout_env_missing', { STORE_SLUG, VARIANT_ID });
+      return NextResponse.json({ error: 'Payment not configured' }, { status: 503 });
     }
 
-    const body = await req.json();
-    const { variantId } = body;
+    // Build LemonSqueezy hosted checkout URL
+    // Trial is configured on the variant in the LS dashboard (30 days)
+    const url = new URL(`https://${STORE_SLUG}.lemonsqueezy.com/buy/${VARIANT_ID}`);
+    url.searchParams.set('checkout[email]', user.email || '');
+    url.searchParams.set('checkout[custom][user_id]', user.id);
+    url.searchParams.set('checkout[success_url]', `${APP_URL}/checkout/success`);
 
-    // Option 1: Use LemonSqueezy's overlay checkout (requires @lemonsqueezy/lemonsqueezy.js)
-    // For now, return the checkout URL that will redirect to LemonSqueezy
-    
-    // Option 2: Generate a checkout URL
-    // Format: https://{store}.lemonsqueezy.com/checkout/buy/{variant}?checkout[email]={email}&checkout[custom][user_id]={userId}
-    
-    const checkoutUrl = new URL(`https://${LEMON_SQUEEZY_STORE_ID || 'your-store'}.lemonsqueezy.com/checkout/buy/${variantId || LEMON_SQUEEZY_VARIANT_ID || 'variant-id'}`);
-    
-    // Add user info for webhook identification
-    checkoutUrl.searchParams.set('checkout[email]', user.email || '');
-    checkoutUrl.searchParams.set('checkout[custom][user_id]', user.id);
-    checkoutUrl.searchParams.set('checkout[success_url]', `${process.env.NEXT_PUBLIC_APP_URL || 'https://heybio.vercel.app'}/checkout/success`);
-    
-    return NextResponse.json({ 
-      checkoutUrl: checkoutUrl.toString(),
-    });
-  } catch (error) {
-    console.error('Checkout error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create checkout session' },
-      { status: 500 }
-    );
+    return NextResponse.json({ checkoutUrl: url.toString() });
+  } catch (err) {
+    logService.error('checkout_error', { error: String(err) });
+    return NextResponse.json({ error: 'Failed to create checkout' }, { status: 500 });
   }
 }

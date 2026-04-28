@@ -3,6 +3,7 @@ import { Metadata, Viewport } from 'next';
 import { BioPage } from '@/components/bio-page';
 import { getTheme } from '@/config/themes';
 import { createStaticClient } from '@/lib/supabase/static';
+import { createAdminClient } from '@/lib/supabase/admin';
 import type { PageTranslation, LinkTranslation, SocialPlatform } from '@/types';
 
 // Demo pages for testing / landing page previews
@@ -109,8 +110,14 @@ async function getPageData(username: string) {
       linkTranslations = lt ?? [];
     }
 
-    // Cover image upload is gated to Pro, so its presence implies Pro
-    const isPro = !!page.cover_image_url;
+    // Fetch plan from profiles using service role (bypasses RLS)
+    const adminSupabase = createAdminClient();
+    const { data: profile } = await adminSupabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', page.user_id)
+      .single();
+    const isPro = profile?.plan === 'pro';
 
     return {
       page: {
@@ -197,7 +204,7 @@ export default async function PublicBioPage({
       linkTranslations={data.linkTranslations}
       coverImageUrl={'cover_image_url' in data.page ? data.page.cover_image_url : undefined}
       isPro={data.isPro}
-      showBadge={true}
+      showBadge={!data.isPro}
     />
   );
 }

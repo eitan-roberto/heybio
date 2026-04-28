@@ -4,6 +4,7 @@ import { Icon } from '@/components/ui/icon';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { DashboardPageCard } from '@/components/dashboard/DashboardPageCard';
 import { createClient } from '@/lib/supabase/server';
+import { ProUpgradeBanner } from '@/components/dashboard/ProUpgradeBanner';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -13,6 +14,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
+
+      {/* Pro upgrade banner for free users */}
+      <ProUpgradeBanner />
 
       {/* Stats — lazy loaded, shows skeletons immediately */}
       <div>

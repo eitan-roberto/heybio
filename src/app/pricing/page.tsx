@@ -7,6 +7,9 @@ import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { SvgAsset } from "@/components/ui/svgasset";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { startTrialCheckout } from "@/services/subscriptionService";
+import { analyticsService } from "@/services/analyticsService";
 
 const FREE_FEATURES = [
   "Unlimited links",
@@ -33,31 +36,20 @@ export default function PricingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
 
-  const handleUpgrade = async () => {
+  const handleStartTrial = async () => {
     setUpgrading(true);
+    analyticsService.track("pricing_trial_clicked", {});
     try {
-      // LemonSqueezy variant ID for Pro plan
-      // You'll need to replace this with your actual variant ID from LemonSqueezy
-      const LEMONSQUEEZY_VARIANT_ID =
-        process.env.NEXT_PUBLIC_LEMONSQUEEZY_VARIANT_ID || "your-variant-id";
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
 
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ variantId: LEMONSQUEEZY_VARIANT_ID }),
-      });
-
-      const data = await response.json();
-
-      if (data.checkoutUrl) {
-        // Redirect to LemonSqueezy checkout
-        window.location.href = data.checkoutUrl;
-      } else {
-        console.error("No checkout URL returned");
-        setUpgrading(false);
+      if (!user) {
+        router.push("/signup?next=/pricing");
+        return;
       }
-    } catch (error) {
-      console.error("Upgrade error:", error);
+
+      await startTrialCheckout(user.id, user.email ?? "");
+    } catch {
       setUpgrading(false);
     }
   };
@@ -71,86 +63,41 @@ export default function PricingPage() {
             <SvgAsset src="/logos/logo-full.svg" height={42} />
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-2 md:gap-4">
-            <Button
-              variant="outline"
-              size="lg"
-              className="rounded-full"
-              asChild
-            >
+            <Button variant="outline" size="lg" className="rounded-full" asChild>
               <Link href="/login">Log in</Link>
             </Button>
-            <Button
-              size="lg"
-              className="rounded-full bg-top text-bottom hover:bg-high"
-              asChild
-            >
+            <Button size="lg" className="rounded-full bg-top text-bottom hover:bg-high" asChild>
               <Link href="/new">Get started</Link>
             </Button>
           </div>
 
-          {/* Mobile Hamburger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden p-2 text-top"
             aria-label="Toggle menu"
           >
             <div className="w-6 h-6 flex flex-col justify-center gap-1.5 relative">
-              <span
-                className={cn(
-                  "block h-[3px] w-full bg-current rounded-full transition-all duration-300 absolute",
-                  mobileMenuOpen
-                    ? "rotate-45 top-1/2 -translate-y-1/2"
-                    : "top-0",
-                )}
-              />
-              <span
-                className={cn(
-                  "block h-[3px] w-full bg-current rounded-full transition-all duration-300",
-                  mobileMenuOpen && "opacity-0",
-                )}
-              />
-              <span
-                className={cn(
-                  "block h-[3px] w-full bg-current rounded-full transition-all duration-300 absolute",
-                  mobileMenuOpen
-                    ? "-rotate-45 top-1/2 -translate-y-1/2"
-                    : "bottom-0",
-                )}
-              />
+              <span className={cn("block h-[3px] w-full bg-current rounded-full transition-all duration-300 absolute", mobileMenuOpen ? "rotate-45 top-1/2 -translate-y-1/2" : "top-0")} />
+              <span className={cn("block h-[3px] w-full bg-current rounded-full transition-all duration-300", mobileMenuOpen && "opacity-0")} />
+              <span className={cn("block h-[3px] w-full bg-current rounded-full transition-all duration-300 absolute", mobileMenuOpen ? "-rotate-45 top-1/2 -translate-y-1/2" : "bottom-0")} />
             </div>
           </button>
         </div>
 
-        {/* Mobile Menu Dropdown */}
-        <div
-          className={cn(
-            "md:hidden overflow-hidden transition-all duration-300",
-            mobileMenuOpen ? "max-h-48 mt-4" : "max-h-0",
-          )}
-        >
+        <div className={cn("md:hidden overflow-hidden transition-all duration-300", mobileMenuOpen ? "max-h-48 mt-4" : "max-h-0")}>
           <div className="flex flex-col gap-2 pb-4">
-            <Button
-              variant="outline"
-              size="lg"
-              className="rounded-full w-full"
-              asChild
-            >
+            <Button variant="outline" size="lg" className="rounded-full w-full" asChild>
               <Link href="/login">Log in</Link>
             </Button>
-            <Button
-              size="lg"
-              className="rounded-full bg-top text-bottom hover:bg-high w-full"
-              asChild
-            >
+            <Button size="lg" className="rounded-full bg-top text-bottom hover:bg-high w-full" asChild>
               <Link href="/new">Get started</Link>
             </Button>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="relative bg-bottom p-6 md:p-10 rounded-4xl overflow-hidden flex flex-col gap-3">
         <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs md:text-sm bg-pink w-fit">
           <span className="font-bold text-top">Simple & transparent</span>
@@ -160,85 +107,80 @@ export default function PricingPage() {
           <span className="text-green"> real value.</span>
         </h1>
         <p className="text-lg text-high max-w-2xl">
-          Start free and upgrade when you're ready. No surprise fees, ever.
+          Start free. Upgrade when you're ready. No surprise fees, ever.
         </p>
       </section>
 
-      {/* Pricing Cards Section */}
+      {/* Pricing Cards */}
       <section className="bg-bottom p-6 md:p-10 rounded-4xl">
         <div className="mx-auto max-w-5xl">
-          {/* Pricing Cards */}
           <div className="grid gap-4 md:gap-8 md:grid-cols-2">
             {/* Free Plan */}
             <div className="rounded-4xl p-6 md:p-10 bg-green h-full flex flex-col">
               <div className="text-sm font-bold text-top">Free Plan</div>
               <div className="mt-4 text-5xl font-bold text-top">$0</div>
-              <p className="mt-4 text-top">
-                Everything you need to get started
-              </p>
+              <p className="mt-4 text-top">Everything you need to get started</p>
 
               <ul className="mt-8 space-y-4">
                 {FREE_FEATURES.map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-center gap-3 text-top"
-                  >
+                  <li key={feature} className="flex items-center gap-3 text-top">
                     <Icon icon="check" className="w-5 h-5 flex-shrink-0" />
                     {feature}
                   </li>
                 ))}
               </ul>
 
-              <Button
-                className="mt-auto w-full rounded-full py-6 bg-top text-bottom hover:bg-high"
-                asChild
-              >
+              <Button className="mt-auto w-full rounded-full py-6 bg-top text-bottom hover:bg-high" asChild>
                 <Link href="/new">Start for free</Link>
               </Button>
             </div>
 
             {/* Pro Plan */}
-            <div className="relative rounded-4xl p-6 md:p-10 bg-pink overflow-hidden">
+            <div className="relative rounded-4xl p-6 md:p-10 bg-pink overflow-hidden flex flex-col">
               <div className="absolute top-4 right-4 inline-block px-3 py-1 rounded-full bg-top text-bottom text-xs font-bold">
                 Popular
               </div>
               <div className="text-sm font-bold text-top">Pro Plan</div>
-              <div className="mt-4 text-5xl font-bold text-top">
-                $4<span className="text-lg font-normal">/month</span>
+              <div className="mt-4 flex items-end gap-2">
+                <span className="text-5xl font-bold text-top">$2</span>
+                <span className="text-lg font-normal text-top mb-1.5">/month</span>
               </div>
-              <p className="mt-4 text-top">For creators who want more</p>
+              <p className="mt-1 text-sm text-top/80 font-medium">30-day free trial included</p>
+              <p className="mt-3 text-top">For creators who want more</p>
 
               <ul className="mt-8 space-y-4">
                 {PRO_FEATURES.map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-center gap-3 text-top"
-                  >
+                  <li key={feature} className="flex items-center gap-3 text-top">
                     <Icon icon="check" className="w-5 h-5 flex-shrink-0" />
                     {feature}
                   </li>
                 ))}
               </ul>
 
-              <Button
-                className="mt-8 w-full rounded-full py-6 bg-top text-bottom hover:bg-high"
-                onClick={handleUpgrade}
-                disabled={upgrading}
-              >
-                {upgrading ? (
-                  <Icon icon="loader-2" className="w-5 h-5 animate-spin mr-2" />
-                ) : null}
-                Upgrade to Pro
-              </Button>
+              <div className="mt-8 space-y-2">
+                <Button
+                  className="w-full rounded-full py-6 bg-top text-bottom hover:bg-high font-bold"
+                  onClick={handleStartTrial}
+                  disabled={upgrading}
+                >
+                  {upgrading ? (
+                    <Icon icon="loader-2" className="w-5 h-5 animate-spin mr-2" />
+                  ) : (
+                    <Icon icon="sparkles" className="w-4 h-4 mr-2" />
+                  )}
+                  Start free trial
+                </Button>
+                <p className="text-center text-xs text-top/70">
+                  Card required · Cancel anytime · $2/mo after 30 days
+                </p>
+              </div>
             </div>
           </div>
 
           {/* FAQ */}
           <div className="mt-8 rounded-4xl p-6 md:p-10 bg-orange flex flex-col gap-y-6 items-center">
             <h3 className="text-2xl font-bold text-top">Have questions?</h3>
-            <p className="text-top text-lg">
-              Both plans include 24/7 support. Upgrade or downgrade anytime.
-            </p>
+            <p className="text-top text-lg">Both plans include support. Upgrade or downgrade anytime.</p>
             <Button asChild>
               <Link href="mailto:hello@heybio.co">Contact us</Link>
             </Button>
@@ -246,7 +188,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA */}
       <section className="bg-bottom p-6 md:p-10 rounded-4xl">
         <div className="mx-auto max-w-5xl rounded-4xl bg-yellow p-6 md:p-20 text-center flex flex-col gap-y-6 items-center">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-top">
@@ -271,15 +213,9 @@ export default function PricingPage() {
             <SvgAsset src="/logos/logo-full.svg" height={32} />
           </Link>
           <div className="flex items-center gap-8 text-sm text-high">
-            <Link href="/pricing" className="transition-colors hover:text-top">
-              Pricing
-            </Link>
-            <Link href="/privacy" className="transition-colors hover:text-top">
-              Privacy
-            </Link>
-            <Link href="/terms" className="transition-colors hover:text-top">
-              Terms
-            </Link>
+            <Link href="/pricing" className="transition-colors hover:text-top">Pricing</Link>
+            <Link href="/privacy" className="transition-colors hover:text-top">Privacy</Link>
+            <Link href="/terms" className="transition-colors hover:text-top">Terms</Link>
           </div>
         </div>
       </footer>

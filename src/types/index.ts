@@ -4,12 +4,18 @@
 
 export type Plan = 'free' | 'pro';
 
+export type SubscriptionStatus = 'inactive' | 'trialing' | 'active' | 'cancelled' | 'expired';
+
 export interface User {
   id: string;
   email: string;
   created_at: string;
   plan: Plan;
+  subscription_status: SubscriptionStatus;
+  trial_ends_at?: string | null;
+  trial_started_at?: string | null;
   lemonsqueezy_customer_id?: string;
+  lemonsqueezy_subscription_id?: string;
 }
 
 export interface Page {

@@ -20,7 +20,11 @@ export async function GET(request: NextRequest) {
       .single();
     if (!page) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: profile } = await supabase.from('profiles').select('plan').eq('id', user.id).single();
+    const isPro = profile?.plan === 'pro';
+    const days = isPro ? 30 : 7;
+
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
     const [{ count: pageViews }, { count: linkClicks }] = await Promise.all([
       supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('page_id', pageId).gte('created_at', since),
@@ -33,6 +37,7 @@ export async function GET(request: NextRequest) {
       pageViews: views,
       linkClicks: clicks,
       clickRate: views > 0 ? Math.round((clicks / views) * 100) : 0,
+      days,
     });
   } catch (error) {
     logService.error('analytics_overview_error', { error: String(error) });

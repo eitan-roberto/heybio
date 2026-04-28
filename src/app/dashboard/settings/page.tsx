@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Icon } from '@/components/ui/icon';
@@ -11,12 +12,14 @@ import { ConfirmSheet } from '@/components/ui/confirm-sheet';
 import { createClient } from '@/lib/supabase/client';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import { analyticsService } from '@/services/analyticsService';
+import { useSubscription } from '@/hooks/useSubscription';
 
 export default function SettingsPage() {
   const router = useRouter();
   const { pages, setPages, getSelectedPage, selectPage } = useDashboardStore();
   const selectedPage = getSelectedPage();
 
+  const subscription = useSubscription();
   const [loading,          setLoading]          = useState(true);
   const [email,            setEmail]            = useState('');
   const [newPassword,      setNewPassword]      = useState('');
@@ -107,6 +110,36 @@ export default function SettingsPage() {
         <p className="text-sm font-semibold text-top">Account</p>
         <p className="text-sm text-mid">{email}</p>
       </div>
+
+      {/* Subscription */}
+      {!subscription.loading && (
+        <div className="bg-bottom border border-low rounded-3xl p-5 space-y-3">
+          <p className="text-sm font-semibold text-top">Plan</p>
+          {subscription.isPro ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-pink text-top">PRO</span>
+                {subscription.isTrialing && subscription.trialDaysLeft !== null && (
+                  <span className="text-xs text-mid">Trial ends in {subscription.trialDaysLeft} day{subscription.trialDaysLeft !== 1 ? 's' : ''}</span>
+                )}
+                {subscription.status === 'active' && <span className="text-xs text-mid">Active · $2/month</span>}
+                {subscription.status === 'cancelled' && <span className="text-xs text-orange">Cancelled</span>}
+              </div>
+              <p className="text-xs text-mid">Manage your subscription on LemonSqueezy.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm text-mid">You're on the Free plan.</p>
+              <Button size="sm" asChild className="bg-pink hover:bg-pink/90 text-top">
+                <NextLink href="/pricing">
+                  <Icon icon="sparkles" className="w-4 h-4" />
+                  Start 30-day free trial
+                </NextLink>
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Password */}
       <div className="bg-bottom border border-low rounded-3xl p-5 space-y-4">

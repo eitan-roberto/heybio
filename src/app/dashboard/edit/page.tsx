@@ -18,6 +18,7 @@ import { analyticsService } from '@/services/analyticsService';
 import { SUPPORTED_LANGUAGES } from '@/lib/languages';
 import { cn } from '@/lib/utils';
 import type { SocialIcon as SocialIconType, PageTranslation } from '@/types';
+import { TrialStartSheet } from '@/components/dashboard/TrialStartSheet';
 
 interface EditLink {
   id?: string;
@@ -61,12 +62,14 @@ type Tab = 'links' | 'social' | 'design' | 'languages';
 function ThemeCard({
   theme,
   selected,
-  locked,
+  isPro: isProTheme,
+  userIsPro,
   onSelect,
 }: {
   theme: string;
   selected: boolean;
-  locked?: boolean;
+  isPro?: boolean;
+  userIsPro?: boolean;
   onSelect: () => void;
 }) {
   const themeData = getTheme(theme);
@@ -75,8 +78,7 @@ function ThemeCard({
       onClick={onSelect}
       className={cn(
         'rounded-2xl p-3 text-left transition-all relative border-2',
-        selected ? 'border-top' : 'border-transparent',
-        locked && 'opacity-60'
+        selected ? 'border-top' : 'border-transparent hover:border-low',
       )}
       style={{ background: themeData.colors.background }}
     >
@@ -84,9 +86,9 @@ function ThemeCard({
       <span className="text-xs font-semibold capitalize" style={{ color: themeData.colors.text }}>
         {themeData.name}
       </span>
-      {locked && (
-        <div className="absolute top-2 right-2">
-          <Icon icon="lock" className="w-3 h-3 text-high" />
+      {isProTheme && !userIsPro && (
+        <div className="absolute top-1.5 right-1.5 text-[9px] font-bold bg-pink text-top px-1.5 py-0.5 rounded-full leading-none">
+          PRO
         </div>
       )}
     </button>
@@ -116,6 +118,8 @@ export default function EditPage() {
   const [coverImageUrl, setCoverImageUrl] = useState('');
   const [uploadingCover, setUploadingCover] = useState(false);
   const [isPro, setIsPro] = useState(false);
+  const [showTrialSheet, setShowTrialSheet] = useState(false);
+  const [trialContext, setTrialContext] = useState<'theme' | 'cover'>('theme');
   const [pageLanguages, setPageLanguages] = useState<string[]>(['en']);
   const [activeLang, setActiveLang] = useState('en');
   const [translations, setTranslations] = useState<Record<string, PageTranslation>>({});
@@ -243,6 +247,19 @@ export default function EditPage() {
 
   const handleSave = async () => {
     if (!pageId) return;
+
+    // Gate pro features before saving
+    if (!isPro && PRO_THEMES.includes(themeId)) {
+      setTrialContext('theme');
+      setShowTrialSheet(true);
+      return;
+    }
+    if (!isPro && coverImageUrl) {
+      setTrialContext('cover');
+      setShowTrialSheet(true);
+      return;
+    }
+
     setSaving(true);
     const supabase = createClient();
 
@@ -687,9 +704,12 @@ export default function EditPage() {
                     </label>
                   </div>
                 ) : (
-                  <button onClick={() => toast.error('Cover images are a Pro feature')} className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-low opacity-60 text-sm text-high">
-                    <Icon icon="lock" className="w-4 h-4" />
-                    Upgrade to Pro
+                  <button
+                    onClick={() => { setTrialContext('cover'); setShowTrialSheet(true); }}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-pink/40 text-sm text-top hover:border-pink transition-colors"
+                  >
+                    <Icon icon="sparkles" className="w-4 h-4 text-pink" />
+                    Start free trial to unlock
                   </button>
                 )}
               </div>
@@ -708,7 +728,11 @@ export default function EditPage() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <p className="text-sm font-semibold text-top">Pro themes</p>
-                  {!isPro && <span className="text-xs px-2 py-0.5 rounded-full bg-pink text-top font-bold">PRO</span>}
+                  {!isPro && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-pink text-top font-bold">
+                      Try free 30 days
+                    </span>
+                  )}
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {PRO_THEMES.map((t) => (
@@ -716,14 +740,15 @@ export default function EditPage() {
                       key={t}
                       theme={t}
                       selected={themeId === t}
-                      locked={!isPro}
-                      onSelect={() => {
-                        if (!isPro) { toast.error('Upgrade to Pro for this theme'); return; }
-                        setThemeId(t);
-                      }}
+                      isPro
+                      userIsPro={isPro}
+                      onSelect={() => setThemeId(t)}
                     />
                   ))}
                 </div>
+                {!isPro && (
+                  <p className="text-xs text-mid mt-2">Select a theme — you'll be prompted to start your trial when saving.</p>
+                )}
               </div>
             </div>
           )}
@@ -834,6 +859,17 @@ export default function EditPage() {
         confirmText="Delete page"
         cancelText="Keep it"
         loading={deleting}
+      />
+
+      <TrialStartSheet
+        open={showTrialSheet}
+        onClose={() => setShowTrialSheet(false)}
+        context={trialContext}
+        onUseFreeTheme={() => {
+          if (trialContext === 'theme') setThemeId('clean');
+          if (trialContext === 'cover') setCoverImageUrl('');
+          setShowTrialSheet(false);
+        }}
       />
     </div>
   );

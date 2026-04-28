@@ -7,6 +7,7 @@ import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { OnboardingLayout } from '@/components/onboarding';
+import { ProUpsellSheet } from '@/components/onboarding/ProUpsellSheet';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import { createClient } from '@/lib/supabase/client';
@@ -33,6 +34,7 @@ function SetupContent() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [publishing, setPublishing] = useState(false);
   const [newUrl,     setNewUrl]     = useState('');
+  const [showUpsell, setShowUpsell] = useState(false);
 
   // Init from ?u= if no draft
   useEffect(() => {
@@ -93,7 +95,7 @@ function SetupContent() {
       selectPage(newPage.id);
       resetDraft();
       toast.success('Your page is live!');
-      router.push('/dashboard/edit');
+      setShowUpsell(true);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Something went wrong');
       setPublishing(false);
@@ -211,6 +213,10 @@ function SetupContent() {
           </div>
         )}
       </div>
+      <ProUpsellSheet
+        open={showUpsell}
+        onSkip={() => { setShowUpsell(false); router.push('/dashboard/edit'); }}
+      />
     </OnboardingLayout>
   );
 }
