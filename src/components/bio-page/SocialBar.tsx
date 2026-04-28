@@ -35,20 +35,22 @@ const iconNames: Record<SocialPlatform, string> = {
 export function SocialBar({ socialIcons, theme, onIconClick, onComingSoon }: SocialBarProps) {
   if (!socialIcons.length) return null;
 
+  const circleBg = theme.colors.socialBg ?? theme.colors.linkBg;
+
   const normalStyle: React.CSSProperties = {
     color: theme.colors.text,
-    backgroundColor: theme.colors.linkBg,
+    backgroundColor: circleBg,
     transition: 'all 0.2s',
   };
 
   const handleEnter = (e: React.MouseEvent<HTMLElement>) => {
     e.currentTarget.style.backgroundColor = theme.colors.primary;
-    e.currentTarget.style.color = theme.colors.background;
+    e.currentTarget.style.color = theme.colors.background.startsWith('linear') ? '#ffffff' : theme.colors.background;
     e.currentTarget.style.transform = 'scale(1.1)';
   };
 
   const handleLeave = (e: React.MouseEvent<HTMLElement>) => {
-    e.currentTarget.style.backgroundColor = theme.colors.linkBg;
+    e.currentTarget.style.backgroundColor = circleBg;
     e.currentTarget.style.color = theme.colors.text;
     e.currentTarget.style.transform = 'scale(1)';
   };

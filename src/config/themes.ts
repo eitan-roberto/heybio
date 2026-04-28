@@ -18,6 +18,7 @@ export interface Theme {
     linkText: string;
     linkHover: string;
     linkBorder?: string;
+    socialBg?: string;
   };
   fonts: {
     heading: string;
@@ -299,18 +300,18 @@ export const themes: Record<string, Theme> = {
       background: '#0c0c14',
       text: '#ffffff',
       textMuted: 'rgba(255,255,255,0.55)',
-      primary: '#f5c518',
-      linkBg: 'rgba(255,255,255,0.08)',
-      linkText: '#ffffff',
-      linkHover: 'rgba(255,255,255,0.14)',
-      linkBorder: 'rgba(255,255,255,0.12)',
+      primary: '#FCD975',
+      linkBg: '#FCD975',
+      linkText: '#0c0c14',
+      linkHover: '#FCD975',
+      socialBg: 'rgba(255,255,255,0.10)',
     },
     fonts: {
       heading: 'Inter, system-ui, sans-serif',
       body: 'Inter, system-ui, sans-serif',
     },
     borderRadius: 'lg',
-    style: 'glass',
+    style: 'filled',
   },
 };
 

@@ -95,8 +95,8 @@ export function LinkCard({ link, theme, onClick, onComingSoon }: LinkCardProps) 
         }}
         className="px-4 py-1.5 rounded-full text-xs font-semibold transition-opacity hover:opacity-80"
         style={{
-          backgroundColor: theme.colors.primary,
-          color: theme.colors.background,
+          backgroundColor: theme.colors.background,
+          color: theme.colors.text,
         }}
       >
         Continue (+18)

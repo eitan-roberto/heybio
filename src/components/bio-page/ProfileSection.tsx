@@ -48,7 +48,7 @@ export function ProfileSection({ displayName, bio, avatarUrl, theme, hasCoverIma
       >
         {displayName}
         {showVerified && (
-          <SvgIcon icon="verified" className="w-6 h-6" style={{ color: theme.colors.textMuted }} />
+          <SvgIcon icon="verified" className="w-6 h-6" style={{ color: theme.colors.primary }} />
         )}
       </h1>
       

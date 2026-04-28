@@ -5,6 +5,7 @@ import { ProfileSection } from './ProfileSection';
 import { LinkCard } from './LinkCard';
 import { SocialBar } from './SocialBar';
 import { getLayout } from './layouts';
+import { HeyBioBadge } from './HeyBioBadge';
 import { getTheme, type Theme } from '@/config/themes';
 import { getLanguage, isRtl } from '@/lib/languages';
 import type { Page, Link, SocialIcon, SocialPlatform, PageTranslation, LinkTranslation } from '@/types';
@@ -213,6 +214,8 @@ export function BioPage({
     </>
   );
 
+  const badge = showBadge ? <HeyBioBadge color={theme.colors.primary} /> : null;
+
   const comingSoonOverlay = comingSoonPopup && (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -239,24 +242,6 @@ export function BioPage({
         </button>
       </div>
     </div>
-  );
-
-  const badge = showBadge && (
-    <footer className="py-6 text-center">
-      <a
-        href="https://heybio.co"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-xs opacity-60 hover:opacity-100 transition-opacity"
-        style={{ color: theme.colors.textMuted }}
-      >
-        <span>Made with</span>
-        <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-        </svg>
-        <span>HeyBio</span>
-      </a>
-    </footer>
   );
 
   return (
