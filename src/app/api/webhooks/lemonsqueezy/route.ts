@@ -12,16 +12,15 @@ function verifySignature(payload: string, signature: string | null): boolean {
 }
 
 async function updateProfile(supabase: ReturnType<typeof createAdminClient>, userId: string, data: Record<string, unknown>) {
-  const { error, count } = await supabase
+  const { error } = await supabase
     .from('profiles')
     .update(data)
-    .eq('id', userId)
-    .select('id', { count: 'exact', head: true });
+    .eq('id', userId);
 
   if (error) {
     logService.error('webhook_db_error', { userId, error: error.message, data });
   } else {
-    logService.error('webhook_db_updated', { userId, count, fields: Object.keys(data) });
+    logService.error('webhook_db_updated', { userId, fields: Object.keys(data) });
   }
 }
 

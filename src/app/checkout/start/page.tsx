@@ -36,8 +36,8 @@ export default function CheckoutStartPage() {
   useEffect(() => { initCheckout(); }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-6 bg-top">
-      <SvgAsset src="/logos/logo-full.svg" height={36} className="text-pink" />
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-6 bg-base">
+      <SvgAsset src="/logos/logo-full.svg" height={36} className="invert" />
 
       {error ? (
         <div className="flex flex-col items-center gap-4 text-center">
