@@ -241,116 +241,133 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 max-w-lg">
+      <div className="space-y-5">
         <Skeleton className="h-8 w-24" />
-        <Skeleton className="h-32 rounded-3xl" />
-        <Skeleton className="h-40 rounded-3xl" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-5">
+            <Skeleton className="h-48 rounded-3xl" />
+            <Skeleton className="h-32 rounded-3xl" />
+          </div>
+          <div className="space-y-5">
+            <Skeleton className="h-20 rounded-3xl" />
+            <Skeleton className="h-28 rounded-3xl" />
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5 max-w-lg">
+    <div className="space-y-5">
       <h1 className="text-xl font-bold text-top">Settings</h1>
 
-      {/* Account info */}
-      <div className="bg-bottom border border-low rounded-3xl p-5 space-y-1">
-        <p className="text-sm font-semibold text-top">Account</p>
-        <p className="text-sm text-mid">{email}</p>
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
 
-      {/* Subscription */}
-      {!subscription.loading && (
-        <div className="bg-bottom border border-low rounded-3xl p-5 space-y-3">
-          <p className="text-sm font-semibold text-top">Plan</p>
-          {subscription.isPro ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-pink text-top">PRO</span>
-                {subscription.isTrialing && subscription.trialDaysLeft !== null && (
-                  <span className="text-xs text-mid">Trial ends in {subscription.trialDaysLeft} day{subscription.trialDaysLeft !== 1 ? 's' : ''}</span>
-                )}
-                {subscription.status === 'active' && <span className="text-xs text-mid">Active · $2/month</span>}
-                {subscription.status === 'cancelled' && <span className="text-xs text-orange">Cancelled · access until period ends</span>}
-              </div>
-              <BillingPortalButton />
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <p className="text-sm text-mid">You're on the Free plan.</p>
-              <Button variant="pro" size="sm" asChild>
-                <NextLink href="/checkout/start">
-                  <Icon icon="sparkles" className="w-4 h-4" />
-                  Start 30-day free trial
-                </NextLink>
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
+        {/* ── Left column ── */}
+        <div className="space-y-5">
 
-      {/* Password */}
-      <div className="bg-bottom border border-low rounded-3xl p-5 space-y-4">
-        <p className="text-sm font-semibold text-top">Change password</p>
-        <Input
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          placeholder="New password"
-        />
-        <Input
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          placeholder="Confirm new password"
-        />
-        <Button
-          onClick={handleUpdatePassword}
-          loading={updatingPassword}
-          disabled={!newPassword || !confirmPassword}
-          variant="success"
-          size="sm"
-        >
-          Update password
-        </Button>
-      </div>
-
-      {/* Log out (mobile only) */}
-      <div className="md:hidden bg-bottom border border-low rounded-3xl p-5">
-        <Button variant="outline" size="md" className="w-full" onClick={handleLogout}>
-          <Icon icon="log-out" className="w-4 h-4" />
-          Log out
-        </Button>
-      </div>
-
-      {/* Danger zone */}
-      <div className="border-2 border-orange/30 rounded-3xl p-5 space-y-4">
-        <p className="text-sm font-semibold text-orange">Danger zone</p>
-
-        {/* Delete page */}
-        {selectedPage && (
-          <div className="space-y-2">
-            <p className="text-sm text-high">
-              Delete <span className="font-semibold text-top">{selectedPage.displayName}</span> — removes the page and all its links permanently.
-            </p>
-            <Button variant="danger" size="sm" onClick={() => setShowDeletePage(true)}>
-              <Icon icon="trash-2" className="w-4 h-4" />
-              Delete page
+          {/* Password */}
+          <div className="bg-bottom border border-low rounded-3xl p-5 space-y-4">
+            <p className="text-sm font-semibold text-top">Change password</p>
+            <Input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="New password"
+            />
+            <Input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm new password"
+            />
+            <Button
+              onClick={handleUpdatePassword}
+              loading={updatingPassword}
+              disabled={!newPassword || !confirmPassword}
+              variant="success"
+              size="sm"
+            >
+              Update password
             </Button>
           </div>
-        )}
 
-        <div className="h-px bg-orange/20" />
+          {/* Log out (mobile only) */}
+          <div className="md:hidden bg-bottom border border-low rounded-3xl p-5">
+            <Button variant="outline" size="md" className="w-full" onClick={handleLogout}>
+              <Icon icon="log-out" className="w-4 h-4" />
+              Log out
+            </Button>
+          </div>
 
-        {/* Delete account */}
-        <div className="space-y-2">
-          <p className="text-sm text-high">
-            Delete account — permanently removes your account, all pages, and all data.
-          </p>
-          <Button variant="danger" size="sm" onClick={() => setShowDeleteAccount(true)}>
-            <Icon icon="trash-2" className="w-4 h-4" />
-            Delete account
-          </Button>
+          {/* Danger zone */}
+          <div className="border-2 border-orange/30 rounded-3xl p-5 space-y-4">
+            <p className="text-sm font-semibold text-orange">Danger zone</p>
+
+            {selectedPage && (
+              <div className="space-y-2">
+                <p className="text-sm text-high">
+                  Delete <span className="font-semibold text-top">{selectedPage.displayName}</span> — removes the page and all its links permanently.
+                </p>
+                <Button variant="danger" size="sm" onClick={() => setShowDeletePage(true)}>
+                  <Icon icon="trash-2" className="w-4 h-4" />
+                  Delete page
+                </Button>
+              </div>
+            )}
+
+            <div className="h-px bg-orange/20" />
+
+            <div className="space-y-2">
+              <p className="text-sm text-high">
+                Delete account — permanently removes your account, all pages, and all data.
+              </p>
+              <Button variant="danger" size="sm" onClick={() => setShowDeleteAccount(true)}>
+                <Icon icon="trash-2" className="w-4 h-4" />
+                Delete account
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Right column ── */}
+        <div className="space-y-5">
+
+          {/* Account */}
+          <div className="bg-bottom border border-low rounded-3xl p-5 space-y-1">
+            <p className="text-sm font-semibold text-top">Account</p>
+            <p className="text-sm text-mid">{email}</p>
+          </div>
+
+          {/* Subscription */}
+          {!subscription.loading && (
+            <div className="bg-bottom border border-low rounded-3xl p-5 space-y-3">
+              <p className="text-sm font-semibold text-top">Plan</p>
+              {subscription.isPro ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-pink text-top">PRO</span>
+                    {subscription.isTrialing && subscription.trialDaysLeft !== null && (
+                      <span className="text-xs text-mid">Trial ends in {subscription.trialDaysLeft} day{subscription.trialDaysLeft !== 1 ? 's' : ''}</span>
+                    )}
+                    {subscription.status === 'active' && <span className="text-xs text-mid">Active · $2/month</span>}
+                    {subscription.status === 'cancelled' && <span className="text-xs text-orange">Cancelled · access until period ends</span>}
+                  </div>
+                  <BillingPortalButton />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-mid">You're on the Free plan.</p>
+                  <Button variant="pro" size="sm" asChild>
+                    <NextLink href="/checkout/start">
+                      <Icon icon="sparkles" className="w-4 h-4" />
+                      Start 30-day free trial
+                    </NextLink>
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

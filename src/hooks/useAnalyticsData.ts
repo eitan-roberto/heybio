@@ -21,6 +21,7 @@ export function useAnalyticsData<T>(
         if (!cancelled) setData(result);
       })
       .catch((err: unknown) => {
+        console.error('[analytics_fetch_failed]', err);
         logService.error('analytics_fetch_failed', { error: String(err) });
       })
       .finally(() => {

@@ -282,7 +282,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
         {/* Main content */}
         <main className="flex-1 min-w-0 border-r border-low">
-          <div className="p-8 max-w-4xl">
+          <div className="p-8">
             {children}
           </div>
         </main>
