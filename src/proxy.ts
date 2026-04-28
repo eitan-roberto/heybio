@@ -53,15 +53,17 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect logged-in users away from auth pages
+  // Redirect logged-in users away from auth pages — honor next/redirect param
   const authPaths = ['/login', '/signup'];
   const isAuthPath = authPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
 
   if (isAuthPath && user) {
+    const next = request.nextUrl.searchParams.get('next') || request.nextUrl.searchParams.get('redirect');
     const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
+    url.pathname = next && next.startsWith('/') ? next : '/dashboard';
+    url.search = '';
     return NextResponse.redirect(url);
   }
 

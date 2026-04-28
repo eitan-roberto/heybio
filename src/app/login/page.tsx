@@ -15,18 +15,19 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
 
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
-  const [loading,  setLoading]  = useState(false);
+  const [email,         setEmail]         = useState('');
+  const [password,      setPassword]      = useState('');
+  const [emailLoading,  setEmailLoading]  = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setEmailLoading(true);
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast.error(error.message);
-      setLoading(false);
+      setEmailLoading(false);
       return;
     }
     router.push(redirect);
@@ -34,13 +35,13 @@ function LoginForm() {
   };
 
   const handleGoogleLogin = async () => {
-    setLoading(true);
+    setGoogleLoading(true);
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}` },
     });
-    if (error) { toast.error(error.message); setLoading(false); }
+    if (error) { toast.error(error.message); setGoogleLoading(false); }
   };
 
   return (
@@ -55,7 +56,8 @@ function LoginForm() {
 
         <Button
           onClick={handleGoogleLogin}
-          loading={loading}
+          loading={googleLoading}
+          disabled={emailLoading}
           size="md"
           className="w-full mb-4"
         >
@@ -98,7 +100,7 @@ function LoginForm() {
             />
           </div>
 
-          <Button type="submit" loading={loading} size="md" className="w-full mt-2">
+          <Button type="submit" loading={emailLoading} disabled={googleLoading} size="md" className="w-full mt-2">
             Sign in
           </Button>
         </form>

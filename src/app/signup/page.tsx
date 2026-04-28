@@ -16,33 +16,34 @@ function SignupForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get('next') || '/dashboard';
 
-  const [name,     setName]     = useState('');
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
-  const [loading,  setLoading]  = useState(false);
+  const [name,          setName]          = useState('');
+  const [email,         setEmail]         = useState('');
+  const [password,      setPassword]      = useState('');
+  const [emailLoading,  setEmailLoading]  = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
-    setLoading(true);
+    setEmailLoading(true);
     const supabase = createClient();
     const { error } = await supabase.auth.signUp({
       email, password,
       options: { data: { full_name: name } },
     });
-    if (error) { toast.error(error.message); setLoading(false); return; }
+    if (error) { toast.error(error.message); setEmailLoading(false); return; }
     toast.success('Account created! Check your email if confirmation is required.');
     router.push(next);
   };
 
   const handleGoogleSignup = async () => {
-    setLoading(true);
+    setGoogleLoading(true);
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${next}` },
     });
-    if (error) { toast.error(error.message); setLoading(false); }
+    if (error) { toast.error(error.message); setGoogleLoading(false); }
   };
 
   return (
@@ -57,7 +58,8 @@ function SignupForm() {
 
         <Button
           onClick={handleGoogleSignup}
-          loading={loading}
+          loading={googleLoading}
+          disabled={emailLoading}
           size="md"
           className="w-full mb-4"
         >
@@ -105,7 +107,7 @@ function SignupForm() {
             />
           </div>
 
-          <Button type="submit" loading={loading} size="md" className="w-full mt-2">
+          <Button type="submit" loading={emailLoading} disabled={googleLoading} size="md" className="w-full mt-2">
             Create account
           </Button>
         </form>
