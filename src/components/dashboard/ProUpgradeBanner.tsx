@@ -12,7 +12,7 @@ export function ProUpgradeBanner() {
 
   return (
     <Link
-      href="/pricing"
+      href="/checkout/start"
       className="block rounded-3xl p-4 bg-gradient-to-r from-pink to-orange group hover:opacity-90 transition-opacity"
     >
       <div className="flex items-center gap-3">

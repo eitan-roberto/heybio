@@ -279,7 +279,7 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <p className="text-sm text-mid">You're on the Free plan.</p>
               <Button variant="pro" size="sm" asChild>
-                <NextLink href="/pricing">
+                <NextLink href="/checkout/start">
                   <Icon icon="sparkles" className="w-4 h-4" />
                   Start 30-day free trial
                 </NextLink>

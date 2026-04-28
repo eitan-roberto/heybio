@@ -1,11 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
-import { createClient } from '@/lib/supabase/client';
-import { startTrialCheckout } from '@/services/subscriptionService';
 import { analyticsService } from '@/services/analyticsService';
 
 interface ProUpsellSheetProps {
@@ -21,23 +18,11 @@ const PRO_HIGHLIGHTS = [
 ];
 
 export function ProUpsellSheet({ open, onSkip }: ProUpsellSheetProps) {
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleStartTrial = async () => {
-    setLoading(true);
+  const handleStartTrial = () => {
     analyticsService.track('pro_upsell_trial_clicked', { source: 'post_creation' });
-    try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/login');
-        return;
-      }
-      await startTrialCheckout(user.id, user.email ?? '');
-    } finally {
-      setLoading(false);
-    }
+    router.push('/checkout/start');
   };
 
   const handleSkip = () => {
@@ -92,7 +77,6 @@ export function ProUpsellSheet({ open, onSkip }: ProUpsellSheetProps) {
           <div className="space-y-2">
             <Button
               onClick={handleStartTrial}
-              loading={loading}
               variant="pro"
               size="lg"
               className="w-full font-bold"

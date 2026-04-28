@@ -7,8 +7,6 @@ import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { SvgAsset } from "@/components/ui/svgasset";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
-import { startTrialCheckout } from "@/services/subscriptionService";
 import { analyticsService } from "@/services/analyticsService";
 
 const FREE_FEATURES = [
@@ -34,24 +32,10 @@ const PRO_FEATURES = [
 export default function PricingPage() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [upgrading, setUpgrading] = useState(false);
 
-  const handleStartTrial = async () => {
-    setUpgrading(true);
+  const handleStartTrial = () => {
     analyticsService.track("pricing_trial_clicked", {});
-    try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) {
-        router.push("/signup?next=/pricing");
-        return;
-      }
-
-      await startTrialCheckout(user.id, user.email ?? "");
-    } catch {
-      setUpgrading(false);
-    }
+    router.push("/checkout/start");
   };
 
   return (
@@ -161,13 +145,8 @@ export default function PricingPage() {
                 <Button
                   className="w-full rounded-full py-6 font-bold"
                   onClick={handleStartTrial}
-                  disabled={upgrading}
                 >
-                  {upgrading ? (
-                    <Icon icon="loader-2" className="w-5 h-5 animate-spin mr-2" />
-                  ) : (
-                    <Icon icon="sparkles" className="w-4 h-4 mr-2" />
-                  )}
+                  <Icon icon="sparkles" className="w-4 h-4 mr-2" />
                   Start free trial
                 </Button>
                 <p className="text-center text-xs text-top/70">

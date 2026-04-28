@@ -262,7 +262,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
             {!isPro && !loadingUser && !subscription.isTrialing && (
               <Link
-                href="/pricing"
+                href="/checkout/start"
                 className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-pink/10 hover:bg-pink/20 transition-colors text-sm border border-pink/20"
               >
                 <Icon icon="sparkles" className="w-4 h-4 text-pink shrink-0" />
@@ -294,7 +294,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <p className="text-xs font-medium text-top">
             Trial ends in {subscription.trialDaysLeft} day{subscription.trialDaysLeft !== 1 ? 's' : ''}
           </p>
-          <Link href="/pricing" className="text-xs font-bold text-top underline">Manage</Link>
+          <Link href="/dashboard/settings" className="text-xs font-bold text-top underline">Manage</Link>
         </div>
       )}
 

@@ -1,12 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
-import { createClient } from '@/lib/supabase/client';
-import { startTrialCheckout } from '@/services/subscriptionService';
 import { analyticsService } from '@/services/analyticsService';
 
 interface TrialStartSheetProps {
@@ -17,20 +14,11 @@ interface TrialStartSheetProps {
 }
 
 export function TrialStartSheet({ open, onClose, onUseFreeTheme, context = 'theme' }: TrialStartSheetProps) {
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleStartTrial = async () => {
-    setLoading(true);
+  const handleStartTrial = () => {
     analyticsService.track('pro_trial_started', { source: context });
-    try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push('/login'); return; }
-      await startTrialCheckout(user.id, user.email ?? '');
-    } finally {
-      setLoading(false);
-    }
+    router.push('/checkout/start');
   };
 
   const contextText = context === 'cover'
@@ -42,7 +30,6 @@ export function TrialStartSheet({ open, onClose, onUseFreeTheme, context = 'them
       <div className="space-y-5">
         <p className="text-sm text-high leading-relaxed">{contextText.body}</p>
 
-        {/* Value props */}
         <div className="bg-pink/10 rounded-2xl p-4 space-y-2">
           {['12 premium themes', 'Cover image with parallax', '30-day analytics', 'No HeyBio badge'].map((f) => (
             <div key={f} className="flex items-center gap-2 text-sm text-top">
@@ -60,7 +47,6 @@ export function TrialStartSheet({ open, onClose, onUseFreeTheme, context = 'them
         <div className="space-y-2">
           <Button
             onClick={handleStartTrial}
-            loading={loading}
             variant="pro"
             size="lg"
             className="w-full font-bold"
@@ -73,7 +59,6 @@ export function TrialStartSheet({ open, onClose, onUseFreeTheme, context = 'them
             size="md"
             className="w-full"
             onClick={onUseFreeTheme}
-            disabled={loading}
           >
             {context === 'cover' ? 'Remove cover image' : 'Use a free theme'}
           </Button>
