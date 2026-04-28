@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     // Build LemonSqueezy hosted checkout URL
     // Trial is configured on the variant in the LS dashboard (30 days)
-    const url = new URL(`https://${STORE_SLUG}.lemonsqueezy.com/buy/${VARIANT_ID}`);
+    const url = new URL(`https://${STORE_SLUG}.lemonsqueezy.com/checkout/buy/${VARIANT_ID}`);
     url.searchParams.set('checkout[email]', user.email || '');
     url.searchParams.set('checkout[custom][user_id]', user.id);
     url.searchParams.set('checkout[success_url]', `${APP_URL}/checkout/success`);
