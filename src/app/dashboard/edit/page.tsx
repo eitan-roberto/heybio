@@ -39,7 +39,7 @@ interface EditSocialIcon {
 }
 
 const FREE_THEMES = ['clean', 'soft', 'bold', 'dark', 'warm', 'minimal'];
-const PRO_THEMES  = ['gradient', 'ocean', 'sunset', 'forest', 'midnight', 'cream'];
+const PRO_THEMES  = ['gradient', 'ocean', 'sunset', 'forest', 'midnight', 'cream', 'superstar'];
 
 const SOCIAL_PLATFORMS = [
   { id: 'instagram', name: 'Instagram', icon: 'instagram' },
@@ -254,11 +254,6 @@ export default function EditPage() {
       setShowTrialSheet(true);
       return;
     }
-    if (!isPro && coverImageUrl) {
-      setTrialContext('cover');
-      setShowTrialSheet(true);
-      return;
-    }
 
     setSaving(true);
     const supabase = createClient();
@@ -369,7 +364,6 @@ export default function EditPage() {
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !pageId) return;
-    if (!isPro) { toast.error('Cover images are a Pro feature'); return; }
     setUploadingCover(true);
     const supabase = createClient();
     const fileExt = file.name.split('.').pop();
@@ -681,13 +675,14 @@ export default function EditPage() {
           {/* DESIGN TAB */}
           {activeTab === 'design' && (
             <div className="space-y-5">
-              {/* Cover image */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm font-semibold text-top">Cover image</span>
-                  {!isPro && <span className="text-xs px-2 py-0.5 rounded-full bg-pink text-top font-bold">PRO</span>}
-                </div>
-                {isPro ? (
+
+              {/* Cover image — only shown for themes with a custom layout */}
+              {getTheme(themeId).layout && getTheme(themeId).layout !== 'standard' && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-sm font-semibold text-top">Cover photo</span>
+                    <span className="text-xs text-mid">Required for Superstar</span>
+                  </div>
                   <div className="space-y-2">
                     {coverImageUrl && (
                       <div className="relative rounded-2xl overflow-hidden">
@@ -699,20 +694,12 @@ export default function EditPage() {
                     )}
                     <label className={cn('flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-low cursor-pointer hover:border-top transition-colors text-sm text-high', uploadingCover && 'opacity-50 pointer-events-none')}>
                       {uploadingCover ? <Icon icon="loader-2" className="w-4 h-4 animate-spin" /> : <Icon icon="image" className="w-4 h-4" />}
-                      {coverImageUrl ? 'Change cover' : 'Upload cover'}
+                      {coverImageUrl ? 'Change cover photo' : 'Upload cover photo'}
                       <input type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" disabled={uploadingCover} />
                     </label>
                   </div>
-                ) : (
-                  <button
-                    onClick={() => { setTrialContext('cover'); setShowTrialSheet(true); }}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-pink/40 text-sm text-top hover:border-pink transition-colors"
-                  >
-                    <Icon icon="sparkles" className="w-4 h-4 text-pink" />
-                    Start free trial to unlock
-                  </button>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Free themes */}
               <div>

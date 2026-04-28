@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { ProfileSection } from './ProfileSection';
 import { LinkCard } from './LinkCard';
 import { SocialBar } from './SocialBar';
-import { CoverBackground, CoverBanner } from './CoverImage';
+import { getLayout } from './layouts';
 import { getTheme, type Theme } from '@/config/themes';
 import { getLanguage, isRtl } from '@/lib/languages';
 import type { Page, Link, SocialIcon, SocialPlatform, PageTranslation, LinkTranslation } from '@/types';
@@ -23,15 +23,7 @@ interface BioPageProps {
   onSocialClick?: (platform: SocialPlatform) => void;
   showBadge?: boolean;
   isPro?: boolean;
-  /** When true, skip analytics tracking (used in dashboard preview) */
   isPreview?: boolean;
-}
-
-function getBackgroundStyle(theme: Theme): React.CSSProperties {
-  if (theme.colors.background.startsWith('linear')) {
-    return { background: theme.colors.background };
-  }
-  return { backgroundColor: theme.colors.background };
 }
 
 function ExpiryBadge({ expiresAt, theme }: { expiresAt: string; theme: Theme }) {
@@ -39,18 +31,15 @@ function ExpiryBadge({ expiresAt, theme }: { expiresAt: string; theme: Theme }) 
   const exp = new Date(expiresAt).getTime();
   const diff = exp - now;
   const hoursLeft = diff / (1000 * 60 * 60);
-
-  if (hoursLeft < 0) return null; // Already filtered, but just in case
+  if (hoursLeft < 0) return null;
 
   let label = '';
   if (hoursLeft < 1) {
-    const mins = Math.round(diff / (1000 * 60));
-    label = `Expires in ${mins}m`;
+    label = `Expires in ${Math.round(diff / (1000 * 60))}m`;
   } else if (hoursLeft < 24) {
     label = `Expires in ${Math.round(hoursLeft)}h`;
   } else {
-    const days = Math.floor(hoursLeft / 24);
-    label = `Expires in ${days}d`;
+    label = `Expires in ${Math.floor(hoursLeft / 24)}d`;
   }
 
   return (
@@ -65,19 +54,13 @@ function ExpiryBadge({ expiresAt, theme }: { expiresAt: string; theme: Theme }) 
   );
 }
 
-function LanguageSwitcher({
-  languages,
-  selected,
-  onSelect,
-  theme,
-}: {
+function LanguageSwitcher({ languages, selected, onSelect, theme }: {
   languages: string[];
   selected: string;
   onSelect: (code: string) => void;
   theme: Theme;
 }) {
   if (languages.length <= 1) return null;
-
   return (
     <div className="flex items-center justify-center gap-2 mb-6 flex-wrap">
       {languages.map((code) => {
@@ -109,14 +92,9 @@ function getOrCreateVisitorId(): string {
   const key = 'hb_vid';
   try {
     let id = localStorage.getItem(key);
-    if (!id) {
-      id = crypto.randomUUID();
-      localStorage.setItem(key, id);
-    }
+    if (!id) { id = crypto.randomUUID(); localStorage.setItem(key, id); }
     return id;
-  } catch {
-    return 'anonymous';
-  }
+  } catch { return 'anonymous'; }
 }
 
 export function BioPage({
@@ -133,18 +111,15 @@ export function BioPage({
   isPreview = false,
 }: BioPageProps) {
   const theme = getTheme(page.theme_id);
+  const Layout = getLayout(theme.layout);
   const languages = page.languages ?? ['en'];
   const [selectedLang, setSelectedLang] = useState(languages[0] ?? 'en');
   const [comingSoonPopup, setComingSoonPopup] = useState<string | null>(null);
 
-  // Reset lang when page languages change
   useEffect(() => {
-    if (!languages.includes(selectedLang)) {
-      setSelectedLang(languages[0] ?? 'en');
-    }
+    if (!languages.includes(selectedLang)) setSelectedLang(languages[0] ?? 'en');
   }, [languages, selectedLang]);
 
-  // Track page view (skip in preview)
   useEffect(() => {
     if (isPreview) return;
     const visitorId = getOrCreateVisitorId();
@@ -167,7 +142,6 @@ export function BioPage({
     onLinkClick?.(index);
   };
 
-  // Apply translations for selected language
   const translationForLang = translations.find((t) => t.language_code === selectedLang);
   const displayName =
     selectedLang !== 'en' && translationForLang?.display_name
@@ -176,39 +150,30 @@ export function BioPage({
   const bio =
     selectedLang !== 'en' && translationForLang?.bio ? translationForLang.bio : page.bio;
 
-  // Filter: active + not expired
   const now = new Date().toISOString();
   const activeLinks = links
     .filter((link) => link.is_active && (!link.expires_at || link.expires_at > now))
     .sort((a, b) => a.order - b.order);
 
   const rtl = isRtl(selectedLang);
+  const hasCoverLayout = !!theme.layout && theme.layout !== 'standard';
 
-  const hasCoverImage = !!coverImageUrl;
-
-  const mainContent = (
+  // Pre-built content piece — layouts can use this or render raw data themselves
+  const content = (
     <>
-      {/* Language switcher */}
       {languages.length > 1 && (
-        <LanguageSwitcher
-          languages={languages}
-          selected={selectedLang}
-          onSelect={setSelectedLang}
-          theme={theme}
-        />
+        <LanguageSwitcher languages={languages} selected={selectedLang} onSelect={setSelectedLang} theme={theme} />
       )}
-
       <div>
         <ProfileSection
           displayName={displayName}
           bio={bio}
           avatarUrl={page.avatar_url}
           theme={theme}
-          hasCoverImage={hasCoverImage}
-          showVerified={hasCoverImage && isPro}
+          hasCoverImage={hasCoverLayout && !!coverImageUrl}
+          showVerified={hasCoverLayout && !!coverImageUrl && isPro}
         />
       </div>
-
       {socialIcons.length > 0 && (
         <div>
           <SocialBar
@@ -219,7 +184,6 @@ export function BioPage({
           />
         </div>
       )}
-
       {activeLinks.length > 0 && (
         <div className="flex-1 flex flex-col gap-4">
           {activeLinks.map((link, index) => {
@@ -229,16 +193,12 @@ export function BioPage({
               : null;
             const translatedTitle =
               selectedLang !== 'en' && ltForLink?.title ? ltForLink.title : link.title;
-
             const showsExpiry =
               link.expires_at &&
               new Date(link.expires_at).getTime() - Date.now() < 24 * 60 * 60 * 1000 * 3;
-
             return (
               <div key={index}>
-                {showsExpiry && link.expires_at && (
-                  <ExpiryBadge expiresAt={link.expires_at} theme={theme} />
-                )}
+                {showsExpiry && link.expires_at && <ExpiryBadge expiresAt={link.expires_at} theme={theme} />}
                 <LinkCard
                   link={{ ...link, title: translatedTitle }}
                   theme={theme}
@@ -272,7 +232,7 @@ export function BioPage({
         <p className="text-base font-medium mb-5" style={{ color: theme.colors.text }}>{comingSoonPopup}</p>
         <button
           onClick={() => setComingSoonPopup(null)}
-          className="w-full py-2.5 rounded-full w-full text-sm font-semibold transition-opacity hover:opacity-80"
+          className="w-full py-2.5 rounded-full text-sm font-semibold transition-opacity hover:opacity-80"
           style={{ backgroundColor: theme.colors.linkBg, color: theme.colors.linkText }}
         >
           Got it
@@ -292,54 +252,29 @@ export function BioPage({
       >
         <span>Made with</span>
         <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-          <path
-            fillRule="evenodd"
-            d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-            clipRule="evenodd"
-          />
+          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
         </svg>
         <span>HeyBio</span>
       </a>
     </footer>
   );
 
-  // --- Cover image layout ---
-  if (hasCoverImage) {
-    return (
-      <div className="min-h-screen w-full relative overflow-hidden" dir={rtl ? 'rtl' : 'ltr'}>
-        <CoverBackground imageUrl={coverImageUrl} isPreview={isPreview} />
-
-        <div className="relative z-10 min-h-screen flex flex-col items-center px-4 py-4">
-          <div
-            className="w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col"
-            style={{ ...getBackgroundStyle(theme), minHeight: isPreview ? undefined : 'calc(100vh - 2rem)' }}
-          >
-            <CoverBanner imageUrl={coverImageUrl} fadeColor={theme.colors.background} />
-            <div className="px-6 pb-8 flex-1 flex flex-col gap-4 -mt-12 relative z-10">
-              {mainContent}
-            </div>
-            {badge}
-          </div>
-        </div>
-
-        {comingSoonOverlay}
-      </div>
-    );
-  }
-
-  // --- Standard layout (no cover image) ---
   return (
-    <div
-      className="min-h-screen w-full flex flex-col"
-      style={getBackgroundStyle(theme)}
-      dir={rtl ? 'rtl' : 'ltr'}
-    >
-      <main className="flex-1 w-full max-w-lg mx-auto px-6 py-12 flex flex-col gap-4">
-        {mainContent}
-      </main>
-
-      {comingSoonOverlay}
-      {badge}
-    </div>
+    <Layout
+      theme={theme}
+      rtl={rtl}
+      isPreview={isPreview}
+      isPro={isPro}
+      showBadge={showBadge}
+      coverImageUrl={coverImageUrl}
+      displayName={displayName}
+      bio={bio}
+      avatarUrl={page.avatar_url}
+      activeLinks={activeLinks}
+      socialIcons={socialIcons}
+      content={content}
+      badge={badge}
+      comingSoonOverlay={comingSoonOverlay}
+    />
   );
 }

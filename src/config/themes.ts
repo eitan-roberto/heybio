@@ -7,6 +7,8 @@ export interface Theme {
   id: string;
   name: string;
   isPro: boolean;
+  /** Layout component ID — defaults to 'standard'. Add new IDs to the layouts registry. */
+  layout?: string;
   colors: {
     background: string;
     text: string;
@@ -286,6 +288,29 @@ export const themes: Record<string, Theme> = {
     },
     borderRadius: 'lg',
     style: 'card',
+  },
+
+  superstar: {
+    id: 'superstar',
+    name: 'Superstar',
+    isPro: true,
+    layout: 'superstar',
+    colors: {
+      background: '#0c0c14',
+      text: '#ffffff',
+      textMuted: 'rgba(255,255,255,0.55)',
+      primary: '#f5c518',
+      linkBg: 'rgba(255,255,255,0.08)',
+      linkText: '#ffffff',
+      linkHover: 'rgba(255,255,255,0.14)',
+      linkBorder: 'rgba(255,255,255,0.12)',
+    },
+    fonts: {
+      heading: 'Inter, system-ui, sans-serif',
+      body: 'Inter, system-ui, sans-serif',
+    },
+    borderRadius: 'lg',
+    style: 'glass',
   },
 };
 
