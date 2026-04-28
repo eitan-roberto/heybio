@@ -20,7 +20,7 @@ async function updateProfile(supabase: ReturnType<typeof createAdminClient>, use
   if (error) {
     logService.error('webhook_db_error', { userId, error: error.message, data });
   } else {
-    logService.error('webhook_db_updated', { userId, fields: Object.keys(data) });
+    logService.info('webhook_db_updated', { userId, fields: Object.keys(data) });
   }
 }
 
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get('X-Signature') ?? req.headers.get('x-signature');
 
     if (!verifySignature(payload, signature)) {
-      logService.error('webhook_invalid_signature', {});
+      logService.warn('webhook_invalid_signature', {});
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
@@ -39,10 +39,10 @@ export async function POST(req: NextRequest) {
     const attrs = event.data?.attributes ?? {};
     const userId: string | undefined = event.meta?.custom_data?.user_id;
 
-    logService.error('lemonsqueezy_webhook_received', { eventName, userId, lsStatus: attrs.status });
+    logService.info('lemonsqueezy_webhook_received', { eventName, userId, lsStatus: attrs.status });
 
     if (!userId) {
-      logService.error('webhook_no_user_id', { eventName, customData: event.meta?.custom_data });
+      logService.warn('webhook_no_user_id', { eventName, customData: event.meta?.custom_data });
       return NextResponse.json({ success: true });
     }
 
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
       }
 
       default:
-        logService.error('webhook_unhandled_event', { eventName });
+        logService.warn('webhook_unhandled_event', { eventName });
     }
 
     return NextResponse.json({ success: true });
