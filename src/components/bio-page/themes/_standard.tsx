@@ -7,7 +7,38 @@ import { SocialBar } from '../SocialBar';
 import { getLanguage } from '@/lib/languages';
 import { cn } from '@/lib/utils';
 import type { ComponentType } from 'react';
-import type { ThemeSpec, ThemeLayoutProps } from './types';
+import type { ThemeSpec, ThemeLayoutProps, ThemeMiniatureProps } from './types';
+
+const RADIUS: Record<ThemeSpec['borderRadius'], string> = {
+  none: '0px', sm: '4px', md: '8px', lg: '12px', full: '9999px',
+};
+
+export function createStandardMiniature(spec: ThemeSpec): ComponentType {
+  const { colors, borderRadius } = spec;
+  const bg: React.CSSProperties = colors.background.startsWith('linear')
+    ? { background: colors.background }
+    : { backgroundColor: colors.background };
+  const r = RADIUS[borderRadius];
+
+  function Miniature(_props: ThemeMiniatureProps) {
+    return (
+      <div className="w-full flex flex-col items-center py-4 px-3 gap-2" style={bg}>
+        <div className="w-8 h-8 rounded-full shrink-0" style={{ backgroundColor: colors.primary }} />
+        <div className="w-14 h-1.5 rounded-full" style={{ backgroundColor: colors.text, opacity: 0.75 }} />
+        <div
+          className="w-full h-4 shrink-0 mt-1"
+          style={{
+            backgroundColor: colors.linkBg,
+            border: colors.linkBorder ? `1px solid ${colors.linkBorder}` : undefined,
+            borderRadius: r,
+          }}
+        />
+      </div>
+    );
+  }
+
+  return Miniature;
+}
 
 function bgStyle(colors: ThemeSpec['colors']): React.CSSProperties {
   return colors.background.startsWith('linear')

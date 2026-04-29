@@ -179,9 +179,9 @@ export async function generateViewport({
   const { username } = await params;
   const data = await getPageData(username);
   const BG: Record<string, string> = {
-    clean: '#ffffff', soft: '#faf5f0', bold: '#fef3c7', dark: '#0a0a0a',
+    clean: '#ffffff', soft: '#faf5f0', dark: '#0a0a0a',
     warm: '#fef2f2', minimal: '#ffffff', gradient: '#667eea', ocean: '#0f172a',
-    sunset: '#f97316', forest: '#14532d', midnight: '#020617', cream: '#fffbeb',
+    sunset: '#f97316', forest: '#14532d', midnight: '#020617',
     superstar: '#0c0c14',
   };
   return { themeColor: data ? (BG[data.page.theme_id] ?? '#ffffff') : '#ffffff' };

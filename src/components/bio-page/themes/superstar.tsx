@@ -7,7 +7,7 @@ import { SocialBar } from '../SocialBar';
 import { CoverBackground, CoverBanner } from '../CoverImage';
 import { getLanguage } from '@/lib/languages';
 import { cn } from '@/lib/utils';
-import type { ThemeSpec, ThemeLayoutProps } from './types';
+import type { ThemeSpec, ThemeLayoutProps, ThemeMiniatureProps } from './types';
 
 const colors = {
   background: '#0c0c14',
@@ -34,6 +34,38 @@ export const meta = {
   hasCustomLayout: true,
   spec,
 };
+
+export function Miniature({ coverImageUrl }: ThemeMiniatureProps) {
+  return (
+    <div className="w-full flex flex-col" style={{ backgroundColor: colors.background }}>
+      {/* cover */}
+      <div className="w-full h-12 overflow-hidden relative">
+        {coverImageUrl ? (
+          <>
+            <img src={coverImageUrl} alt="" className="w-full h-full object-cover" />
+            <div className="absolute inset-x-0 bottom-0 h-6" style={{ background: `linear-gradient(to bottom, transparent, ${colors.background})` }} />
+          </>
+        ) : (
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{ background: `linear-gradient(135deg, ${colors.primary}50 0%, ${colors.primary}20 100%)` }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: colors.primary, opacity: 0.7 }}>
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <path d="M21 15l-5-5L5 21" />
+            </svg>
+          </div>
+        )}
+      </div>
+      {/* content */}
+      <div className="flex flex-col items-center px-3 py-3 gap-2">
+        <div className="w-14 h-1.5 rounded-full" style={{ backgroundColor: colors.text, opacity: 0.9 }} />
+        <div className="w-full h-4 rounded-lg shrink-0" style={{ backgroundColor: colors.linkBg }} />
+      </div>
+    </div>
+  );
+}
 
 function ExpiryBadge({ expiresAt }: { expiresAt: string }) {
   const diff = new Date(expiresAt).getTime() - Date.now();

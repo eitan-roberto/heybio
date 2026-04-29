@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ConfirmSheet } from '@/components/ui/confirm-sheet';
 import { BioPage } from '@/components/bio-page';
-import { getTheme } from '@/components/bio-page/themes';
+import { getTheme, getMiniature, freeThemes, proThemes } from '@/components/bio-page/themes';
 import { createClient } from '@/lib/supabase/client';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import type { CachedTranslation } from '@/stores/dashboardStore';
@@ -38,9 +38,6 @@ interface EditSocialIcon {
   coming_soon_message?: string | null;
 }
 
-const FREE_THEMES = ['clean', 'soft', 'bold', 'dark', 'warm', 'minimal'];
-const PRO_THEMES  = ['gradient', 'ocean', 'sunset', 'forest', 'midnight', 'cream', 'superstar'];
-
 const SOCIAL_PLATFORMS = [
   { id: 'instagram', name: 'Instagram', icon: 'instagram' },
   { id: 'twitter',   name: 'X',         icon: 'x-social'  },
@@ -60,37 +57,46 @@ type Tab = 'links' | 'social' | 'design' | 'languages';
 // ── Theme card ──────────────────────────────────────────────────────────────
 
 function ThemeCard({
-  theme,
+  themeId,
   selected,
-  isPro: isProTheme,
   userIsPro,
+  coverImageUrl,
   onSelect,
 }: {
-  theme: string;
+  themeId: string;
   selected: boolean;
-  isPro?: boolean;
   userIsPro?: boolean;
+  coverImageUrl?: string;
   onSelect: () => void;
 }) {
-  const themeData = getTheme(theme);
+  const theme = getTheme(themeId);
+  const MiniatureComponent = getMiniature(themeId);
+  const locked = theme.isPro && !userIsPro;
+
   return (
     <button
       onClick={onSelect}
       className={cn(
-        'rounded-2xl p-3 text-left transition-all relative border-2',
-        selected ? 'border-top' : 'border-transparent hover:border-low',
+        'relative w-full rounded-2xl overflow-hidden transition-all border-2',
+        selected ? 'border-top ring-2 ring-top/20' : 'border-transparent hover:border-low',
       )}
-      style={{ background: themeData.colors.background }}
     >
-      <div className="w-6 h-6 rounded-full mb-2" style={{ background: themeData.colors.primary }} />
-      <span className="text-xs font-semibold capitalize" style={{ color: themeData.colors.text }}>
-        {themeData.name}
-      </span>
-      {isProTheme && !userIsPro && (
-        <div className="absolute top-1.5 right-1.5 text-[9px] font-bold bg-pink text-top px-1.5 py-0.5 rounded-full leading-none">
+      <MiniatureComponent coverImageUrl={coverImageUrl} />
+
+      {selected && (
+        <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-top flex items-center justify-center">
+          <Icon icon="check" className="w-3 h-3 text-bottom" />
+        </div>
+      )}
+      {locked && !selected && (
+        <div className="absolute top-2 right-2 text-[9px] font-bold bg-pink text-top px-1.5 py-0.5 rounded-full leading-none">
           PRO
         </div>
       )}
+
+      <div className="px-2 py-1.5 bg-low">
+        <span className="text-xs font-medium text-top">{theme.name}</span>
+      </div>
     </button>
   );
 }
@@ -249,7 +255,7 @@ export default function EditPage() {
     if (!pageId) return;
 
     // Gate pro features before saving
-    if (!isPro && PRO_THEMES.includes(themeId)) {
+    if (!isPro && getTheme(themeId).isPro) {
       setTrialContext('theme');
       setShowTrialSheet(true);
       return;
@@ -681,7 +687,7 @@ export default function EditPage() {
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-sm font-semibold text-top">Cover photo</span>
-                    <span className="text-xs text-mid">Required for Superstar</span>
+                    <span className="text-xs text-mid">Shown at the top of your page</span>
                   </div>
                   <div className="space-y-2">
                     {coverImageUrl && (
@@ -705,8 +711,8 @@ export default function EditPage() {
               <div>
                 <p className="text-sm font-semibold text-top mb-2">Free themes</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {FREE_THEMES.map((t) => (
-                    <ThemeCard key={t} theme={t} selected={themeId === t} onSelect={() => setThemeId(t)} />
+                  {freeThemes.map((t) => (
+                    <ThemeCard key={t.id} themeId={t.id} selected={themeId === t.id} coverImageUrl={coverImageUrl} onSelect={() => setThemeId(t.id)} />
                   ))}
                 </div>
               </div>
@@ -722,14 +728,14 @@ export default function EditPage() {
                   )}
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  {PRO_THEMES.map((t) => (
+                  {proThemes.map((t) => (
                     <ThemeCard
-                      key={t}
-                      theme={t}
-                      selected={themeId === t}
-                      isPro
+                      key={t.id}
+                      themeId={t.id}
+                      selected={themeId === t.id}
                       userIsPro={isPro}
-                      onSelect={() => setThemeId(t)}
+                      coverImageUrl={coverImageUrl}
+                      onSelect={() => setThemeId(t.id)}
                     />
                   ))}
                 </div>
@@ -810,16 +816,30 @@ export default function EditPage() {
         {/* ── Live preview (desktop only) ─────────────── */}
         <div className="hidden lg:block lg:sticky lg:top-8">
           <p className="text-xs text-mid font-medium mb-2">Live preview</p>
-          <div className="h-[560px] overflow-auto rounded-3xl border border-low">
-            <BioPage
-              page={previewPage}
-              links={previewLinks}
-              socialIcons={previewSocialIcons}
-              coverImageUrl={coverImageUrl || undefined}
-              isPro={isPro}
-              showBadge
-              isPreview
-            />
+          <div className="relative overflow-hidden rounded-3xl border border-low" style={{ height: 560 }}>
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: '50%',
+                marginLeft: -195,
+                width: 390,
+                height: 844,
+                overflow: 'hidden',
+                transformOrigin: 'top center',
+                transform: 'scale(0.663)',
+              }}
+            >
+              <BioPage
+                page={previewPage}
+                links={previewLinks}
+                socialIcons={previewSocialIcons}
+                coverImageUrl={coverImageUrl || undefined}
+                isPro={isPro}
+                showBadge
+                isPreview
+              />
+            </div>
           </div>
         </div>
       </div>

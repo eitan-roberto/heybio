@@ -31,17 +31,11 @@ export function LinkCard({ link, theme, onClick, onComingSoon }: LinkCardProps) 
   const [showNsfwWarning, setShowNsfwWarning] = useState(false);
 
   const cardStyles: React.CSSProperties = {
-    backgroundColor: theme.style === 'outline' || theme.style === 'glass'
-      ? 'transparent'
-      : theme.colors.linkBg,
+    backgroundColor: theme.colors.linkBg,
     color: theme.colors.linkText,
     borderRadius: getBorderRadius(theme.borderRadius),
-    border: theme.colors.linkBorder
-      ? `1px solid ${theme.colors.linkBorder}`
-      : theme.style === 'outline'
-        ? `1px solid ${theme.colors.linkText}`
-        : 'none',
-    backdropFilter: theme.style === 'glass' ? 'blur(10px)' : undefined,
+    border: theme.colors.linkBorder ? `1px solid ${theme.colors.linkBorder}` : 'none',
+    backdropFilter: theme.colors.linkBackdropFilter,
     fontFamily: theme.fonts.body,
   };
 
@@ -64,8 +58,7 @@ export function LinkCard({ link, theme, onClick, onComingSoon }: LinkCardProps) 
       e.currentTarget.style.backgroundColor = hoverBg;
     },
     onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
-      e.currentTarget.style.backgroundColor =
-        theme.style === 'outline' || theme.style === 'glass' ? 'transparent' : theme.colors.linkBg;
+      e.currentTarget.style.backgroundColor = theme.colors.linkBg;
     },
   };
 

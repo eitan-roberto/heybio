@@ -10,6 +10,7 @@ export interface ThemeColors {
   linkText: string;
   linkHover: string;
   linkBorder?: string;
+  linkBackdropFilter?: string;
   socialBg?: string;
 }
 
@@ -53,6 +54,11 @@ export interface ThemeMeta {
   spec: ThemeSpec;
 }
 
+export interface ThemeMiniatureProps {
+  coverImageUrl?: string;
+}
+
 export interface ThemeDefinition extends ThemeMeta {
   Layout: ComponentType<ThemeLayoutProps>;
+  Miniature: ComponentType<ThemeMiniatureProps>;
 }

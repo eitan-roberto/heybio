@@ -2,7 +2,6 @@
 
 import * as clean from './clean';
 import * as soft from './soft';
-import * as bold from './bold';
 import * as dark from './dark';
 import * as warm from './warm';
 import * as minimal from './minimal';
@@ -11,16 +10,15 @@ import * as ocean from './ocean';
 import * as sunset from './sunset';
 import * as forest from './forest';
 import * as midnight from './midnight';
-import * as cream from './cream';
 import * as superstar from './superstar';
 import type { ComponentType } from 'react';
-import type { ThemeSpec, ThemeLayoutProps } from './types';
+import type { ThemeSpec, ThemeLayoutProps, ThemeMiniatureProps } from './types';
 
-export type { ThemeSpec, ThemeLayoutProps };
+export type { ThemeSpec, ThemeLayoutProps, ThemeMiniatureProps };
 
 const definitions = [
-  clean, soft, bold, dark, warm, minimal,
-  gradient, ocean, sunset, forest, midnight, cream, superstar,
+  clean, soft, dark, warm, minimal,
+  gradient, ocean, sunset, forest, midnight, superstar,
 ] as const;
 
 const registry = Object.fromEntries(definitions.map((d) => [d.meta.id, d]));
@@ -54,6 +52,11 @@ export function getLayout(id: string): ComponentType<ThemeLayoutProps> {
   return ((registry[id] ?? registry.clean) as (typeof definitions)[number]).Layout;
 }
 
+export function getMiniature(id: string): ComponentType<ThemeMiniatureProps> {
+  return ((registry[id] ?? registry.clean) as (typeof definitions)[number]).Miniature;
+}
+
 export const allThemes: Theme[] = definitions.map(flatten);
 export const freeThemes: Theme[] = allThemes.filter((t) => !t.isPro);
 export const proThemes: Theme[] = allThemes.filter((t) => t.isPro);
+export const DEFAULT_THEME_ID: string = freeThemes[0].id;

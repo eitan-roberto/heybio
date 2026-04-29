@@ -1,5 +1,5 @@
 'use client';
-import { createStandardLayout } from './_standard';
+import { createStandardLayout, createStandardMiniature } from './_standard';
 import type { ThemeSpec } from './types';
 
 const spec: ThemeSpec = {
@@ -12,11 +12,13 @@ const spec: ThemeSpec = {
     linkText: '#f0f9ff',
     linkHover: 'rgba(56,189,248,0.2)',
     linkBorder: 'rgba(56,189,248,0.3)',
+    linkBackdropFilter: 'blur(10px)',
   },
   fonts: { heading: 'Inter, system-ui, sans-serif', body: 'Inter, system-ui, sans-serif' },
   borderRadius: 'md',
   style: 'glass',
 };
 
-export const meta = { id: 'ocean', name: 'Ocean', isPro: true, spec };
+export const meta = { id: 'ocean', name: 'Ocean', isPro: false, spec };
 export const Layout = createStandardLayout(spec);
+export const Miniature = createStandardMiniature(spec);

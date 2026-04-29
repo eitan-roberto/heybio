@@ -1,5 +1,5 @@
 'use client';
-import { createStandardLayout } from './_standard';
+import { createStandardLayout, createStandardMiniature } from './_standard';
 import type { ThemeSpec } from './types';
 
 const spec: ThemeSpec = {
@@ -18,5 +18,6 @@ const spec: ThemeSpec = {
   style: 'card',
 };
 
-export const meta = { id: 'forest', name: 'Forest', isPro: true, spec };
+export const meta = { id: 'forest', name: 'Forest', isPro: false, spec };
 export const Layout = createStandardLayout(spec);
+export const Miniature = createStandardMiniature(spec);
