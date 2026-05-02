@@ -35,7 +35,7 @@ export function LinkRedirect({ url, title, avatarUrl, coverImageUrl, displayName
 
       {/* iOS in-app only: bubble flush at top pointing to 3-dots area */}
       {isInApp && isIOS && (
-        <div className="fixed top-2 right-4 z-50 max-w-[200px]">
+        <div className="fixed top-5 right-4 z-50 max-w-[200px]">
           <div className="relative bg-white rounded-2xl px-4 py-3 shadow-2xl">
             <div className="absolute -top-2 right-5 w-4 h-4 bg-white rotate-45" />
             <p className="text-black text-xs leading-relaxed">
@@ -54,7 +54,8 @@ export function LinkRedirect({ url, title, avatarUrl, coverImageUrl, displayName
 
         <img src="/icons/hidden.svg" alt="" className="w-10 h-10 invert opacity-50 mb-4" />
 
-        <h1 className="text-white text-2xl font-bold mb-8">+18 Content</h1>
+        <h1 className="text-white text-2xl font-bold mb-2">+18 Content</h1>
+        <p className="text-white/50 text-sm mb-5">Please follow the instructions to enter the link.</p>
 
         {isInApp === null && (
           <div className="w-6 h-6 rounded-full border-2 border-white/30 border-t-white animate-spin" />
@@ -63,7 +64,6 @@ export function LinkRedirect({ url, title, avatarUrl, coverImageUrl, displayName
         {isInApp === true && (
           <div className="bg-white/10 rounded-2xl p-5 w-full flex flex-col gap-5 text-left">
             <div className="flex items-center gap-4">
-              <span className="text-white text-2xl font-bold leading-none flex-shrink-0">1)</span>
               <img src="/icons/three-dots-menu.svg" alt="" className="w-6 h-6 invert opacity-70 flex-shrink-0" />
               <span className="text-white text-base leading-snug">
                 Tap the <strong>three dots</strong> top or bottom right
@@ -71,7 +71,6 @@ export function LinkRedirect({ url, title, avatarUrl, coverImageUrl, displayName
             </div>
             <div className="w-full h-px bg-white/15" />
             <div className="flex items-center gap-4">
-              <span className="text-white text-2xl font-bold leading-none flex-shrink-0">2)</span>
               <img src="/icons/open-in-browser.svg" alt="" className="w-6 h-6 invert opacity-70 flex-shrink-0" />
               <span className="text-white text-base leading-snug">
                 Choose <strong>Open in external browser</strong>
