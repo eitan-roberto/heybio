@@ -52,8 +52,13 @@ export async function GET(request: NextRequest) {
 
       for (const e of nsfwEvents ?? []) {
         if (!e.link_id) continue;
-        if (e.event_type === 'nsfw_gate_viewed') gateViews[e.link_id] = (gateViews[e.link_id] ?? 0) + 1;
-        if (e.event_type === 'nsfw_continue_clicked') entered[e.link_id] = (entered[e.link_id] ?? 0) + 1;
+        const ctx: string = (e.properties as Record<string, string>)?.browser_context ?? '';
+        if (e.event_type === 'nsfw_gate_viewed' && ctx.startsWith('inapp_')) {
+          gateViews[e.link_id] = (gateViews[e.link_id] ?? 0) + 1;
+        }
+        if (e.event_type === 'nsfw_continue_clicked') {
+          entered[e.link_id] = (entered[e.link_id] ?? 0) + 1;
+        }
       }
     }
 
