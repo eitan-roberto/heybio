@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Icon } from '@/components/ui/icon';
 import { detectLinkIcon, formatUrl } from '@/lib/icons';
 import type { ThemeSpec as Theme } from './themes/types';
@@ -8,7 +7,7 @@ import type { Link } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface LinkCardProps {
-  link: Pick<Link, 'title' | 'url' | 'icon' | 'coming_soon_message' | 'is_nsfw'>;
+  link: Pick<Link, 'title' | 'url' | 'icon' | 'coming_soon_message' | 'is_nsfw'> & { id?: string };
   theme: Theme;
   onClick?: () => void;
   onComingSoon?: (message: string) => void;
@@ -28,7 +27,6 @@ function getBorderRadius(radius: Theme['borderRadius']): string {
 export function LinkCard({ link, theme, onClick, onComingSoon }: LinkCardProps) {
   const iconName = link.icon || detectLinkIcon(link.url);
   const isComingSoon = !!link.coming_soon_message;
-  const [showNsfwWarning, setShowNsfwWarning] = useState(false);
 
   const cardStyles: React.CSSProperties = {
     backgroundColor: theme.colors.linkBg,
@@ -72,42 +70,6 @@ export function LinkCard({ link, theme, onClick, onComingSoon }: LinkCardProps) 
     </>
   );
 
-  function openExternalUrl(url: string) {
-    const formatted = formatUrl(url);
-    const ua = navigator.userAgent;
-    if (/iPhone|iPad|iPod/.test(ua)) {
-      window.location.href = formatted.replace(/^https?:\/\//, 'x-safari-$&');
-    } else if (/Android/.test(ua)) {
-      window.location.href = `intent://${formatted.replace(/^https?:\/\//, '')}#Intent;scheme=https;end`;
-    } else {
-      window.open(formatted, '_blank');
-    }
-  }
-
-  // NSFW warning overlay content
-  const nsfwContent = (
-    <div className="flex flex-col items-center gap-2 py-1">
-      <span className="text-sm font-medium opacity-80">
-        18+ May Contain Sensitive Content
-      </span>
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onClick?.();
-          openExternalUrl(link.url);
-        }}
-        className="px-4 py-1.5 rounded-full text-xs font-semibold transition-opacity hover:opacity-80"
-        style={{
-          backgroundColor: theme.colors.background,
-          color: theme.colors.text,
-        }}
-      >
-        Continue (+18)
-      </button>
-    </div>
-  );
-
   if (isComingSoon) {
     return (
       <button
@@ -125,43 +87,17 @@ export function LinkCard({ link, theme, onClick, onComingSoon }: LinkCardProps) 
     );
   }
 
-  // NSFW link — render as button that reveals warning on click
-  if (link.is_nsfw) {
+  if (link.is_nsfw && link.id) {
     return (
-      <button
-        type="button"
-        className={cn(sharedClassNames, "relative overflow-hidden")}
-        style={{
-          ...sharedStyle,
-          cursor: showNsfwWarning ? 'default' : 'pointer',
-        }}
+      <a
+        href={`/link/${link.id}`}
+        className={sharedClassNames}
+        style={sharedStyle}
         {...sharedHover}
-        onClick={() => {
-          if (!showNsfwWarning) {
-            setShowNsfwWarning(true);
-          }
-        }}
+        onClick={onClick}
       >
-        {/* Original content — fades out */}
-        <div
-          className={cn(
-            "flex items-center gap-3 w-full transition-all duration-300 ease-out",
-            showNsfwWarning ? "opacity-0 scale-95 absolute inset-0 pointer-events-none" : "opacity-100 scale-100"
-          )}
-        >
-          {inner}
-        </div>
-
-        {/* NSFW warning — fades in */}
-        <div
-          className={cn(
-            "w-full transition-all duration-300 ease-out",
-            showNsfwWarning ? "opacity-100 scale-100" : "opacity-0 scale-95 absolute inset-0 pointer-events-none"
-          )}
-        >
-          {nsfwContent}
-        </div>
-      </button>
+        {inner}
+      </a>
     );
   }
 
