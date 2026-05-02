@@ -8,7 +8,7 @@ export default async function LinkPage({ params }: { params: Promise<{ linkId: s
 
   const { data } = await supabase
     .from('links')
-    .select('id, url, title, is_nsfw, pages(avatar_url, cover_image_url, display_name)')
+    .select('id, url, title, is_nsfw, page_id, pages(id, avatar_url, cover_image_url, display_name)')
     .eq('id', linkId)
     .eq('is_active', true)
     .single();
@@ -21,6 +21,8 @@ export default async function LinkPage({ params }: { params: Promise<{ linkId: s
     <LinkRedirect
       url={data.url}
       title={data.title}
+      linkId={data.id}
+      pageId={page?.id ?? data.page_id}
       avatarUrl={page?.avatar_url ?? null}
       coverImageUrl={page?.cover_image_url ?? null}
       displayName={page?.display_name ?? null}

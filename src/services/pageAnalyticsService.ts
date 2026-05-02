@@ -38,8 +38,12 @@ export interface AnalyticsLink {
   url: string;
   is_active: boolean;
   expires_at: string | null;
+  is_nsfw: boolean;
   clicks: number;
   ctr: number;
+  nsfw_gate_views?: number;
+  nsfw_entered?: number;
+  nsfw_entry_rate?: number;
 }
 
 export interface AnalyticsFirstClick {

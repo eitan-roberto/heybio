@@ -6,20 +6,40 @@ import InAppSpy from 'inapp-spy';
 interface Props {
   url: string;
   title: string;
+  linkId: string;
+  pageId: string;
   avatarUrl: string | null;
   coverImageUrl: string | null;
   displayName: string | null;
 }
 
-export function LinkRedirect({ url, title, avatarUrl, coverImageUrl, displayName }: Props) {
+function trackEvent(eventType: string, linkId: string, pageId: string, properties: Record<string, string>) {
+  fetch('/api/analytics/event', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ eventType, linkId, pageId, properties }),
+  }).catch(() => {});
+}
+
+function getBrowserContext(inApp: boolean, ua: string): string {
+  if (!inApp) return 'external';
+  if (/iPhone|iPad|iPod/.test(ua)) return 'inapp_ios';
+  if (/Android/.test(ua)) return 'inapp_android';
+  return 'inapp_other';
+}
+
+export function LinkRedirect({ url, title, linkId, pageId, avatarUrl, coverImageUrl, displayName }: Props) {
   const [isInApp, setIsInApp] = useState<boolean | null>(null);
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     const { isInApp: detected } = InAppSpy();
+    const ua = navigator.userAgent;
     setIsInApp(detected);
-    setIsIOS(/iPhone|iPad|iPod/.test(navigator.userAgent));
-  }, []);
+    setIsIOS(/iPhone|iPad|iPod/.test(ua));
+    const browser_context = getBrowserContext(detected, ua);
+    trackEvent('nsfw_gate_viewed', linkId, pageId, { browser_context });
+  }, [linkId, pageId]);
 
   const bgImage = coverImageUrl || avatarUrl;
 
@@ -82,6 +102,7 @@ export function LinkRedirect({ url, title, avatarUrl, coverImageUrl, displayName
         {isInApp === false && (
           <a
             href={url}
+            onClick={() => trackEvent('nsfw_continue_clicked', linkId, pageId, { browser_context: 'external' })}
             className="px-8 py-3 bg-white text-black text-sm font-semibold rounded-full hover:bg-white/90 transition-opacity"
           >
             Continue (+18)

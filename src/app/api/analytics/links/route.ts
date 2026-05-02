@@ -8,7 +8,6 @@ export async function GET(request: NextRequest) {
     if (isErrorResponse(ctx)) return ctx;
     const { supabase, pageId, since, until } = ctx;
 
-    // Fetch links and total page views in parallel first
     const [{ count: totalViews }, { data: links }] = await Promise.all([
       supabase
         .from('page_views')
@@ -18,14 +17,13 @@ export async function GET(request: NextRequest) {
         .lte('created_at', until),
       supabase
         .from('links')
-        .select('id, title, url, is_active, expires_at')
+        .select('id, title, url, is_active, expires_at, is_nsfw')
         .eq('page_id', pageId)
         .order('order'),
     ]);
 
     if (!links?.length) return NextResponse.json([]);
 
-    // One HEAD count per link — exact, bypasses max-rows, works with RLS subquery policies.
     const clickCounts = await Promise.all(
       links.map((link) =>
         supabase
@@ -37,19 +35,50 @@ export async function GET(request: NextRequest) {
       )
     );
 
+    // One query for all NSFW gate events across NSFW links
+    const nsfwLinkIds = links.filter((l) => l.is_nsfw).map((l) => l.id);
+    const gateViews: Record<string, number> = {};
+    const entered: Record<string, number> = {};
+
+    if (nsfwLinkIds.length > 0) {
+      const { data: nsfwEvents } = await supabase
+        .from('events')
+        .select('link_id, event_type')
+        .eq('page_id', pageId)
+        .in('event_type', ['nsfw_gate_viewed', 'nsfw_continue_clicked'])
+        .in('link_id', nsfwLinkIds)
+        .gte('created_at', since)
+        .lte('created_at', until);
+
+      for (const e of nsfwEvents ?? []) {
+        if (!e.link_id) continue;
+        if (e.event_type === 'nsfw_gate_viewed') gateViews[e.link_id] = (gateViews[e.link_id] ?? 0) + 1;
+        if (e.event_type === 'nsfw_continue_clicked') entered[e.link_id] = (entered[e.link_id] ?? 0) + 1;
+      }
+    }
+
     const views = totalViews ?? 0;
     const result = links
       .map((l, i) => {
         const clicks = clickCounts[i]?.count ?? 0;
-        return {
+        const base = {
           id: l.id,
           title: l.title,
           url: l.url,
           is_active: l.is_active,
           expires_at: l.expires_at ?? null,
+          is_nsfw: l.is_nsfw ?? false,
           clicks,
           ctr: views > 0 ? Math.round((clicks / views) * 100) : 0,
         };
+
+        if (!l.is_nsfw) return base;
+
+        const nsfw_gate_views = gateViews[l.id] ?? 0;
+        const nsfw_entered = entered[l.id] ?? 0;
+        const nsfw_entry_rate = nsfw_gate_views > 0 ? Math.round((nsfw_entered / nsfw_gate_views) * 100) : 0;
+
+        return { ...base, nsfw_gate_views, nsfw_entered, nsfw_entry_rate };
       })
       .sort((a, b) => b.clicks - a.clicks);
 
