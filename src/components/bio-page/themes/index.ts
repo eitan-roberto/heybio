@@ -11,6 +11,7 @@ import * as sunset from './sunset';
 import * as forest from './forest';
 import * as midnight from './midnight';
 import * as superstar from './superstar';
+import * as gamer from './gamer';
 import type { ComponentType } from 'react';
 import type { ThemeSpec, ThemeLayoutProps, ThemeMiniatureProps } from './types';
 
@@ -18,7 +19,7 @@ export type { ThemeSpec, ThemeLayoutProps, ThemeMiniatureProps };
 
 const definitions = [
   clean, soft, dark, warm, minimal,
-  gradient, ocean, sunset, forest, midnight, superstar,
+  gradient, ocean, sunset, forest, midnight, superstar, gamer,
 ] as const;
 
 const registry = Object.fromEntries(definitions.map((d) => [d.meta.id, d]));

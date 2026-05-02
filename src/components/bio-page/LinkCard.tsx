@@ -72,19 +72,30 @@ export function LinkCard({ link, theme, onClick, onComingSoon }: LinkCardProps) 
     </>
   );
 
+  function openExternalUrl(url: string) {
+    const formatted = formatUrl(url);
+    const ua = navigator.userAgent;
+    if (/iPhone|iPad|iPod/.test(ua)) {
+      window.location.href = formatted.replace(/^https?:\/\//, 'x-safari-$&');
+    } else if (/Android/.test(ua)) {
+      window.location.href = `intent://${formatted.replace(/^https?:\/\//, '')}#Intent;scheme=https;end`;
+    } else {
+      window.open(formatted, '_blank');
+    }
+  }
+
   // NSFW warning overlay content
   const nsfwContent = (
     <div className="flex flex-col items-center gap-2 py-1">
       <span className="text-sm font-medium opacity-80">
         18+ May Contain Sensitive Content
       </span>
-      <a
-        href={formatUrl(link.url)}
-        target="_blank"
-        rel="noopener noreferrer"
+      <button
+        type="button"
         onClick={(e) => {
           e.stopPropagation();
           onClick?.();
+          openExternalUrl(link.url);
         }}
         className="px-4 py-1.5 rounded-full text-xs font-semibold transition-opacity hover:opacity-80"
         style={{
@@ -93,7 +104,7 @@ export function LinkCard({ link, theme, onClick, onComingSoon }: LinkCardProps) 
         }}
       >
         Continue (+18)
-      </a>
+      </button>
     </div>
   );
 
