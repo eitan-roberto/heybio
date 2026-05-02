@@ -13,10 +13,10 @@ const colors = {
   background: '#0c0c14',
   text: '#ffffff',
   textMuted: 'rgba(255,255,255,0.55)',
-  primary: '#f5c518',
-  linkBg: '#f5c518',
+  primary: '#d3a9fd',
+  linkBg: '#d3a9fd',
   linkText: '#0c0c14',
-  linkHover: '#e6b800',
+  linkHover: '#d0a0ff',
   socialBg: 'rgba(255,255,255,0.10)',
 };
 
