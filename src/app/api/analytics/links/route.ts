@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     if (nsfwLinkIds.length > 0) {
       const { data: nsfwEvents } = await supabase
         .from('events')
-        .select('link_id, event_type')
+        .select('link_id, event_type, properties')
         .eq('page_id', pageId)
         .in('event_type', ['nsfw_gate_viewed', 'nsfw_continue_clicked'])
         .in('link_id', nsfwLinkIds)
