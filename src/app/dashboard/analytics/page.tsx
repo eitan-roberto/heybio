@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ActivityChart } from '@/components/dashboard/ActivityChart';
+import { LinkDailyChart } from '@/components/dashboard/LinkDailyChart';
 import { PieChart } from '@/components/dashboard/PieChart';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Icon } from '@/components/ui/icon';
@@ -121,9 +122,58 @@ function FirstClickPie({ pageId, range }: { pageId: string; range: DateRange }) 
 
 // ── Link performance ───────────────────────────────────────────────────────
 
+function LinkRow({ link, rank, pageId, range }: {
+  link: ReturnType<typeof pageAnalyticsService.getLinks> extends Promise<(infer T)[]> ? T : never;
+  rank: number;
+  pageId: string;
+  range: DateRange;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const { data: daily, loading: dailyLoading } = useAnalyticsData(
+    () => expanded ? pageAnalyticsService.getLinkDaily(pageId, link.id, range) : Promise.resolve(null),
+    [expanded, pageId, link.id, range.start, range.end]
+  );
+
+  return (
+    <div className="bg-bottom border border-low rounded-2xl overflow-hidden">
+      <button
+        type="button"
+        className="w-full flex items-center gap-3 p-3 text-left"
+        onClick={() => setExpanded((v) => !v)}
+      >
+        <span className="text-sm font-bold text-mid w-5 text-center shrink-0">{rank}</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-top truncate">{link.title}</p>
+          <p className="text-xs text-mid truncate">{link.url}</p>
+        </div>
+        <div className="text-right shrink-0 mr-2">
+          <p className="text-sm font-bold text-top">{formatCount(link.clicks)}</p>
+          <p className="text-xs text-mid">clicks</p>
+        </div>
+        <Icon
+          icon="chevron-down"
+          className={cn('w-4 h-4 text-mid shrink-0 transition-transform', expanded && 'rotate-180')}
+        />
+      </button>
+
+      {expanded && (
+        <div className="px-3 pb-3">
+          {dailyLoading || !daily ? (
+            <Skeleton className="h-[200px] rounded-xl" />
+          ) : (
+            <LinkDailyChart data={daily.days} isNsfw={daily.isNsfw} />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LinkPerformance({ pageId, range }: { pageId: string; range: DateRange }) {
-  const { data: links, loading } = useAnalyticsData(() => pageAnalyticsService.getLinks(pageId, range), [pageId, range.start, range.end]);
-  const now = new Date().toISOString();
+  const { data: links, loading } = useAnalyticsData(
+    () => pageAnalyticsService.getLinks(pageId, range),
+    [pageId, range.start, range.end]
+  );
 
   if (loading) {
     return (
@@ -140,27 +190,7 @@ function LinkPerformance({ pageId, range }: { pageId: string; range: DateRange }
     <div className="space-y-3">
       <p className="text-sm font-semibold text-top">Link performance</p>
       {links.map((link, i) => (
-        <div key={link.id} className="flex items-center gap-3 p-3 bg-bottom border border-low rounded-2xl">
-          <span className="text-sm font-bold text-mid w-5 text-center shrink-0">{i + 1}</span>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-top truncate">{link.title}</p>
-            <p className="text-xs text-mid truncate">{link.url}</p>
-          </div>
-          <div className="text-right shrink-0">
-            <p className="text-sm font-bold text-top">{formatCount(link.clicks)}</p>
-            <p className="text-xs text-mid">{link.ctr}% CTR</p>
-            {link.is_nsfw && link.nsfw_entered !== undefined && (
-              <p className="text-xs text-mid mt-0.5">
-                {link.nsfw_entry_rate}% entered final link
-              </p>
-            )}
-          </div>
-          <div className="hidden sm:block w-16">
-            <div className="h-1.5 bg-low rounded-full overflow-hidden">
-              <div className="h-full bg-green rounded-full" style={{ width: `${Math.min(link.ctr * 5, 100)}%` }} />
-            </div>
-          </div>
-        </div>
+        <LinkRow key={link.id} link={link} rank={i + 1} pageId={pageId} range={range} />
       ))}
     </div>
   );

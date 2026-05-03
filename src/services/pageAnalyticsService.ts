@@ -95,4 +95,13 @@ export const pageAnalyticsService = {
 
   getFirstClicks: (pageId: string, range: DateRange) =>
     get<AnalyticsFirstClick[]>('first-click', pageId, range),
+
+  getLinkDaily: (pageId: string, linkId: string, range: DateRange) => {
+    const qs = new URLSearchParams({ pageId, linkId, start: range.start, end: range.end }).toString();
+    return fetch(`/api/analytics/link-daily?${qs}`)
+      .then((r) => r.json()) as Promise<{
+        isNsfw: boolean;
+        days: { date: string; clicks: number; nsfw_entered?: number }[];
+      }>;
+  },
 };
