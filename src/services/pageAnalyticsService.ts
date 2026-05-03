@@ -41,7 +41,6 @@ export interface AnalyticsLink {
   is_nsfw: boolean;
   clicks: number;
   ctr: number;
-  nsfw_gate_views?: number;
   nsfw_entered?: number;
   nsfw_entry_rate?: number;
 }

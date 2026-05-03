@@ -149,10 +149,9 @@ function LinkPerformance({ pageId, range }: { pageId: string; range: DateRange }
           <div className="text-right shrink-0">
             <p className="text-sm font-bold text-top">{formatCount(link.clicks)}</p>
             <p className="text-xs text-mid">{link.ctr}% CTR</p>
-            {link.is_nsfw && link.nsfw_gate_views !== undefined && (
+            {link.is_nsfw && link.nsfw_entered !== undefined && (
               <p className="text-xs text-mid mt-0.5">
-                {link.nsfw_entry_rate}% entered
-                <span className="opacity-50 ml-1">({link.nsfw_gate_views} saw gate)</span>
+                {link.nsfw_entry_rate}% entered final link
               </p>
             )}
           </div>

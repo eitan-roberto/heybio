@@ -37,28 +37,21 @@ export async function GET(request: NextRequest) {
 
     // One query for all NSFW gate events across NSFW links
     const nsfwLinkIds = links.filter((l) => l.is_nsfw).map((l) => l.id);
-    const gateViews: Record<string, number> = {};
     const entered: Record<string, number> = {};
 
     if (nsfwLinkIds.length > 0) {
       const { data: nsfwEvents } = await supabase
         .from('events')
-        .select('link_id, event_type, properties')
+        .select('link_id, event_type')
         .eq('page_id', pageId)
-        .in('event_type', ['nsfw_gate_viewed', 'nsfw_continue_clicked'])
+        .eq('event_type', 'nsfw_continue_clicked')
         .in('link_id', nsfwLinkIds)
         .gte('created_at', since)
         .lte('created_at', until);
 
       for (const e of nsfwEvents ?? []) {
         if (!e.link_id) continue;
-        const ctx: string = (e.properties as Record<string, string>)?.browser_context ?? '';
-        if (e.event_type === 'nsfw_gate_viewed' && ctx.startsWith('inapp_')) {
-          gateViews[e.link_id] = (gateViews[e.link_id] ?? 0) + 1;
-        }
-        if (e.event_type === 'nsfw_continue_clicked') {
-          entered[e.link_id] = (entered[e.link_id] ?? 0) + 1;
-        }
+        entered[e.link_id] = (entered[e.link_id] ?? 0) + 1;
       }
     }
 
@@ -79,11 +72,10 @@ export async function GET(request: NextRequest) {
 
         if (!l.is_nsfw) return base;
 
-        const nsfw_gate_views = gateViews[l.id] ?? 0;
         const nsfw_entered = entered[l.id] ?? 0;
-        const nsfw_entry_rate = nsfw_gate_views > 0 ? Math.round((nsfw_entered / nsfw_gate_views) * 100) : 0;
+        const nsfw_entry_rate = clicks > 0 ? Math.round((nsfw_entered / clicks) * 100) : 0;
 
-        return { ...base, nsfw_gate_views, nsfw_entered, nsfw_entry_rate };
+        return { ...base, nsfw_entered, nsfw_entry_rate };
       })
       .sort((a, b) => b.clicks - a.clicks);
 
