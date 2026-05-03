@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAnalyticsContext, isErrorResponse, buildDailyMap, toUTCDate } from '@/lib/analytics-auth';
+import { getAnalyticsContext, isErrorResponse, toUTCDate } from '@/lib/analytics-auth';
 import { logService } from '@/services/logService';
 
 export async function GET(request: NextRequest) {
@@ -21,9 +21,12 @@ export async function GET(request: NextRequest) {
 
     if (!link) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    const dayMap = buildDailyMap(startDate, endDate) as Record<string, { clicks: number; entered: number }>;
-    for (const key of Object.keys(dayMap)) {
-      dayMap[key] = { clicks: 0, entered: 0 };
+    const dayMap: Record<string, { clicks: number; entered: number }> = {};
+    const cur = new Date(startDate + 'T00:00:00.000Z');
+    const end = new Date(endDate + 'T00:00:00.000Z');
+    while (cur <= end) {
+      dayMap[cur.toISOString().split('T')[0]] = { clicks: 0, entered: 0 };
+      cur.setUTCDate(cur.getUTCDate() + 1);
     }
 
     const [{ data: clicks }, { data: enterEvents }] = await Promise.all([
