@@ -42,7 +42,7 @@ export function ActivityChart({ data }: ActivityChartProps) {
           backgroundColor: "transparent",
           style: { fontFamily: '"DM Sans", system-ui, sans-serif' },
           animation: { duration: 400 },
-          spacing: [0, 0, 0, 0],
+          spacing: [10, 0, 0, 0],
         },
         title: { text: undefined },
         credits: { enabled: false },
