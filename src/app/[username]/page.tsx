@@ -208,7 +208,7 @@ export default async function PublicBioPage({
       linkTranslations={data.linkTranslations}
       coverImageUrl={'cover_image_url' in data.page ? data.page.cover_image_url : undefined}
       isPro={data.isPro}
-      showBadge={!data.isPro}
+      showBadge={true}
     />
   );
 }
